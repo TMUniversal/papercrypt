@@ -1,0 +1,52 @@
+version: "3"
+
+tasks:
+  generate:
+    desc: Generate the code
+    cmds:
+      - go generate ./...
+    generates:
+      - "build_date.gen.txt"
+      - "git_ref.gen.txt"
+      - "git_commit.gen.txt"
+      - "go_version.gen.txt"
+      - "os_arch.gen.txt"
+      - "os_type.gen.txt"
+      - "version.gen.txt"
+    sources:
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".git/HEAD"
+      - ".git/refs/heads/*"
+      - ".git/refs/tags/*"
+      - "scripts/*.sh"
+
+  build:
+    desc: Build the app
+    deps:
+      - generate
+    sources:
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
+    generates:
+      - "bin/papercrypt{{exeExt}}"
+    cmds:
+      - go build -v -o bin/papercrypt{{exeExt}} main.go
+
+  run:
+    desc: Run the app
+    deps:
+      - generate
+    sources:
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
+    cmds:
+      - go run main.go
+
+  clean_generate:
+    desc: Remove all generated files
+    cmds:
+      - rm -f *.gen.txt

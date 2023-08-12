@@ -100,3 +100,7 @@ fabric.properties
 # Go workspace file
 go.work
 
+### Genrated files
+
+.task/
+*.gen.txt
