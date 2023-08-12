@@ -25,7 +25,7 @@ seedtool --out bip39 --count 32
 or use this tool directly:
 
 ```bash
-papercrypt generateKey --out-file key.txt
+papercrypt generateKey --words 24 --out mnemonic.txt
 ```
 
 to generate a 24 word mnemonic phrase.
