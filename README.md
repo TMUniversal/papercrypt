@@ -49,7 +49,7 @@ Example `data.json` file:
 Then, run
 
 ```bash
-papercrypt generate --in-file data.json --out-file output.pdf
+papercrypt generate --in-file data.json --out-file output.txt.gpg
 ```
 
 to generate the file containing your data, and the decryption instructions.
