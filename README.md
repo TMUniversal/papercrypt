@@ -56,3 +56,5 @@ to generate the file containing your data, and the decryption instructions.
 
 The program will ask you for an encryption key,
 for which you can use your mnemonic phrase from earlier.
+
+![example.png](example.png)

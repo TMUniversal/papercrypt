@@ -8,13 +8,23 @@ import (
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/pkg/errors"
 	"os"
+	"papercrypt/util"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-var inFile string
-var outFile string
+var inFileName string
+var outFileName string
+var overrideOutFile bool
+
+var serialNumber string
+var purpose string
+var comment string
+var date string
+var outputPdf bool
+var noQR bool
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
@@ -27,6 +37,16 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// 0. check if outfile exists
+		if _, err := os.Stat(outFileName); err == nil {
+			if overrideOutFile {
+				fmt.Printf("Overriding existing file \"%s\"!\n", outFileName)
+			} else {
+				fmt.Printf("File %s already exists, use --force to override\n", outFileName)
+				os.Exit(1)
+			}
+		}
+
 		// 1. Read passphrase from stdin
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
@@ -51,10 +71,8 @@ to quickly create a Cobra application.`,
 		passphrase = strings.ReplaceAll(passphrase, "\r", "")
 		passphrase = strings.ReplaceAll(passphrase, "\n", "")
 
-		fmt.Printf("Encrypting with passphrase [%s]\n", passphrase)
-
 		// 2. Read inFile as JSON, minimize
-		secretContentsFile, err := os.OpenFile(inFile, os.O_RDONLY, 0)
+		secretContentsFile, err := os.OpenFile(inFileName, os.O_RDONLY, 0)
 		if err != nil {
 			fmt.Printf("Error opening file: %s\n", err)
 			os.Exit(1)
@@ -79,25 +97,66 @@ to quickly create a Cobra application.`,
 		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsMinimal.Bytes())
 
 		// 4. Write encryptedSecretContents to outFile
-		encryptedSecretContentsFile, err := os.OpenFile(outFile, os.O_CREATE|os.O_WRONLY, 0600)
+		var outFile *os.File
+
+		if outFileName == "" || outFileName == "-" {
+			outFile = os.Stdout
+		} else {
+
+			outFile, err = os.OpenFile(outFileName, os.O_CREATE|os.O_WRONLY, 0600)
+			if err != nil {
+				fmt.Printf("Error opening file: %s\n", err)
+				os.Exit(1)
+			}
+			defer outFile.Close()
+		}
+
+		if serialNumber == "" {
+			serialNumber, err = util.GenerateSerial(6)
+			if err != nil {
+				fmt.Printf("Error generating serial number: %s\n", err)
+				os.Exit(1)
+			}
+		}
+
+		if date == "" {
+			date = time.Now().Format("Mon, 02 Jan 2006 15:04:05.000000000")
+		}
+
+		timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000", date)
 		if err != nil {
-			fmt.Printf("Error opening file: %s\n", err)
+			timestamp, err = time.Parse("2006-01-02 15:04:05", date)
+			if err != nil {
+				timestamp, err = time.Parse("2006-01-02", date)
+				if err != nil {
+					fmt.Printf("Error parsing date: %s\n", err)
+					os.Exit(1)
+				}
+			}
+		}
+
+		crypt := util.NewPaperCrypt(VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
+
+		var text []byte
+
+		if outputPdf {
+			text, err = crypt.GetBinary(noQR)
+		} else {
+			text, err = crypt.GetText(true)
+		}
+
+		if err != nil {
+			fmt.Printf("Error creating file contents: %s\n", err)
 			os.Exit(1)
 		}
 
-		n, err := encryptedSecretContentsFile.Write(encryptedSecretContents.GetBinary())
+		n, err := outFile.Write(text)
 		if err != nil {
 			fmt.Printf("Error writing file: %s\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("Wrote %d bytes to %s\n", n, outFile)
-		armored, err := encryptedSecretContents.GetArmored()
-		if err != nil {
-			fmt.Printf("Error getting armored contents: %s\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Encrypted Contents:\n%s\n", armored)
+		fmt.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
 
 		fmt.Println("Done!")
 	},
@@ -117,9 +176,17 @@ func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVarP(&inFile, "in-file", "i", "", "Input JSON file (Required)")
+	generateCmd.Flags().StringVarP(&inFileName, "in-file", "i", "", "Input JSON file (Required)")
 	generateCmd.MarkFlagRequired("in-file")
 
-	generateCmd.Flags().StringVarP(&outFile, "out-file", "o", "", "Output PDF file (Required)")
+	generateCmd.Flags().StringVarP(&outFileName, "out-file", "o", "", "Output PDF file (Required)")
 	generateCmd.MarkFlagRequired("out-file")
+
+	generateCmd.Flags().BoolVarP(&overrideOutFile, "force", "f", false, "Override output file if it exists (defaults to false)")
+	generateCmd.Flags().StringVarP(&serialNumber, "serial-number", "s", "", "Serial number of the sheet (optional, default: 6 random characters)")
+	generateCmd.Flags().StringVarP(&purpose, "purpose", "p", "", "Purpose of the sheet (optional)")
+	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
+	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
+	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
+	generateCmd.Flags().BoolVar(&outputPdf, "pdf", false, "Whether to output a PDF (optional, defaults to false, currently not implemented)")
 }
