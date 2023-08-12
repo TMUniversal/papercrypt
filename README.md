@@ -16,20 +16,35 @@ A 24 word mnemonic phrase is suitable for our purposes,
 but you can use any string of words or characters.
 
 Generate one with your tool of choice,
-you can use [seedtool-cli](https://github.com/BlockchainCommons/seedtool-cli)
-or, if you have it, [Bitwarden](https://bitwarden.com/)'s passphrase generator.
-
-For seedtool-cli, see the [usage instructions](https://github.com/BlockchainCommons/seedtool-cli/blob/master/Docs/MANUAL.md#bip39),
-
-and run
+you can use [seedtool-cli](https://github.com/BlockchainCommons/seedtool-cli):
 
 ```bash
 seedtool --out bip39 --count 32
 ```
 
+or use this tool directly:
+
+```bash
+papercrypt generateKey --out-file key.txt
+```
+
 to generate a 24 word mnemonic phrase.
 
 Save your data as a JSON file, let's call it `data.json`.
+
+Example `data.json` file:
+
+```json
+{
+  "bitwarden": {
+    "backup_localtion": "https://your-bucket.s3.amazonaws.com/bitwarden-backup.tar.gz.aes",
+    "access_key_id": "YOUR_S3_ACCESS_KEY_ID",
+    "secret_key": "YOUR_S3_SECRET_KEY",
+    "encryption_key": "your-backup-encryption-key",
+    "admin_token": "your-bitwarden-admin-token"
+  }
+}
+```
 
 Then, run
 
