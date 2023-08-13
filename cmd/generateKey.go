@@ -4,10 +4,11 @@ import (
 	"crypto/rand"
 	_ "embed"
 	"fmt"
-	"github.com/spf13/cobra"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 var genKeyOutFile string

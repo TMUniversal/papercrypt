@@ -7,7 +7,7 @@ you can use it to restore your secrets if you lose access to your computer.
 ## Installation
 
 TODO(2023-08-11): Add installation instructions.
- 
+
 ## Usage
 
 Generating a new key:
@@ -56,5 +56,3 @@ to generate the file containing your data, and the decryption instructions.
 
 The program will ask you for an encryption key,
 for which you can use your mnemonic phrase from earlier.
-
-![example.png](example.png)

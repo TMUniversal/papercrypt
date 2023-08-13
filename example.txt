@@ -1,0 +1,25 @@
+PaperCrypt/v0.1.0-2-ga3b3e19
+Content Serial: L2Z7BV (Base32)
+Purpose: Example
+Comment: Example Bitwarden Restore Details
+Date: Sat, 12 Aug 2023 18:43:10.829931200
+Content CRC-32: 51ba42a3
+Content SHA-256: 640bc8ebb89ea88a9514e98fa2605c3f4561a29543725e51690b06f5d8d4667c
+Content Length: 610 bytes
+Header CRC-32: 40fce8bf
+
+
+-----BEGIN PGP MESSAGE-----
+Version: GopenPGP 2.7.2
+Comment: https://gopenpgp.org
+
+wy4ECQMIXxnAsdy28SHgabslmvCLlMLwPLpG8n1nrJrsBQtTNVh20x1tDj1bMJJL
+0sB7AZFkkrupJzLHVH+tnDWTqOSxGURN41bYCpo3a+v+4poLR/rXGUZiz31ex8Vn
+kXfwVM4uCFhG59Cb0Snmze8DJ4Efq6cJpKo6V/0KIce6i26e1tQgNnq9rPF5rII/
+JfxPHOfVgtloX5KiOD70vZYaRC7p9amPafBpeWgMERz6vdOeEra6IZRuCvM9mWS6
+yN+t23vvW8u0AufngvH4p/GDkiXZuCjlK4n6uDJxO7aB6oOhqKohJfSrbysdeBiR
+mNzbBR6YRZ680LZG4IYSUxJWc2IjRDaxH5bH6QaaYGonDgeDGYh/RaEI5jDgKYPI
+YTTUsWS4e/hDFsrKqubFa9uzkAOKt+x6BsBRwofeA4Okb3QTfFrv9cGKH0y2D1Bh
+Ftl1wq03/5So8EK0sHrRtifgu5+k4OOOFiIZ5JRZ
+=aoJ+
+-----END PGP MESSAGE-----

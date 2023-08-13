@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
-	"github.com/pkg/errors"
 	"os"
 	"papercrypt/util"
 	"strings"
 	"time"
+
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 )
@@ -122,18 +123,19 @@ to quickly create a Cobra application.`,
 			}
 		}
 
+		var timestamp time.Time
 		if date == "" {
-			date = time.Now().Format("Mon, 02 Jan 2006 15:04:05.000000000")
-		}
-
-		timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000", date)
-		if err != nil {
-			timestamp, err = time.Parse("2006-01-02 15:04:05", date)
+			timestamp = time.Now()
+		} else {
+			timestamp, err = time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", date)
 			if err != nil {
-				timestamp, err = time.Parse("2006-01-02", date)
+				timestamp, err = time.Parse("2006-01-02 15:04:05", date)
 				if err != nil {
-					fmt.Printf("Error parsing date: %s\n", err)
-					os.Exit(1)
+					timestamp, err = time.Parse("2006-01-02", date)
+					if err != nil {
+						fmt.Printf("Error parsing date: %s\n", err)
+						os.Exit(1)
+					}
 				}
 			}
 		}

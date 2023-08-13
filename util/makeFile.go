@@ -3,17 +3,25 @@ package util
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
-	"github.com/pkg/errors"
 	"hash/crc32"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/phpdave11/gofpdf"
+	"github.com/skip2/go-qrcode"
 )
 
 const (
 	BytesPerLine = 22 // As is done in paperkey (https://www.jabberwocky.com/software/paperkey/)
+	PdfTextFont  = "Times"
+	PdfMonoFont  = "Courier"
 )
 
 type PaperCrypt struct {
@@ -99,10 +107,125 @@ func SerializeBinary(data *[]byte) string {
 }
 
 // GetBinary returns the binary representation of the paper crypt
-// TODO(2023-08-12): make this return pdf data, instead of acsii text
+// The PDF will be generated to include some basic information about papercrypt,
+// some metadata, optionally a QR-Code, and the encrypted data.
+//
+// The data will be formatted as
+//
+//	a) ASCII armored OpenPGP data, if --armor is specified
+//	b) Base16 (hex) encoded binary data, if --armor is not specified
+//
+// The PDF Document will have a header row, containing the following information:
+//   - Serial Number
+//   - Creation Date
+//   - Purpose
+//
+// and, next to the markdown information, a QR code containing the encrypted data.
 func (p *PaperCrypt) GetBinary(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+	text, err := p.GetText(asciiArmor, lowerCaseEncoding)
+	if err != nil {
+		return nil, errors.Errorf("error getting text content: %s", err)
+	}
 
-	return p.GetText(asciiArmor, lowerCaseEncoding)
+	// split at 2 empty lines, to get the header and the data
+	parts := strings.Split(string(text), "\n\n\n")
+	if len(parts) != 2 {
+		return nil, errors.Errorf("error splitting text content into header and data")
+	}
+
+	var qr []byte
+
+	if !noQR {
+
+		// for the qr-code, encode the *p as json, then base64 encode it
+		// finally format it as a URL: papercrypt://d/?data=<base64-encoded-json>
+		qrDataJson, err := json.Marshal(p)
+		if err != nil {
+			return nil, errors.Errorf("error marshalling PaperCrypt to json: %s", err)
+		}
+
+		qrDataBase64 := new(bytes.Buffer)
+		base64encoder := base64.NewEncoder(base64.URLEncoding, qrDataBase64)
+		_, err = base64encoder.Write(qrDataJson)
+		if err != nil {
+			return nil, errors.Errorf("error base64-encoding PaperCrypt json: %s", err)
+		}
+
+		qrData := fmt.Sprintf("papercrypt://d/?data=%s", qrDataBase64.String())
+
+		qr, err = qrcode.Encode(qrData, qrcode.Highest, 1024)
+		if err != nil {
+			return nil, errors.Errorf("error generating QR code: %s", err)
+		}
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetCreator("PaperCrypt/"+p.Version, true)
+	pdf.SetTopMargin(30)
+	pdf.SetHeaderFuncMode(func() {
+		pdf.SetY(5)
+		pdf.SetFont(PdfMonoFont, "", 10)
+		pdf.Cell(80, 0, "")
+		pdf.CellFormat(30, 10, fmt.Sprintf("Sheet ID: %s - %s - Purpose: %s", p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"), p.Purpose),
+			"", 0, "C", false, 0, "")
+		pdf.Ln(10)
+	}, true)
+	pdf.SetFooterFunc(func() {
+		pdf.SetY(-15)
+		pdf.SetFont(PdfMonoFont, "", 10)
+		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
+	})
+	pdf.AliasNbPages("")
+	pdf.AddPage()
+
+	pdf.SetFont(PdfTextFont, "", 16)
+	pdf.CellFormat(0, 10, "PaperCrypt Recovery Sheet", "", 0, "C", false, 0, "")
+	pdf.Ln(10)
+	pdf.SetFont(PdfTextFont, "", 12)
+	// enter the markdown information
+	pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
+	pdf.Ln(5)
+	pdf.SetFont(PdfTextFont, "", 10)
+	pdf.MultiCell(0, 5, `This is a recovery sheet for a PaperCrypt. It contains the encrypted data, its creation date, purpose, and comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.`, "", "", false)
+	pdf.Ln(5)
+	pdf.SetFont(PdfTextFont, "", 12)
+	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
+	pdf.Ln(5)
+	pdf.SetFont(PdfTextFont, "", 10)
+	pdf.MultiCell(0, 5, `1. Scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer.
+2. Decrypt using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.`, "", "", false)
+	pdf.Ln(10)
+
+	// add the qr code
+	if !noQR {
+		pdf.RegisterImageReader("qr.png", "PNG", bytes.NewReader(qr))
+		pdf.ImageOptions("qr.png", 30, 0, 150, 150, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.Ln(50)
+	}
+
+	pdf.SetFont(PdfMonoFont, "", 10)
+	pdf.Cell(0, 5, fmt.Sprintf("PaperCrypt %s", p.Version))
+	pdf.Ln(5)
+	pdf.Cell(0, 5, fmt.Sprintf("Creation Date: %s", p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST")))
+	pdf.Ln(5)
+	pdf.Cell(0, 5, fmt.Sprintf("Comment: %s", p.Comment))
+	pdf.Ln(10)
+
+	// loop over the data lines, and add them to the pdf
+	dataLines := strings.Split(parts[1], "\n")
+	pdf.SetFont(PdfMonoFont, "", 10)
+	for _, line := range dataLines {
+		pdf.Cell(0, 5, line)
+		pdf.Ln(5)
+	}
+
+	var buf bytes.Buffer
+	err = pdf.Output(&buf)
+	if err != nil {
+		return nil, errors.Errorf("error generating pdf: %s", err)
+	}
+
+	return buf.Bytes(), nil
 }
 
 // GetText returns the text representation of the paper crypt
@@ -139,7 +262,7 @@ Content Length: %d bytes`,
 		p.Comment,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
-		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000"),
+		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
 		dataCRC32,
 		dataSHA256,
 		len(data))

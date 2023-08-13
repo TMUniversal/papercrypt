@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base32"
-	"github.com/pkg/errors"
 	"math"
 	"math/big"
+
+	"github.com/pkg/errors"
 )
 
 // GenerateSerial generates a random serial number of length `length`
