@@ -23,10 +23,11 @@ var serialNumber string
 var purpose string
 var comment string
 var date string
+
 var outputPdf bool
 var noQR bool
-
 var lowerCasedBase16 bool
+var asciiArmor bool
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
@@ -142,9 +143,9 @@ to quickly create a Cobra application.`,
 		var text []byte
 
 		if outputPdf {
-			text, err = crypt.GetBinary(noQR, lowerCasedBase16)
+			text, err = crypt.GetBinary(asciiArmor, noQR, lowerCasedBase16)
 		} else {
-			text, err = crypt.GetText(true, lowerCasedBase16)
+			text, err = crypt.GetText(asciiArmor, lowerCasedBase16)
 		}
 
 		if err != nil {
@@ -192,4 +193,5 @@ func init() {
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
 	generateCmd.Flags().BoolVar(&outputPdf, "pdf", false, "Whether to output a PDF (optional, defaults to false, currently not implemented)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
+	generateCmd.Flags().BoolVar(&asciiArmor, "armor", false, "Whether to use ASCII armor (optional, defaults to Base16)")
 }

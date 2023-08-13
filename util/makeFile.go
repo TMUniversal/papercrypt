@@ -100,15 +100,16 @@ func SerializeBinary(data *[]byte) string {
 
 // GetBinary returns the binary representation of the paper crypt
 // TODO(2023-08-12): make this return pdf data, instead of acsii text
-func (p *PaperCrypt) GetBinary(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
-	return p.GetText(false, lowerCaseEncoding)
+func (p *PaperCrypt) GetBinary(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+
+	return p.GetText(asciiArmor, lowerCaseEncoding)
 }
 
 // GetText returns the text representation of the paper crypt
-func (p *PaperCrypt) GetText(armor bool, lowerCaseEncoding bool) ([]byte, error) {
+func (p *PaperCrypt) GetText(asciiArmor bool, lowerCaseEncoding bool) ([]byte, error) {
 	var data []byte
 
-	if armor {
+	if asciiArmor {
 		//stringData, err := p.Data.GetArmoredWithCustomHeaders(fmt.Sprintf("PaperCrypt/%s (https://github.com/TMUniversal/PaperCrypt), https://openpgp.org/", p.Version), constants.ArmorHeaderVersion)
 		stringData, err := p.Data.GetArmored()
 		if err != nil {
@@ -146,7 +147,7 @@ Content Length: %d bytes`,
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
 
 	serializedData := string(data)
-	if armor {
+	if !asciiArmor {
 		serializedData = SerializeBinary(&data)
 		if lowerCaseEncoding {
 			serializedData = strings.ToLower(serializedData)
