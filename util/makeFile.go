@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"hash/crc32"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -96,12 +97,12 @@ func SerializeBinary(data *[]byte) string {
 
 // GetBinary returns the binary representation of the paper crypt
 // TODO(2023-08-12): make this return pdf data, instead of acsii text
-func (p *PaperCrypt) GetBinary(noQR bool) ([]byte, error) {
-	return p.GetText(false)
+func (p *PaperCrypt) GetBinary(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+	return p.GetText(false, lowerCaseEncoding)
 }
 
 // GetText returns the text representation of the paper crypt
-func (p *PaperCrypt) GetText(armor bool) ([]byte, error) {
+func (p *PaperCrypt) GetText(armor bool, lowerCaseEncoding bool) ([]byte, error) {
 	var data []byte
 
 	if armor {
@@ -144,6 +145,9 @@ Content Length: %d bytes`,
 	serializedData := string(data)
 	if armor {
 		serializedData = SerializeBinary(&data)
+		if lowerCaseEncoding {
+			serializedData = strings.ToLower(serializedData)
+		}
 	}
 
 	return []byte(

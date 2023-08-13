@@ -26,6 +26,8 @@ var date string
 var outputPdf bool
 var noQR bool
 
+var lowerCasedBase16 bool
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -140,9 +142,9 @@ to quickly create a Cobra application.`,
 		var text []byte
 
 		if outputPdf {
-			text, err = crypt.GetBinary(noQR)
+			text, err = crypt.GetBinary(noQR, lowerCasedBase16)
 		} else {
-			text, err = crypt.GetText(true)
+			text, err = crypt.GetText(true, lowerCasedBase16)
 		}
 
 		if err != nil {
@@ -189,4 +191,5 @@ func init() {
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
 	generateCmd.Flags().BoolVar(&outputPdf, "pdf", false, "Whether to output a PDF (optional, defaults to false, currently not implemented)")
+	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
 }
