@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.2
-	github.com/phpdave11/gofpdf v1.4.2
+	github.com/phpdave11/gofpdf/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
 )
