@@ -73,15 +73,18 @@ func SerializeBinary(data *[]byte) string {
 
 		line := fmt.Sprintf("%s%d: ", string(bytes.Repeat([]byte{' '}, lineNumberPadding)), lineNumber)
 
+		dataLine := make([]byte, 0, BytesPerLine)
+
 		for j := 0; j < BytesPerLine; j++ {
 			if i+j >= len(*data) {
 				break
 			}
 
+			dataLine = append(dataLine, (*data)[i+j])
 			line += fmt.Sprintf("%02X ", (*data)[i+j])
 		}
 
-		lineCRC24 := Crc24Checksum([]byte(line))
+		lineCRC24 := Crc24Checksum(dataLine)
 		line += fmt.Sprintf("%06X\n", lineCRC24)
 
 		dataBlock = append(dataBlock, []byte(line)...)
