@@ -135,7 +135,6 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	var qr []byte
 
 	if !noQR {
-
 		// for the qr-code, encode the *p as json, then base64 encode it
 		// finally format it as a URL: papercrypt://d/?data=<base64-encoded-json>
 		qrDataJson, err := json.Marshal(p)
@@ -185,14 +184,19 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, `This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.`, "", "", false)
+	pdf.MultiCell(0, 5, "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.", "", "", false)
+	pdf.Ln(5)
+	pdf.SetFont(PdfTextFont, "", 12)
+	pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
+	pdf.Ln(5)
+	pdf.SetFont(PdfTextFont, "", 10)
+	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block.", BytesPerLine), "", "", false)
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 12)
 	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, `1. Scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer.
-2. Decrypt using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.`, "", "", false)
+	pdf.MultiCell(0, 5, "1. Scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer.\n2. Decrypt using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", "", "", false)
 	pdf.Ln(10)
 
 	// add the qr code
@@ -202,15 +206,15 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 		pdf.Ln(50)
 	}
 
+	// print header lines
 	pdf.SetFont(PdfMonoFont, "", 10)
-	pdf.Cell(0, 5, fmt.Sprintf("PaperCrypt %s", p.Version))
-	pdf.Ln(5)
-	pdf.Cell(0, 5, fmt.Sprintf("Creation Date: %s", p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST")))
-	pdf.Ln(5)
-	pdf.Cell(0, 5, fmt.Sprintf("Comment: %s", p.Comment))
+	for _, line := range strings.Split(parts[0], "\n") {
+		pdf.Cell(0, 5, "# "+line)
+		pdf.Ln(5)
+	}
 	pdf.Ln(10)
 
-	// loop over the data lines, and add them to the pdf
+	// print data lines
 	dataLines := strings.Split(parts[1], "\n")
 	pdf.SetFont(PdfMonoFont, "", 10)
 	for _, line := range dataLines {
@@ -245,18 +249,20 @@ func (p *PaperCrypt) GetText(asciiArmor bool, lowerCaseEncoding bool) ([]byte, e
 		data = p.Data.GetBinary()
 	}
 
+	dataCRC24 := Crc24Checksum(data)
 	dataCRC32 := crc32.ChecksumIEEE(data)
 	dataSHA256 := sha256.Sum256(data)
 
 	header := fmt.Sprintf(
 		`PaperCrypt/%s
-Content Serial: %s (Base32)
+Content Serial: %s
 Purpose: %s
 Comment: %s
 Date: %s
+Content Length: %d
+Content CRC-24: %x
 Content CRC-32: %x
-Content SHA-256: %x
-Content Length: %d bytes`,
+Content SHA-256: %s`,
 		p.Version,
 		p.SerialNumber,
 		p.Purpose,
@@ -264,9 +270,10 @@ Content Length: %d bytes`,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
+		len(data),
+		dataCRC24,
 		dataCRC32,
-		dataSHA256,
-		len(data))
+		base64.StdEncoding.EncodeToString(dataSHA256[:]))
 
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
 
