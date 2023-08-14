@@ -142,8 +142,7 @@ to quickly create a Cobra application.`,
 		if outFileName == "" || outFileName == "-" {
 			outFile = os.Stdout
 		} else {
-
-			outFile, err = os.OpenFile(outFileName, os.O_CREATE|os.O_WRONLY, 0600)
+			outFile, err = os.OpenFile(outFileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 			if err != nil {
 				fmt.Printf("Error opening file: %s\n", err)
 				os.Exit(1)
