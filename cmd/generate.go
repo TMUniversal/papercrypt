@@ -145,7 +145,7 @@ to quickly create a Cobra application.`,
 		var text []byte
 
 		if outputPdf {
-			text, err = crypt.GetBinary(asciiArmor, noQR, lowerCasedBase16)
+			text, err = crypt.GetPDF(asciiArmor, noQR, lowerCasedBase16)
 		} else {
 			text, err = crypt.GetText(asciiArmor, lowerCasedBase16)
 		}

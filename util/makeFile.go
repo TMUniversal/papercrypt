@@ -11,10 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
-	"github.com/phpdave11/gofpdf"
+	"github.com/jung-kurt/gofpdf/v2"
+	"github.com/pkg/errors"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -106,7 +105,7 @@ func SerializeBinary(data *[]byte) string {
 	return string(dataBlock)
 }
 
-// GetBinary returns the binary representation of the paper crypt
+// GetPDF returns the binary representation of the paper crypt
 // The PDF will be generated to include some basic information about papercrypt,
 // some metadata, optionally a QR-Code, and the encrypted data.
 //
@@ -121,7 +120,7 @@ func SerializeBinary(data *[]byte) string {
 //   - Purpose
 //
 // and, next to the markdown information, a QR code containing the encrypted data.
-func (p *PaperCrypt) GetBinary(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	text, err := p.GetText(asciiArmor, lowerCaseEncoding)
 	if err != nil {
 		return nil, errors.Errorf("error getting text content: %s", err)
@@ -186,7 +185,7 @@ func (p *PaperCrypt) GetBinary(asciiArmor, noQR bool, lowerCaseEncoding bool) ([
 	pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, `This is a recovery sheet for a PaperCrypt. It contains the encrypted data, its creation date, purpose, and comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.`, "", "", false)
+	pdf.MultiCell(0, 5, `This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.`, "", "", false)
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 12)
 	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
@@ -218,6 +217,8 @@ func (p *PaperCrypt) GetBinary(asciiArmor, noQR bool, lowerCaseEncoding bool) ([
 		pdf.Cell(0, 5, line)
 		pdf.Ln(5)
 	}
+
+	pdf.Close()
 
 	var buf bytes.Buffer
 	err = pdf.Output(&buf)
