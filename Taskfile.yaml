@@ -15,6 +15,7 @@ tasks:
       - "version.gen.txt"
     sources:
       - "*.go"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
       - ".git/HEAD"
@@ -28,6 +29,7 @@ tasks:
       - generate
     sources:
       - "*.go"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
     generates:
@@ -35,18 +37,8 @@ tasks:
     cmds:
       - go build -v -o bin/papercrypt{{exeExt}} main.go
 
-  run:
-    desc: Run the app
-    deps:
-      - generate
-    sources:
-      - "*.go"
-      - "go.mod"
-      - "go.sum"
-    cmds:
-      - go run main.go
-
-  clean_generate:
+  clean:
     desc: Remove all generated files
     cmds:
-      - rm -f *.gen.txt
+      - "rm -f *.gen.txt"
+      - "rm -f bin/papercrypt{{exeExt}}"
