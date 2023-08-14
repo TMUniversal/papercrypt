@@ -51,31 +51,37 @@ to quickly create a Cobra application.`,
 			}
 		}
 
-		// 1. Read passphrase from stdin
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
-		passphrase, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("Error reading passphrase: %s\n", err)
-			os.Exit(1)
+		// 1. generate serial number if not provided
+		if serialNumber == "" {
+			var err error
+			serialNumber, err = util.GenerateSerial(6)
+			if err != nil {
+				fmt.Printf("Error generating serial number: %s\n", err)
+				os.Exit(1)
+			}
 		}
 
-		fmt.Println("Enter your encryption passphrase again: ")
-		passphraseAgain, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("Error reading passphrase: %s\n", err)
-			os.Exit(1)
+		// 2. parse date if provided
+		var timestamp time.Time
+		if date == "" {
+			timestamp = time.Now()
+		} else {
+			var err error
+			timestamp, err = time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", date)
+			if err != nil {
+				// try other formats if this fails
+				timestamp, err = time.Parse("2006-01-02 15:04:05", date)
+				if err != nil {
+					timestamp, err = time.Parse("2006-01-02", date)
+					if err != nil {
+						fmt.Printf("Error parsing date: %s\n", err)
+						os.Exit(1)
+					}
+				}
+			}
 		}
-		if passphrase != passphraseAgain {
-			fmt.Printf("Passphrases do not match\n")
-			os.Exit(1)
-		}
-		passphraseAgain = "" // clear passphraseAgain
 
-		passphrase = strings.ReplaceAll(passphrase, "\r", "")
-		passphrase = strings.ReplaceAll(passphrase, "\n", "")
-
-		// 2. Read inFile as JSON, minimize
+		// 3. Read inFile as JSON, minimize
 		secretContentsFile, err := os.OpenFile(inFileName, os.O_RDONLY, 0)
 		if err != nil {
 			fmt.Printf("Error opening file: %s\n", err)
@@ -97,8 +103,38 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		// 3. Encrypt secretContentsMinimal with passphrase
+		// 4. Read passphrase from stdin
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
+		passphrase, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("Error reading passphrase: %s\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Enter your encryption passphrase again: ")
+		passphraseAgain, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("Error reading passphrase: %s\n", err)
+			os.Exit(1)
+		}
+		if passphrase != passphraseAgain {
+			fmt.Printf("Passphrases do not match! Aborting.\n")
+			os.Exit(1)
+		}
+		passphraseAgain = "" // clear passphraseAgain
+
+		passphrase = strings.ReplaceAll(passphrase, "\r", "")
+		passphrase = strings.ReplaceAll(passphrase, "\n", "")
+
+		// 5. Encrypt secretContentsMinimal with passphrase
 		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsMinimal.Bytes())
+		if err != nil {
+			fmt.Printf("Error encrypting secret contents: %s\n", err)
+			os.Exit(1)
+		}
+
+		passphrase = "" // clear passphrase
 
 		// 4. Write encryptedSecretContents to outFile
 		var outFile *os.File
@@ -113,31 +149,6 @@ to quickly create a Cobra application.`,
 				os.Exit(1)
 			}
 			defer outFile.Close()
-		}
-
-		if serialNumber == "" {
-			serialNumber, err = util.GenerateSerial(6)
-			if err != nil {
-				fmt.Printf("Error generating serial number: %s\n", err)
-				os.Exit(1)
-			}
-		}
-
-		var timestamp time.Time
-		if date == "" {
-			timestamp = time.Now()
-		} else {
-			timestamp, err = time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", date)
-			if err != nil {
-				timestamp, err = time.Parse("2006-01-02 15:04:05", date)
-				if err != nil {
-					timestamp, err = time.Parse("2006-01-02", date)
-					if err != nil {
-						fmt.Printf("Error parsing date: %s\n", err)
-						os.Exit(1)
-					}
-				}
-			}
 		}
 
 		crypt := util.NewPaperCrypt(VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
