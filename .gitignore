@@ -104,3 +104,6 @@ go.work
 
 .task/
 *.gen.txt
+
+test.pdf
+test.txt
