@@ -1,25 +1,26 @@
-PaperCrypt/v0.1.0-2-ga3b3e19
-Content Serial: L2Z7BV (Base32)
-Purpose: Example
-Comment: Example Bitwarden Restore Details
-Date: Sat, 12 Aug 2023 18:43:10.829931200
-Content CRC-32: 51ba42a3
-Content SHA-256: 640bc8ebb89ea88a9514e98fa2605c3f4561a29543725e51690b06f5d8d4667c
-Content Length: 610 bytes
-Header CRC-32: 40fce8bf
+PaperCrypt/v1.0.0-beta0-5-g72c479e-dirty
+Content Serial: FK5SGW
+Purpose: Example Sheet
+Comment: Bitwarden Restore Details
+Date: Mon, 14 Aug 2023 19:02:36.728268700 CEST
+Content Length: 610
+Content CRC-24: 7461da
+Content CRC-32: cfa42e9f
+Content SHA-256: 695973394e6e4a6651545336724238767758724f693342584472444654362b33754f456c502b504b6965673d
+Header CRC-32: 359331dc
 
 
 -----BEGIN PGP MESSAGE-----
 Version: GopenPGP 2.7.2
 Comment: https://gopenpgp.org
 
-wy4ECQMIXxnAsdy28SHgabslmvCLlMLwPLpG8n1nrJrsBQtTNVh20x1tDj1bMJJL
-0sB7AZFkkrupJzLHVH+tnDWTqOSxGURN41bYCpo3a+v+4poLR/rXGUZiz31ex8Vn
-kXfwVM4uCFhG59Cb0Snmze8DJ4Efq6cJpKo6V/0KIce6i26e1tQgNnq9rPF5rII/
-JfxPHOfVgtloX5KiOD70vZYaRC7p9amPafBpeWgMERz6vdOeEra6IZRuCvM9mWS6
-yN+t23vvW8u0AufngvH4p/GDkiXZuCjlK4n6uDJxO7aB6oOhqKohJfSrbysdeBiR
-mNzbBR6YRZ680LZG4IYSUxJWc2IjRDaxH5bH6QaaYGonDgeDGYh/RaEI5jDgKYPI
-YTTUsWS4e/hDFsrKqubFa9uzkAOKt+x6BsBRwofeA4Okb3QTfFrv9cGKH0y2D1Bh
-Ftl1wq03/5So8EK0sHrRtifgu5+k4OOOFiIZ5JRZ
-=aoJ+
+wy4ECQMINZTejYqzrQrgUQLYPTMg6lzmD7HnPz24TAMGOSx8DpUo9LqF3ZaogqRu
+0sB7AenmGRTlutUssNZMg5+AATwtU2HEN0XZI16ASAZwijE4Rn+IYIPXc1ab6KQJ
+oR5uGaBgZA1chvoL+GRYFadl0XbDnD72e1GelBuk8Xel9gltwvvSNOoZKkp+l5h0
+6k7OyYh/dDPRvv1bDF7dOSw3GZqJhGL8+xIrOhuTu476XbdnutdrFirBvFGo2sQb
+1lRkwcvGhjYvK+e2hJ2JKQps9H0ZMNGHbmsO3cWdwGo5MaBfPLSx76leBgk00Tps
+6oG8EEiWKDB//BjVxYSw9ZwouB195vR/dS0RTpdhLAUUP0acUIUOjDfFJWcJlCI5
+MI0vDVDLKMcDQp7GOkwmWjYGPD9MI61LBc1W0ho/u+Ie8CqWDOCg6NSxY2fDVvrb
+fWsRCKJy3f8WDIxqGSl4T5KdR/MJQvSZw1DnexrS
+=8378
 -----END PGP MESSAGE-----
