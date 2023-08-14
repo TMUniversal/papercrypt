@@ -24,19 +24,19 @@ const (
 )
 
 type PaperCrypt struct {
-	// Version is the version of the paper crypt
+	// Version is the version of papercrypt used to generate the document.
 	Version string
 
-	// Data is the encrypted data
+	// Data is the encrypted data as a PGP message
 	Data *crypto.PGPMessage
 
-	// SerialNumber is the serial number of the paper crypt
+	// SerialNumber is the serial number of document, used to identify it. It is generated randomly if not provided.
 	SerialNumber string
 
-	// Purpose is the purpose of the paper crypt
+	// Purpose is the purpose of document
 	Purpose string
 
-	// Comment is the comment on the paper crypt
+	// Comment is the comment on document
 	Comment string
 
 	// CreatedAt is the creation timestamp
@@ -61,13 +61,15 @@ func NewPaperCrypt(version string, data *crypto.PGPMessage, serialNumber string,
 // bytes are printed as two base16 (hex) digits, separated by a space.
 // Example:
 //
-//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 <CRC-24 of this line>
-//	2: ...
+//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 <CRC-24 of this line>
+//	2: ... <CRC-24 of this line>
 //
-// 10: ...
+// 10: ... <CRC-24 of this line>
 // ...
 // n-1: ... <CRC-24 of this line>
 // n: <CRC-24 of the block>
+//
+// See [example.pdf](example.pdf) for an example.
 func SerializeBinary(data *[]byte) string {
 	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
 	lineNumberDigits := int(math.Floor(math.Log10(lines)))
@@ -159,12 +161,14 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetCreator("PaperCrypt/"+p.Version, true)
-	pdf.SetTopMargin(30)
+	pdf.SetTopMargin(20)
+	pdf.SetLeftMargin(20)
+	pdf.SetRightMargin(20)
+	pdf.SetAutoPageBreak(true, 15)
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
-		pdf.Cell(80, 0, "")
-		pdf.CellFormat(30, 10, fmt.Sprintf("Sheet ID: %s - %s - Purpose: %s", p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"), p.Purpose),
+		pdf.CellFormat(0, 10, fmt.Sprintf("Sheet ID: %s - %s - Purpose: %s", p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"), p.Purpose),
 			"", 0, "C", false, 0, "")
 		pdf.Ln(10)
 	}, true)
@@ -190,13 +194,13 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block.", BytesPerLine), "", "", false)
+	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, Polynomial, Initial), "", "", false)
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 12)
 	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, "1. Scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer.\n2. Decrypt using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", "", "", false)
+	pdf.MultiCell(0, 5, "Firstly, scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", "", "", false)
 	pdf.Ln(10)
 
 	// add the qr code
