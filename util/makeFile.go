@@ -70,7 +70,7 @@ func NewPaperCrypt(version string, data *crypto.PGPMessage, serialNumber string,
 // n: <CRC-24 of the block>
 func SerializeBinary(data *[]byte) string {
 	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
-	lineNumberDigits := int(math.Floor(math.Log10(lines))) + 1
+	lineNumberDigits := int(math.Floor(math.Log10(lines)))
 
 	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
 
