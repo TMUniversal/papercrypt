@@ -98,7 +98,7 @@ func SerializeBinary(data *[]byte) string {
 	}
 
 	dataCRC24 := Crc24Checksum(*data)
-	finalLineNumber := int(math.Ceil(float64(len(*data)) / BytesPerLine))
+	finalLineNumber := int(math.Ceil(float64(len(*data))/BytesPerLine)) + 1
 	finalLinePadding := lineNumberDigits - int(math.Floor(math.Log10(lines+1)))
 	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%s%d: %06X\n", string(bytes.Repeat([]byte{' '}, finalLinePadding)), finalLineNumber, dataCRC24))...)
 
