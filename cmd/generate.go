@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"papercrypt/util"
 	"strings"
@@ -30,10 +31,13 @@ var noQR bool
 var lowerCasedBase16 bool
 var asciiArmor bool
 
+var passphrase string
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate a PaperCrypt document",
+	Aliases: []string{"gen", "g"},
+	Use:     "generate",
+	Short:   "Generate a PaperCrypt document",
 	Long: `The 'generate' command takes a JSON file as input and encrypts the data within. It then embeds the encrypted data in a 
 newly created PDF file that you can print for physical storage.
 
@@ -42,7 +46,7 @@ encryption process. Treat this passphrase with care; loss of the passphrase coul
 encrypted data.`,
 	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
 	Run: func(cmd *cobra.Command, args []string) {
-		// 0. check if outfile exists
+		// 0. check if out file exists
 		if _, err := os.Stat(outFileName); err == nil {
 			if overrideOutFile {
 				fmt.Printf("Overriding existing file \"%s\"!\n", outFileName)
@@ -84,7 +88,7 @@ encrypted data.`,
 
 		// 3. Read inFile as JSON, minimize
 		secretContentsFile, err := os.OpenFile(inFileName, os.O_RDONLY, 0)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			fmt.Printf("Error opening file: %s\n", err)
 			os.Exit(1)
 		}
@@ -105,28 +109,33 @@ encrypted data.`,
 		}
 
 		// 4. Read passphrase from stdin
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
-		passphrase, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("Error reading passphrase: %s\n", err)
-			os.Exit(1)
-		}
 
-		fmt.Println("Enter your encryption passphrase again: ")
-		passphraseAgain, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("Error reading passphrase: %s\n", err)
-			os.Exit(1)
-		}
-		if passphrase != passphraseAgain {
-			fmt.Printf("Passphrases do not match! Aborting.\n")
-			os.Exit(1)
-		}
-		passphraseAgain = "" // clear passphraseAgain
+		// check if passphrase flag is set
 
-		passphrase = strings.ReplaceAll(passphrase, "\r", "")
-		passphrase = strings.ReplaceAll(passphrase, "\n", "")
+		if !cmd.Flags().Lookup("passphrase").Changed {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
+			passphrase, err = reader.ReadString('\n')
+			if err != nil && err != io.EOF {
+				fmt.Printf("Error reading passphrase: %s\n", err)
+				os.Exit(1)
+			}
+
+			fmt.Println("Enter your encryption passphrase again: ")
+			passphraseAgain, err := reader.ReadString('\n')
+			if err != nil && err != io.EOF {
+				fmt.Printf("Error reading passphrase: %s\n", err)
+				os.Exit(1)
+			}
+			if passphrase != passphraseAgain {
+				fmt.Printf("Passphrases do not match! Aborting.\n")
+				os.Exit(1)
+			}
+			passphraseAgain = "" // clear passphraseAgain
+
+			passphrase = strings.ReplaceAll(passphrase, "\r", "")
+			passphrase = strings.ReplaceAll(passphrase, "\n", "")
+		}
 
 		// 5. Encrypt secretContentsMinimal with passphrase
 		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsMinimal.Bytes())
@@ -207,4 +216,6 @@ func init() {
 	generateCmd.Flags().BoolVar(&outputPdf, "pdf", true, "Whether to output a PDF (optional, defaults to true)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
 	generateCmd.Flags().BoolVar(&asciiArmor, "armor", false, "Whether to use ASCII armor instead of hex+crc serialization (optional, defaults to hex)")
+
+	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")
 }
