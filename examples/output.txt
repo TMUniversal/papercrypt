@@ -5,7 +5,7 @@ Comment: Regular Text Output Example
 Date: Wed, 16 Aug 2023 20:29:41.496984300 CEST
 Serialization Type: papercrypt/base16+crc
 Content Length: 366
-Content CRC-24: 22df5a
+Content CRC-24: 22df5f
 Content CRC-32: eb92c6ba
 Content SHA-256: VR/3qgEcL9O8CDz95xLK0PznmkF9cncMcfnJOnlPSDk=
 Header CRC-32: db03891f
