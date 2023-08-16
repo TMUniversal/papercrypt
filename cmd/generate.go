@@ -33,13 +33,14 @@ var asciiArmor bool
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate a PaperCrypt document",
+	Long: `The 'generate' command takes a JSON file as input and encrypts the data within. It then embeds the encrypted data in a 
+newly created PDF file that you can print for physical storage.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Please note, to decrypt the data from the output PaperCrypt PDF, you'll need the original passphrase used during the 
+encryption process. Treat this passphrase with care; loss of the passphrase could result in the permanent loss of the 
+encrypted data.`,
+	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
 	Run: func(cmd *cobra.Command, args []string) {
 		// 0. check if outfile exists
 		if _, err := os.Stat(outFileName); err == nil {
@@ -191,11 +192,11 @@ func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVarP(&inFileName, "in-file", "i", "", "Input JSON file (Required)")
-	generateCmd.MarkFlagRequired("in-file")
+	generateCmd.Flags().StringVarP(&inFileName, "in", "i", "", "Input JSON file (Required)")
+	generateCmd.MarkFlagRequired("in")
 
-	generateCmd.Flags().StringVarP(&outFileName, "out-file", "o", "", "Output PDF file (Required)")
-	generateCmd.MarkFlagRequired("out-file")
+	generateCmd.Flags().StringVarP(&outFileName, "out", "o", "", "Output PDF file (Required)")
+	generateCmd.MarkFlagRequired("out")
 
 	generateCmd.Flags().BoolVarP(&overrideOutFile, "force", "f", false, "Override output file if it exists (defaults to false)")
 	generateCmd.Flags().StringVarP(&serialNumber, "serial-number", "s", "", "Serial number of the sheet (optional, default: 6 random characters)")
@@ -203,7 +204,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
-	generateCmd.Flags().BoolVar(&outputPdf, "pdf", false, "Whether to output a PDF (optional, defaults to false, currently not implemented)")
+	generateCmd.Flags().BoolVar(&outputPdf, "pdf", true, "Whether to output a PDF (optional, defaults to true)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
-	generateCmd.Flags().BoolVar(&asciiArmor, "armor", false, "Whether to use ASCII armor (optional, defaults to Base16)")
+	generateCmd.Flags().BoolVar(&asciiArmor, "armor", false, "Whether to use ASCII armor instead of hex+crc serialization (optional, defaults to hex)")
 }
