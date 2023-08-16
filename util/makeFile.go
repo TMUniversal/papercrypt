@@ -261,12 +261,18 @@ func (p *PaperCrypt) GetText(asciiArmor bool, lowerCaseEncoding bool) ([]byte, e
 	dataCRC32 := crc32.ChecksumIEEE(data)
 	dataSHA256 := sha256.Sum256(data)
 
+	serializationType := "papercrypt/base16+crc"
+	if asciiArmor {
+		serializationType = "openpgp/armor"
+	}
+
 	header := fmt.Sprintf(
-		`PaperCrypt/%s
+		`PaperCrypt Version: %s
 Content Serial: %s
 Purpose: %s
 Comment: %s
 Date: %s
+Serialization Type: %s
 Content Length: %d
 Content CRC-24: %x
 Content CRC-32: %x
@@ -278,6 +284,7 @@ Content SHA-256: %s`,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
+		serializationType,
 		len(data),
 		dataCRC24,
 		dataCRC32,

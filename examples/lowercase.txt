@@ -1,31 +1,32 @@
-PaperCrypt/v1.0.0-beta0-17-ga1a3bfc-dirty
-Content Serial: DELISR
-Purpose: 
-Comment: 
-Date: Wed, 16 Aug 2023 18:15:43.550268200 CEST
+PaperCrypt Version: v1.0.0-beta0-20-g92709bd-dirty
+Content Serial: MHAHU7
+Purpose: Example Sheet
+Comment: Lowercase Text Output Example
+Date: Wed, 16 Aug 2023 20:29:41.675684400 CEST
+Serialization Type: papercrypt/base16+crc
 Content Length: 366
-Content CRC-24: c0c35f
-Content CRC-32: 23800b78
-Content SHA-256: ykPfoFGX1O0du6xG355DxiLW7hmZ4dXfko0yndGSUQc=
-Header CRC-32: 5d9c64d9
+Content CRC-24: b56cc6
+Content CRC-32: 2eae7963
+Content SHA-256: FHriQoafdzno/A0kDyMHEIwlIGAtdtPsQfZm/f7ybQQ=
+Header CRC-32: f0c04aa7
 
 
- 1: c3 2e 04 09 03 08 a0 c9 0f 58 40 cf ea 5f e0 2b 81 c1 03 14 24 f4 ced5c9
- 2: 12 da 78 53 1a e0 e7 29 cf 38 a7 c3 57 99 20 28 7c cd dd f8 2a 64 a755c5
- 3: 7b 74 a9 4e d2 c0 7b 01 a8 6a 39 36 11 10 b3 5e 4b 1a 4d 1a 23 35 9885d7
- 4: 5c e5 cb 65 45 9b 28 6c 13 4f 01 95 78 62 cc dd 6d c1 52 33 b1 48 9b4eca
- 5: ec e8 be be 26 9a 99 77 7d f1 76 90 1f 9d 5a cf 6f f4 5a d9 9c ab d61326
- 6: 0e 3c 1b 95 13 8b ee 21 25 57 95 1c fa 74 56 57 ee 69 a5 9e ee 85 515379
- 7: f4 47 ba 70 54 56 ee 03 aa 82 2e e8 3f 52 8d 0d e7 10 2c e2 d8 eb c0d14b
- 8: 44 38 01 30 9b 44 93 98 61 19 f7 dd da c0 69 0b 53 5d 6f 7e 1b f4 c07f69
- 9: 94 19 8d 03 e5 cb 77 3f 2f 1b 76 d6 d5 e6 b9 5c a7 30 08 d9 ba d2 5c6c8b
-10: ad 9c 86 4e d6 5b 43 60 81 a9 1f 5b 9c 74 2a 25 95 8e d4 4e 4b 9a 8d7c28
-11: d8 49 f4 25 06 11 7e 2c 48 40 b9 00 4e 32 e3 39 1e f8 81 23 bf a8 373c1c
-12: d6 ba c7 87 d2 11 67 cb 1a 04 ee 90 5f c6 6d 4c c2 03 44 00 94 4b 6abc50
-13: aa 99 f0 0f 84 97 5b ef 3e 3c 9b 2f f2 70 ba a1 68 ea 27 d3 40 ea 557167
-14: 9d cc 9a 62 1f 7a 02 66 85 91 7b 7d 9f 00 eb b6 f5 a3 d7 cf 54 b5 f259ae
-15: 0b 83 61 76 a8 67 d5 0d 57 57 f5 cc a1 72 b4 0b 01 68 83 46 8b 97 25091e
-16: 4c e0 c7 b6 cd 46 75 6c fd 65 e9 2b c2 bb 4b b3 c8 86 ad 21 97 f7 b88097
-17: aa 10 15 39 67 75 2f b3 a9 1a 80 e6 27 a4 6227ef
-18: c0c35f
+ 1: c3 2e 04 09 03 08 ce a7 c5 29 f9 32 fc c3 e0 9c 4a 1f a6 7e 59 bd b3b0f8
+ 2: 06 0c f4 ef 4c 28 0e b7 83 78 22 79 2c 4c 43 22 45 26 e4 65 f7 c1 fe5600
+ 3: 8d ab c1 0b d2 c0 7b 01 43 c4 12 b3 b3 68 10 5e 55 33 f0 9c 9f 62 094f34
+ 4: b7 54 56 16 03 f2 63 3e 9c 66 15 9d b5 1c 81 f1 0c 3f 09 f1 21 e1 2fa1f3
+ 5: fd d3 e1 1c 8d bf e0 47 b3 70 8d 31 f5 f0 de 52 e3 cf 4f b7 d3 5e 598fb8
+ 6: 75 7d 68 19 84 1d 4f 65 48 55 d1 f6 d1 b3 e1 eb d8 f0 f0 7f ea b5 bfa4c5
+ 7: 70 49 bf 26 1f ba 4f 49 ce 9d 8e 5b ef 80 c7 2e ee e0 ff 28 fb a0 056ea1
+ 8: 4d d8 6c 8a 4e 52 e1 b2 0d 39 c1 94 c1 02 55 46 85 64 46 8c b1 08 f3a35d
+ 9: c1 e8 b9 43 c9 3c d8 52 04 11 f7 d7 71 69 44 9f 9d 27 08 fc 64 1a 36cd3b
+10: 64 3c a8 57 e3 1f ef 31 6d 7c 43 29 f4 3c 28 f6 3a 46 2a be bf 57 1bf363
+11: da 2b a1 57 15 a0 e2 8c 0a f8 61 ec 90 ea 41 18 fd e0 fd be bd 9a a45b4b
+12: 33 d2 99 e3 57 29 4d 27 25 5d f8 fd 2e 54 32 1b 0c 07 c2 a5 45 cc 6f61a2
+13: b3 98 62 db 96 2a 39 53 5b e6 c0 0c 41 0f 0e 9c af d4 4d f0 6a c7 0b9940
+14: 48 cb 28 35 7e 80 cd ae f1 ad 8d c4 19 6e 55 4e 3d b3 93 c6 15 01 d05017
+15: 36 8b 3a b1 c7 4a 65 11 87 a8 db b6 7a c1 c8 80 bb a1 fa 99 ce b2 104033
+16: 95 c0 63 e6 06 a5 24 c0 9c 67 06 49 f5 ae 2e d7 06 65 4f a1 b5 3f 1a7411
+17: 14 b5 57 cf 85 f0 f9 8d f0 cb 20 07 88 3d 2762ff
+18: b56cc6
 

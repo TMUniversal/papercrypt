@@ -50,13 +50,13 @@ tasks:
       - "examples/armoured.pdf"
       - "examples/lowercase.pdf"
     cmds:
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/output.txt --pdf=false'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/armoured.txt --pdf=false --armor'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/lowercase.txt --pdf=false --lowercase'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/output.pdf'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/no_qr.pdf --no-qr'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/armoured.pdf --pdf=true --armor'
-      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/lowercase.pdf --lowercase'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.txt    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular Text Output Example"                --pdf=false'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/armoured.txt  --force --passphrase "example" --purpose "Example Sheet" --comment "Armoured Text Output Example"   --armor     --pdf=false'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.txt --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase Text Output Example"  --lowercase --pdf=false'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/armoured.pdf  --force --passphrase "example" --purpose "Example Sheet" --comment "Armoured PDF Example" --armor'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase'
 
   clean:
     desc: Remove all generated files

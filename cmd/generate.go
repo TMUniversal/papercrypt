@@ -110,8 +110,6 @@ encrypted data.`,
 
 		// 4. Read passphrase from stdin
 
-		// check if passphrase flag is set
-
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			reader := bufio.NewReader(os.Stdin)
 			fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")

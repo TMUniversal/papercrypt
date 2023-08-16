@@ -1,5 +1,9 @@
 package util
 
+import (
+	"hash/crc32"
+)
+
 const (
 	Polynomial = uint32(0x864CFB) // CRC-24 polynomial
 	Initial    = uint32(0xB704CE) // Initial value
@@ -43,4 +47,8 @@ func Crc24Checksum(data []byte) uint32 {
 
 func ValidateCRC24(data []byte, checksum uint32) bool {
 	return Crc24Checksum(data) == checksum
+}
+
+func ValidateCRC32(data []byte, checksum uint32) bool {
+	return crc32.ChecksumIEEE(data) == checksum
 }

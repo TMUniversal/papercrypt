@@ -1,9 +1,19 @@
 {
-  "bitwarden": {
-    "backup_localtion": "https://your-bucket.s3.amazonaws.com/bitwarden-backup.tar.gz.aes",
+  "my_backup": {
+    "backup_location": "https://your-bucket.s3.amazonaws.com/my_backup.tar.gz",
     "access_key_id": "YOUR_S3_ACCESS_KEY_ID",
     "secret_key": "YOUR_S3_SECRET_KEY",
     "encryption_key": "your-backup-encryption-key",
-    "admin_token": "your-bitwarden-admin-token"
+    "another_property": "another_value",
+    "a_number": 123,
+    "a_boolean": true,
+    "an_array": [
+      "a",
+      "b",
+      "c"
+    ],
+    "an_object": {
+      "another_property": "another_value"
+    }
   }
 }
