@@ -37,8 +37,34 @@ tasks:
     cmds:
       - go build -v -o bin/papercrypt{{exeExt}} main.go
 
+  examples:
+    desc: Run the examples
+    deps:
+      - build
+    generates:
+      - "examples/output.txt"
+      - "examples/armoured.txt"
+      - "examples/lowercase.txt"
+      - "examples/output.pdf"
+      - "examples/no_qr.pdf"
+      - "examples/armoured.pdf"
+      - "examples/lowercase.pdf"
+    cmds:
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/output.txt --pdf=false'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/armoured.txt --pdf=false --armor'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/lowercase.txt --pdf=false --lowercase'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/output.pdf'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/no_qr.pdf --no-qr'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/armoured.pdf --pdf=true --armor'
+      - 'bin/papercrypt{{exeExt}} generate --force --passphrase "example" -i examples/input.json -o examples/lowercase.pdf --lowercase'
+
   clean:
     desc: Remove all generated files
     cmds:
       - "rm -f *.gen.txt"
       - "rm -f bin/papercrypt{{exeExt}}"
+
+  clean_examples:
+    desc: Remove all generated files
+    cmds:
+      - "rm -f examples/output.txt examples/output.pdf examples/armoured.txt examples/armoured.pdf"

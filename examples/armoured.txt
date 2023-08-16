@@ -1,0 +1,26 @@
+PaperCrypt/v1.0.0-beta0-17-ga1a3bfc-dirty
+Content Serial: OYQW66
+Purpose: 
+Comment: 
+Date: Wed, 16 Aug 2023 18:15:43.449144300 CEST
+Content Length: 610
+Content CRC-24: 9d68e8
+Content CRC-32: e3308f64
+Content SHA-256: hX9qHYWhPYdtI4Sht/3frRGkF6pKjHR3hivhLrBeHsY=
+Header CRC-32: 1736264b
+
+
+-----BEGIN PGP MESSAGE-----
+Version: GopenPGP 2.7.2
+Comment: https://gopenpgp.org
+
+wy4ECQMI5B8x9d2c5G/gFowl0MixJBQahNCKm8Bfe5fWrvaXCHLUBNDFbRpMs3cN
+0sB7AY+I59DP0xTPQLVARw1drHZHHBMXK14iHF+9C9/BVn1h/l/2TecV6ksdsB0Z
+bbfoa4acD+4jnP0ZCCgWaBYxUXrojWh9qJPV3K+/wJo+aPrx217VD1XMgJb7/6P3
+vRjxPaVQVNiwhD9Ba/ap0MH0amLqe4Ee7UlNt/ikB/xdOL64l3YIlGeagaGtX4iv
+827/OBCbhwK1RFB3EAEhz3QrJRZZl1EmRpdjFZT+lOmU3B4RukpSV7VT9sHaG2UZ
+YlZoah1Zc9FLuRR2SUSXqSRuG1sx3WPQhpOF3mlIQ4Awm9GHZcO7hLRm5kreIwL4
+95ep8KLCtrHD0LTVyfu+wkn5gZ56/2bCZud8q/4uDGDmPtqqFjgurgeQSMF2yrdq
+DerobhEP2hxPLp+VOptcfuctpFKpYvJ3x9ekVlOj
+=Efqt
+-----END PGP MESSAGE-----
