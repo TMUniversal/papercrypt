@@ -200,7 +200,11 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, "Firstly, scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", "", "", false)
+	qrInstruction := ""
+	if !noQR {
+		qrInstruction = "scan the QR code, or "
+	}
+	pdf.MultiCell(0, 5, fmt.Sprintf("Firstly, %scopy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", qrInstruction), "", "", false)
 	pdf.Ln(10)
 
 	// add the qr code
