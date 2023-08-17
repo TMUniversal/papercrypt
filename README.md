@@ -39,33 +39,33 @@ TODO(2023-08-11): Add installation instructions.
 
 2. **Clone the Repository**: Clone the repository to your local machine:
 
-  ```bash
-  git clone https://github.com/TMUniversal/PaperCrypt.git
-  ```
+```bash
+git clone https://github.com/TMUniversal/PaperCrypt.git
+```
 
 3. **Navigate to the Directory**:
 
-  ```bash
-  cd papercrypt
-  ```
+```bash
+cd papercrypt
+```
 
 4. **Install Dependencies**: Run the following command to install the required dependencies:
 
-  ```bash
-  go mod tidy
-  ```
+```bash
+go mod tidy
+```
 
 5. **Build PaperCrypt**:
 
-  ```bash
-  go build -o bin/papercrypt
-  ```
+```bash
+go build -o bin/papercrypt
+```
 
 or using [`task`](https://taskfile.dev/#/installation):
 
-  ```bash
-  task build
-  ```
+```bash
+task build
+```
 
 ## Usage
 
