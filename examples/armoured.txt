@@ -1,27 +1,29 @@
-PaperCrypt Version: v1.0.0-beta0-20-g92709bd-dirty
-Content Serial: GC4BYV
+PaperCrypt Version: v1.0.0-beta0-23-gdced528-dirty
+Content Serial: NI4OUU
 Purpose: Example Sheet
 Comment: Armoured Text Output Example
-Date: Wed, 16 Aug 2023 20:29:41.580455000 CEST
+Date: Thu, 17 Aug 2023 17:08:40.227032500 CEST
 Serialization Type: openpgp/armor
-Content Length: 610
-Content CRC-24: 1cb207
-Content CRC-32: ce717857
-Content SHA-256: SweB+A/M25SEC7G4uj2JHeMc5XOKF52QrKooF+m3edw=
-Header CRC-32: bf642552
+Content Length: 728
+Content CRC-24: 62e234
+Content CRC-32: c3f8b7be
+Content SHA-256: GvYYAdvfv+L79ljemycYIdzvhIz/nyk4gOfbPJ5qi9s=
+Header CRC-32: 75f5782
 
 
 -----BEGIN PGP MESSAGE-----
 Version: GopenPGP 2.7.2
 Comment: https://gopenpgp.org
 
-wy4ECQMIGOaIES6zpEbg8O86MGSgmyXtrO78Spbomnog2BOPFxATDlkExKCN1jF5
-0sB7AW9S/fj+6I3xghAnlU2J9NZUTr7z8QWsEWK9OnOFd+sCTApo33QIW7I838ws
-iB7Qg916eXi6G7fjctNqN5sEwHl7bKgiT6cAEyhbKxQXXBkIE3Jx+KckxAbWwCmy
-bJYp4EHqQzyLsqZI366sG9hhCJb9M1TnCHRjX3u3Pyok1v4AT+Ksnrb/+cEshDsj
-UKZeyKCp+xkLQ6sAihjrktgk/keHs6d5G79Ar1XZ21MAdCvv+eu/tVgjmca9yAMD
-chKxJbvvjferBUkT93m7IKl4J6YfATxvYJECe0ovCnZTZ4T40T3oeketiIb7yfKb
-5BY89PHW9+j8HZqB+o8l7qF1yZk5+tIiqaNaXgMEDmhAzSBjAEHB/HRTGv/6Cami
-VnG4GRQYyIgLQC+tbM8GyAm6rrmLT1bLIkRaT/o2
-=TdQ+
+wy4ECQMIV/XVgEDl82fgEJgFK5+hPRVdhdNc0thZv5ohbOd3CkYw5URhlON5wbfB
+0sDRAbMiyPwH/WBzUH/45TsR5cyyLwqfkvzlBqvOPSg9KN3eDaT9TYTopXA28Ug2
+zUGZp9ur/AfRziKpJmmCOBtctsqwyZ+xlzxNXt1sSsqDqtilWb60DgaGHvEDl+Yc
+czE3qVRACEHSwOMEuXrEK3EsLhjg41ky7OW9Bpf0AzTY4eXSLU5y8CFbI98DJuy1
+Sn89rPJfdXzXSsnN9Xj2vUqDhdZjU6mn215D/VlbYbF5ZFJBQEtI8mT/EW5yc1xE
+PSJm2LUcHGsSUAXNeiiIplLUmEFa1S/Rgnf9Nkh/FAWsZfr8pkXJVbkzpHLneCyN
+3no3LUde5e1flBD1LQTgoicwQDh9eTusKw6neebrH/ZtF2aCgqKfTA7NUbS7XIje
+cHbJHelzujuv9GuQTp1lgO5uF0ZcYRWLwSCpGimTY0E76UoTHHMbPq0lbmxRsmld
+xwOxjnYEtOCtEuG9MxxRgaaoCC3BgFN4QLT1L7JcHarbc0qt5fUM4Tx3Z6lDw5vP
+TlbgxpziGO75kwRk2csq+oMXDZk=
+=V50b
 -----END PGP MESSAGE-----
