@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"papercrypt/util"
 	"strings"
 	"time"
+
+	"github.com/tmuniversal/papercrypt/internal"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/spf13/cobra"
@@ -112,11 +113,15 @@ The data should be read from a file or stdin, you will be required to provide a 
 		headerCrc = strings.ToLower(headerCrc)
 		headerCrc = strings.ReplaceAll(headerCrc, "0x", "")
 		headerCrc = strings.ReplaceAll(headerCrc, " ", "")
-		headerCrc32, err := util.ParseHexUint32(headerCrc)
+		headerCrc32, err := internal.ParseHexUint32(headerCrc)
+		if err != nil {
+			fmt.Printf("Error parsing headers: invalid crc-32 format %s\n", err)
+			os.Exit(1)
+		}
 
 		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\nHeader CRC-32: "+headers["Header CRC-32"]), []byte(""))
 
-		if !util.ValidateCRC32(headerWithoutCrc, headerCrc32) {
+		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
 				fmt.Printf("Error parsing headers: header is invalid: Header CRC-32 mismatch\n")
 				os.Exit(1)
@@ -136,7 +141,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		if serializationType == "papercrypt/base16+crc" {
 			fmt.Println("Decoding body as papercrypt/base16+crc")
 			var body []byte
-			body, err = util.DeserializeBinary(&paperCryptFileContentsSplit[1])
+			body, err = internal.DeserializeBinary(&paperCryptFileContentsSplit[1])
 			if err == nil {
 				pgpMessage = crypto.NewPGPMessage(body)
 			}
@@ -175,13 +180,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		}
 
-		bodyCrc32Uint32, err := util.ParseHexUint32(bodyCrc32)
+		bodyCrc32Uint32, err := internal.ParseHexUint32(bodyCrc32)
 		if err != nil {
 			fmt.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
 		}
 
-		if !util.ValidateCRC32(body, bodyCrc32Uint32) {
+		if !internal.ValidateCRC32(body, bodyCrc32Uint32) {
 			if !ignoreChecksumMismatch {
 				fmt.Printf("Validation failure: Content CRC-32 mismatch!\n")
 				os.Exit(1)
@@ -198,13 +203,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		}
 
-		bodyCrc24Uint32, err := util.ParseHexUint32(bodyCrc24)
+		bodyCrc24Uint32, err := internal.ParseHexUint32(bodyCrc24)
 		if err != nil {
 			fmt.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
 		}
 
-		if !util.ValidateCRC24(body, bodyCrc24Uint32) {
+		if !internal.ValidateCRC24(body, bodyCrc24Uint32) {
 			if !ignoreChecksumMismatch {
 				fmt.Printf("Validation failure: Content CRC-24 mismatch\n")
 				os.Exit(1)
@@ -220,7 +225,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
-		bodySha256Bytes, err := util.BytesFromBase64(bodySha256)
+		bodySha256Bytes, err := internal.BytesFromBase64(bodySha256)
 		if err != nil {
 			fmt.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
@@ -248,7 +253,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
-		paperCrypt := util.NewPaperCrypt(
+		paperCrypt := internal.NewPaperCrypt(
 			versionLine,
 			pgpMessage,
 			headers["Content Serial"],

@@ -1,27 +1,23 @@
-package util
+package internal
 
 import (
 	"hash/crc32"
 )
 
 const (
-	Polynomial = uint32(0x864CFB) // CRC-24 polynomial
-	Initial    = uint32(0xB704CE) // Initial value
-	TableSize  = uint32(256)      // Table size for faster computation
-
-	ReversedPolynomial = uint32(0xDF3261)
-	Reciprocal         = uint32(0xBE64C3)
-	ReversedReciprocal = uint32(0xC3267D)
+	CRC24Polynomial = uint32(0x864CFB) // CRC-24 polynomial
+	CRC24Initial    = uint32(0xB704CE) // Initial value
+	CRC24TableSize  = uint32(256)      // Table size for faster computation
 )
 
-var crc24Table [TableSize]uint32
+var crc24Table [CRC24TableSize]uint32
 
 func generateCRCTable() {
-	for i := uint32(0); i < TableSize; i++ {
+	for i := uint32(0); i < CRC24TableSize; i++ {
 		crc := uint32(i) << 16
 		for j := 0; j < 8; j++ {
 			if (crc & 0x800000) != 0 {
-				crc = (crc << 1) ^ Polynomial
+				crc = (crc << 1) ^ CRC24Polynomial
 			} else {
 				crc <<= 1
 			}
@@ -35,7 +31,7 @@ func Crc24Checksum(data []byte) uint32 {
 		generateCRCTable()
 	}
 
-	crc := Initial
+	crc := CRC24Initial
 
 	for _, b := range data {
 		index := byte(crc>>16) ^ b

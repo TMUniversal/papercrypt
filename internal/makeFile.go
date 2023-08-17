@@ -1,4 +1,4 @@
-package util
+package internal
 
 import (
 	"bytes"
@@ -194,7 +194,7 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, Polynomial, Initial), "", "", false)
+	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
 	pdf.Ln(5)
 	pdf.SetFont(PdfTextFont, "", 12)
 	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
@@ -215,7 +215,7 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	}
 
 	// print header lines
-	pdf.SetFont(PdfMonoFont, "", 10)
+	pdf.SetFont(PdfMonoFont, "B", 10)
 	for _, line := range strings.Split(parts[0], "\n") {
 		pdf.Cell(0, 5, "# "+line)
 		pdf.Ln(5)
@@ -224,7 +224,7 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 
 	// print data lines
 	dataLines := strings.Split(parts[1], "\n")
-	pdf.SetFont(PdfMonoFont, "", 10)
+	pdf.SetFont(PdfMonoFont, "B", 10)
 	for _, line := range dataLines {
 		pdf.Cell(0, 5, line)
 		pdf.Ln(5)

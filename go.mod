@@ -1,4 +1,4 @@
-module papercrypt
+module github.com/tmuniversal/papercrypt
 
 go 1.20
 

@@ -2,8 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"papercrypt/cmd"
 	"strings"
+
+	"github.com/tmuniversal/papercrypt/cmd"
 )
 
 // Version is the current version of the application

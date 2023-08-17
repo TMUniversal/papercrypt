@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"papercrypt/util"
 	"strings"
 	"time"
 
+	"github.com/tmuniversal/papercrypt/internal"
+
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/pkg/errors"
-
 	"github.com/spf13/cobra"
 )
 
@@ -59,7 +59,7 @@ encrypted data.`,
 		// 1. generate serial number if not provided
 		if serialNumber == "" {
 			var err error
-			serialNumber, err = util.GenerateSerial(6)
+			serialNumber, err = internal.GenerateSerial(6)
 			if err != nil {
 				fmt.Printf("Error generating serial number: %s\n", err)
 				os.Exit(1)
@@ -158,7 +158,7 @@ encrypted data.`,
 			defer outFile.Close()
 		}
 
-		crypt := util.NewPaperCrypt(VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
+		crypt := internal.NewPaperCrypt(VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
 
 		var text []byte
 
