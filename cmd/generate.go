@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -49,9 +46,9 @@ encrypted data.`,
 		// 0. check if out file exists
 		if _, err := os.Stat(outFileName); err == nil {
 			if overrideOutFile {
-				fmt.Printf("Overriding existing file \"%s\"!\n", outFileName)
+				internal.L.Printf("Overriding existing file \"%s\"!\n", outFileName)
 			} else {
-				fmt.Printf("File %s already exists, use --force to override\n", outFileName)
+				internal.L.Printf("File %s already exists, use --force to override\n", outFileName)
 				os.Exit(1)
 			}
 		}
@@ -61,7 +58,7 @@ encrypted data.`,
 			var err error
 			serialNumber, err = internal.GenerateSerial(6)
 			if err != nil {
-				fmt.Printf("Error generating serial number: %s\n", err)
+				internal.L.Printf("Error generating serial number: %s\n", err)
 				os.Exit(1)
 			}
 		}
@@ -79,54 +76,38 @@ encrypted data.`,
 				if err != nil {
 					timestamp, err = time.Parse("2006-01-02", date)
 					if err != nil {
-						fmt.Printf("Error parsing date: %s\n", err)
+						internal.L.Printf("Error parsing date: %s\n", err)
 						os.Exit(1)
 					}
 				}
 			}
 		}
 
-		// 3. Read inFile as JSON, minimize
-		secretContentsFile, err := os.OpenFile(inFileName, os.O_RDONLY, 0)
-		if err != nil && err != io.EOF {
-			fmt.Printf("Error opening file: %s\n", err)
-			os.Exit(1)
-		}
-
-		jsonDecoder := json.NewDecoder(secretContentsFile)
-		var secretContents map[string]interface{}
-		err = jsonDecoder.Decode(&secretContents)
+		// 3. Read input file as bytes
+		secretContentsFile, err := os.ReadFile(inFileName)
 		if err != nil {
-			fmt.Printf("Error decoding JSON: %s\n", err)
-			os.Exit(1)
-		}
-
-		var secretContentsMinimal bytes.Buffer
-		err = json.NewEncoder(&secretContentsMinimal).Encode(secretContents)
-		if err != nil {
-			fmt.Printf("Error encoding JSON: %s\n", err)
+			internal.L.Printf("Error reading file: %s\n", err)
 			os.Exit(1)
 		}
 
 		// 4. Read passphrase from stdin
-
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
+			internal.L.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
 			passphrase, err = reader.ReadString('\n')
 			if err != nil && err != io.EOF {
-				fmt.Printf("Error reading passphrase: %s\n", err)
+				internal.L.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
 			}
 
-			fmt.Println("Enter your encryption passphrase again: ")
+			internal.L.Println("Enter your encryption passphrase again: ")
 			passphraseAgain, err := reader.ReadString('\n')
 			if err != nil && err != io.EOF {
-				fmt.Printf("Error reading passphrase: %s\n", err)
+				internal.L.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
 			}
 			if passphrase != passphraseAgain {
-				fmt.Printf("Passphrases do not match! Aborting.\n")
+				internal.L.Printf("Passphrases do not match! Aborting.\n")
 				os.Exit(1)
 			}
 			passphraseAgain = "" // clear passphraseAgain
@@ -136,9 +117,9 @@ encrypted data.`,
 		}
 
 		// 5. Encrypt secretContentsMinimal with passphrase
-		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsMinimal.Bytes())
+		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsFile)
 		if err != nil {
-			fmt.Printf("Error encrypting secret contents: %s\n", err)
+			internal.L.Printf("Error encrypting secret contents: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -152,7 +133,7 @@ encrypted data.`,
 		} else {
 			outFile, err = os.OpenFile(outFileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 			if err != nil {
-				fmt.Printf("Error opening file: %s\n", err)
+				internal.L.Printf("Error opening file: %s\n", err)
 				os.Exit(1)
 			}
 			defer outFile.Close()
@@ -169,19 +150,19 @@ encrypted data.`,
 		}
 
 		if err != nil {
-			fmt.Printf("Error creating file contents: %s\n", err)
+			internal.L.Printf("Error creating file contents: %s\n", err)
 			os.Exit(1)
 		}
 
 		n, err := outFile.Write(text)
 		if err != nil {
-			fmt.Printf("Error writing file: %s\n", err)
+			internal.L.Printf("Error writing file: %s\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
+		internal.L.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
 
-		fmt.Println("Done!")
+		internal.L.Println("Done!")
 	},
 }
 

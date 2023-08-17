@@ -3,7 +3,7 @@ package cmd
 import (
 	"crypto/rand"
 	_ "embed"
-	"fmt"
+	"github.com/tmuniversal/papercrypt/internal"
 	"math/big"
 	"os"
 	"strings"
@@ -24,13 +24,13 @@ var generateKeyCmd = &cobra.Command{
 	Short: "Generates a mnemonic key phrase",
 	Long:  `This command generates a mnemonic key phrase base on the eff.org large word list.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Generating key phrase...")
+		internal.L.Println("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
 		if err != nil {
-			fmt.Println("An error occurred:", err)
+			internal.L.Println("An error occurred:", err)
 			os.Exit(1)
 		}
-		fmt.Println("Key phrase generated.")
+		internal.L.Println("Key phrase generated.")
 
 		var out *os.File
 
@@ -39,14 +39,14 @@ var generateKeyCmd = &cobra.Command{
 		} else {
 			if _, err := os.Stat(genKeyOutFile); err == nil {
 				if !genKeyOutFileOverride {
-					fmt.Printf("File %s already exists. Use -f to override.\n", genKeyOutFile)
+					internal.L.Printf("File %s already exists. Use -f to override.\n", genKeyOutFile)
 					os.Exit(1)
 				}
 			}
 
 			out, err = os.OpenFile(genKeyOutFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 			if err != nil {
-				fmt.Println("An error occurred:", err)
+				internal.L.Println("An error occurred:", err)
 				os.Exit(1)
 			}
 			defer out.Close()
@@ -54,13 +54,11 @@ var generateKeyCmd = &cobra.Command{
 
 		n, err := out.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
-			fmt.Println("Error writing file:", err)
+			internal.L.Println("Error writing file:", err)
 			os.Exit(1)
 		}
 
-		if out != os.Stdout {
-			fmt.Printf("Wrote %d bytes to %s\n", n, out.Name())
-		}
+		internal.L.Printf("Wrote %d bytes to %s\n", n, out.Name())
 	},
 }
 
