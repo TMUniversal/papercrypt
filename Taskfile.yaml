@@ -37,6 +37,14 @@ tasks:
     cmds:
       - go build -v -o bin/papercrypt{{exeExt}} main.go
 
+  test:
+    desc: Run the tests
+    deps:
+      - build
+    cmds:
+      - go test -v ./... -cover
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o - --passphrase "example" --purpose "Example Sheet" --comment "Regular Text Output Example" | bin/papercrypt{{exeExt}} pdf2png | bin/papercrypt{{exeExt}} qr | bin/papercrypt{{exeExt}} decode -o examples/test.json -f --passphrase "example" && diff -u examples/input.json examples/test.json ; rm examples/test.json'
+
   examples:
     desc: Run the examples
     deps:
