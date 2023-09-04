@@ -64,10 +64,25 @@ type PaperCrypt struct {
 
 	// CreatedAt is the creation timestamp
 	CreatedAt time.Time
+
+	// DataCRC24 is the CRC-24 checksum of the encrypted data
+	DataCRC24 uint32
+
+	// DataCRC32 is the CRC-32 checksum of the encrypted data
+	DataCRC32 uint32
+
+	// DataSHA256 is the SHA-256 checksum of the encrypted data
+	DataSHA256 [32]byte
 }
 
 // NewPaperCrypt creates a new paper crypt
 func NewPaperCrypt(version string, data *crypto.PGPMessage, serialNumber string, purpose string, comment string, createdAt time.Time) *PaperCrypt {
+	binData := data.GetBinary()
+
+	dataCRC24 := Crc24Checksum(binData)
+	dataCRC32 := crc32.ChecksumIEEE(binData)
+	dataSHA256 := sha256.Sum256(binData)
+
 	return &PaperCrypt{
 		Version:      version,
 		Data:         data,
@@ -75,7 +90,23 @@ func NewPaperCrypt(version string, data *crypto.PGPMessage, serialNumber string,
 		Purpose:      purpose,
 		Comment:      comment,
 		CreatedAt:    createdAt,
+		DataCRC24:    dataCRC24,
+		DataCRC32:    dataCRC32,
+		DataSHA256:   dataSHA256,
 	}
+}
+
+func (p *PaperCrypt) GetBinary() []byte {
+	return p.Data.GetBinary()
+}
+
+func (p *PaperCrypt) GetBinarySerialized() string {
+	data := p.GetBinary()
+	return SerializeBinary(&data)
+}
+
+func (p *PaperCrypt) GetLength() int {
+	return len(p.GetBinary())
 }
 
 // SerializeBinary returns the encrypted binary data,
@@ -294,12 +325,6 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 // GetText returns the text representation of the paper crypt
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
-	data := p.Data.GetBinary()
-
-	dataCRC24 := Crc24Checksum(data)
-	dataCRC32 := crc32.ChecksumIEEE(data)
-	dataSHA256 := sha256.Sum256(data)
-
 	header := fmt.Sprintf(
 		`PaperCrypt Version: %s
 Content Serial: %s
@@ -317,14 +342,14 @@ Content SHA-256: %s`,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
-		len(data),
-		dataCRC24,
-		dataCRC32,
-		base64.StdEncoding.EncodeToString(dataSHA256[:]))
+		p.GetLength(),
+		p.DataCRC24,
+		p.DataCRC32,
+		base64.StdEncoding.EncodeToString(p.DataSHA256[:]))
 
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
 
-	serializedData := SerializeBinary(&data)
+	serializedData := p.GetBinarySerialized()
 	if lowerCaseEncoding {
 		serializedData = strings.ToLower(serializedData)
 	}
