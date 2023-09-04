@@ -144,12 +144,7 @@ encrypted data.`,
 
 		var text []byte
 
-		if outputPdf {
-			text, err = crypt.GetPDF(asciiArmor, noQR, lowerCasedBase16)
-		} else {
-			text, err = crypt.GetText(asciiArmor, lowerCasedBase16)
-		}
-
+		text, err = crypt.GetPDF(noQR, lowerCasedBase16)
 		if err != nil {
 			cmd.Printf("Error creating file contents: %s\n", err)
 			os.Exit(1)
@@ -186,9 +181,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
-	generateCmd.Flags().BoolVar(&outputPdf, "pdf", true, "Whether to output a PDF (optional, defaults to true)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
-	generateCmd.Flags().BoolVar(&asciiArmor, "armor", false, "Whether to use ASCII armor instead of hex+crc serialization (optional, defaults to hex)")
 
 	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")
 }

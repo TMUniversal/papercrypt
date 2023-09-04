@@ -75,7 +75,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 3. Read inFile
 		paperCryptFileContents, err := io.ReadAll(inFile)
 		if err != nil && err != io.EOF {
-			cmd.Printf("Error opening file: %s\n", err)
+			cmd.Printf("Error reading file: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -156,26 +156,12 @@ The data should be read from a file or stdin, you will be required to provide a 
 			}
 		}
 
-		// 6. Read Body
-		serializationType, ok := headers["Serialization Type"]
-		if !ok {
-			cmd.Printf("Warning: Serialization Type not present in header, assuming 'papercrypt/base16+crc'\n")
-			serializationType = "papercrypt/base16+crc"
-		}
-
 		var pgpMessage *crypto.PGPMessage
-		if serializationType == "papercrypt/base16+crc" {
-			cmd.Println("Decoding body as papercrypt/base16+crc")
-			var body []byte
-			body, err = internal.DeserializeBinary(&paperCryptFileContentsSplit[1])
-			if err == nil {
-				pgpMessage = crypto.NewPGPMessage(body)
-			}
-		} else if serializationType == "openpgp/armor" {
-			pgpMessage, err = crypto.NewPGPMessageFromArmored(string(paperCryptFileContentsSplit[1]))
-		} else {
-			cmd.Printf("Error: unknown serialization type %s\n", serializationType)
-			os.Exit(1)
+		cmd.Println("Decoding body as papercrypt/base16+crc")
+		var body []byte
+		body, err = internal.DeserializeBinary(&paperCryptFileContentsSplit[1])
+		if err == nil {
+			pgpMessage = crypto.NewPGPMessage(body)
 		}
 
 		if err != nil {
@@ -184,7 +170,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 7. Verify Body Hashes
-		body := pgpMessage.GetBinary()
+		body = pgpMessage.GetBinary()
 
 		// 7.1 Verify Content Length
 		bodyLength, ok := headers["Content Length"]

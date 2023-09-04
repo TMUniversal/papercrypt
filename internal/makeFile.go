@@ -145,8 +145,8 @@ func SerializeBinary(data *[]byte) string {
 //   - Purpose
 //
 // and, next to the markdown information, a QR code containing the encrypted data.
-func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]byte, error) {
-	text, err := p.GetText(asciiArmor, lowerCaseEncoding)
+func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+	text, err := p.GetText(lowerCaseEncoding)
 	if err != nil {
 		return nil, errors.Errorf("error getting text content: %s", err)
 	}
@@ -293,20 +293,8 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 }
 
 // GetText returns the text representation of the paper crypt
-func (p *PaperCrypt) GetText(asciiArmor bool, lowerCaseEncoding bool) ([]byte, error) {
-	var data []byte
-
-	if asciiArmor {
-		//stringData, err := p.Data.GetArmoredWithCustomHeaders(fmt.Sprintf("PaperCrypt/%s (https://github.com/TMUniversal/PaperCrypt), https://openpgp.org/", p.Version), constants.ArmorHeaderVersion)
-		stringData, err := p.Data.GetArmored()
-		if err != nil {
-			return nil, errors.Errorf("error getting armored data: %s", err)
-		}
-
-		data = []byte(stringData)
-	} else {
-		data = p.Data.GetBinary()
-	}
+func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
+	data := p.Data.GetBinary()
 
 	dataCRC24 := Crc24Checksum(data)
 	dataCRC32 := crc32.ChecksumIEEE(data)
@@ -323,7 +311,6 @@ Content Serial: %s
 Purpose: %s
 Comment: %s
 Date: %s
-Serialization Type: %s
 Content Length: %d
 Content CRC-24: %x
 Content CRC-32: %x
@@ -335,7 +322,6 @@ Content SHA-256: %s`,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
-		serializationType,
 		len(data),
 		dataCRC24,
 		dataCRC32,
@@ -343,12 +329,9 @@ Content SHA-256: %s`,
 
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
 
-	serializedData := string(data)
-	if !asciiArmor {
-		serializedData = SerializeBinary(&data)
-		if lowerCaseEncoding {
-			serializedData = strings.ToLower(serializedData)
-		}
+	serializedData := SerializeBinary(&data)
+	if lowerCaseEncoding {
+		serializedData = strings.ToLower(serializedData)
 	}
 
 	return []byte(
