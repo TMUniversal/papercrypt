@@ -7,14 +7,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/crc32"
+	"image/png"
 	"math"
 	"strings"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/jung-kurt/gofpdf/v2"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/datamatrix"
+	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/pkg/errors"
-	"github.com/skip2/go-qrcode"
 )
 
 const (
@@ -134,28 +137,44 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 		return nil, errors.Errorf("error splitting text content into header and data")
 	}
 
-	var qr []byte
+	qr := new(bytes.Buffer)
+	dm := new(bytes.Buffer)
 
 	if !noQR {
 		// for the qr-code, encode the *p as json, then base64 encode it
-		// finally format it as a URL: papercrypt://d/?data=<base64-encoded-json>
 		qrDataJson, err := json.Marshal(p)
 		if err != nil {
 			return nil, errors.Errorf("error marshalling PaperCrypt to json: %s", err)
 		}
+		codeData := string(qrDataJson)
 
-		qrDataBase64 := new(bytes.Buffer)
-		base64encoder := base64.NewEncoder(base64.URLEncoding, qrDataBase64)
-		_, err = base64encoder.Write(qrDataJson)
-		if err != nil {
-			return nil, errors.Errorf("error base64-encoding PaperCrypt json: %s", err)
-		}
-
-		qrData := fmt.Sprintf("papercrypt://d/?data=%s", qrDataBase64.String())
-
-		qr, err = qrcode.Encode(qrData, qrcode.Highest, 1024)
+		enc := qrcode.NewQRCodeWriter()
+		encoderHints := make(map[gozxing.EncodeHintType]interface{})
+		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "Q"
+		encoderHints[gozxing.EncodeHintType_MARGIN] = 0
+		qrSize := int(math.Ceil(165 * 9)) // 165 mm
+		code, err := enc.Encode(codeData, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
 		if err != nil {
 			return nil, errors.Errorf("error generating QR code: %s", err)
+		}
+
+		err = png.Encode(qr, code)
+		if err != nil {
+			return nil, errors.Errorf("error generating QR code PNG: %s", err)
+		}
+	}
+
+	{
+		// generate a data matrix with the sheet id
+		enc := datamatrix.NewDataMatrixWriter()
+		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 100, 100, nil)
+		if err != nil {
+			return nil, errors.Errorf("error generating Data Matrix code: %s", err)
+		}
+
+		err = png.Encode(dm, code)
+		if err != nil {
+			return nil, errors.Errorf("error generating Data Matrix code PNG: %s", err)
 		}
 	}
 
@@ -170,6 +189,14 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 		pdf.SetFont(PdfMonoFont, "", 10)
 		pdf.CellFormat(0, 10, fmt.Sprintf("Sheet ID: %s - %s - Purpose: %s", p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"), p.Purpose),
 			"", 0, "C", false, 0, "")
+
+		{
+			// add the data matrix code
+			pdf.RegisterImageReader("dm.png", "PNG", dm)
+			imageSize := 5.0
+			pdf.ImageOptions("dm.png", 195, 50, imageSize, imageSize, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		}
+
 		pdf.Ln(10)
 	}, true)
 	pdf.SetFooterFunc(func() {
@@ -180,37 +207,41 @@ func (p *PaperCrypt) GetPDF(asciiArmor, noQR bool, lowerCaseEncoding bool) ([]by
 	pdf.AliasNbPages("")
 	pdf.AddPage()
 
-	pdf.SetFont(PdfTextFont, "", 16)
-	pdf.CellFormat(0, 10, "PaperCrypt Recovery Sheet", "", 0, "C", false, 0, "")
-	pdf.Ln(10)
-	pdf.SetFont(PdfTextFont, "", 12)
-	// enter the markdown information
-	pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
-	pdf.Ln(5)
-	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.", "", "", false)
-	pdf.Ln(5)
-	pdf.SetFont(PdfTextFont, "", 12)
-	pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
-	pdf.Ln(5)
-	pdf.SetFont(PdfTextFont, "", 10)
-	pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
-	pdf.Ln(5)
-	pdf.SetFont(PdfTextFont, "", 12)
-	pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
-	pdf.Ln(5)
-	pdf.SetFont(PdfTextFont, "", 10)
-	qrInstruction := ""
-	if !noQR {
-		qrInstruction = "scan the QR code, or "
+	{
+		// Info text
+		pdf.SetFont(PdfTextFont, "", 16)
+		pdf.CellFormat(0, 10, "PaperCrypt Recovery Sheet", "", 0, "C", false, 0, "")
+		pdf.Ln(10)
+		pdf.SetFont(PdfTextFont, "", 12)
+		// enter the markdown information
+		pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
+		pdf.Ln(5)
+		pdf.SetFont(PdfTextFont, "", 10)
+		pdf.MultiCell(0, 5, "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.", "", "", false)
+		pdf.Ln(5)
+		pdf.SetFont(PdfTextFont, "", 12)
+		pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
+		pdf.Ln(5)
+		pdf.SetFont(PdfTextFont, "", 10)
+		pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
+		pdf.Ln(5)
+		pdf.SetFont(PdfTextFont, "", 12)
+		pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
+		pdf.Ln(5)
+		pdf.SetFont(PdfTextFont, "", 10)
+		qrInstruction := ""
+		if !noQR {
+			qrInstruction = "scan the QR code, or "
+		}
+		pdf.MultiCell(0, 5, fmt.Sprintf("Firstly, %scopy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", qrInstruction), "", "", false)
+		pdf.Ln(10)
 	}
-	pdf.MultiCell(0, 5, fmt.Sprintf("Firstly, %scopy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", qrInstruction), "", "", false)
-	pdf.Ln(10)
 
 	// add the qr code
 	if !noQR {
-		pdf.RegisterImageReader("qr.png", "PNG", bytes.NewReader(qr))
-		pdf.ImageOptions("qr.png", 30, 0, 150, 150, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.RegisterImageReader("qr.png", "PNG", qr)
+		imageSize := 167.0
+		pdf.ImageOptions("qr.png", 20.5, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		pdf.Ln(50)
 	}
 

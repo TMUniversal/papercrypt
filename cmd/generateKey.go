@@ -11,60 +11,46 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var genKeyOutFile string
-var genKeyOutFileOverride bool
 var words int
 
-//go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
-var wordListFile string
+var WordListFile *string
 var wordList = make([]string, 0)
 
 var generateKeyCmd = &cobra.Command{
-	Use:   "generateKey",
-	Short: "Generates a mnemonic key phrase",
-	Long:  `This command generates a mnemonic key phrase base on the eff.org large word list.`,
+	Aliases: []string{"key", "gk"},
+	Use:     "generateKey",
+	Short:   "Generates a mnemonic key phrase",
+	Long: `This command generates a mnemonic key phrase base on the eff.org large word list,
+which can be found here: https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.L.Println("Generating key phrase...")
-		keyPhrase, err := generateMnemonic(words)
+		out, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
-			internal.L.Println("An error occurred:", err)
+			cmd.Println("Error opening output file:", err)
 			os.Exit(1)
 		}
-		internal.L.Println("Key phrase generated.")
+		defer out.Close()
 
-		var out *os.File
-
-		if genKeyOutFile == "" || genKeyOutFile == "-" {
-			out = os.Stdout
-		} else {
-			if _, err := os.Stat(genKeyOutFile); err == nil {
-				if !genKeyOutFileOverride {
-					internal.L.Printf("File %s already exists. Use -f to override.\n", genKeyOutFile)
-					os.Exit(1)
-				}
-			}
-
-			out, err = os.OpenFile(genKeyOutFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-			if err != nil {
-				internal.L.Println("An error occurred:", err)
-				os.Exit(1)
-			}
-			defer out.Close()
+		cmd.Println("Generating key phrase...")
+		keyPhrase, err := generateMnemonic(words)
+		if err != nil {
+			cmd.Println("An error occurred:", err)
+			os.Exit(1)
 		}
+		cmd.Println("Key phrase generated.")
 
 		n, err := out.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
-			internal.L.Println("Error writing file:", err)
+			cmd.Println("Error writing file:", err)
 			os.Exit(1)
 		}
 
-		internal.L.Printf("Wrote %d bytes to %s\n", n, out.Name())
+		cmd.Printf("Wrote %d bytes to %s\n", n, out.Name())
 	},
 }
 
 func generateMnemonic(amount int) ([]string, error) {
 	if len(wordList) == 0 {
-		wordListArray := strings.Split(wordListFile, "\n")
+		wordListArray := strings.Split(*WordListFile, "\n")
 
 		for i, word := range wordListArray {
 			wordListArray[i] = strings.TrimSpace(strings.Split(word, "\t")[1])
@@ -98,6 +84,4 @@ func init() {
 	rootCmd.AddCommand(generateKeyCmd)
 
 	generateKeyCmd.Flags().IntVarP(&words, "words", "w", 24, "Number of words to include in the key phrase (defaults to 24)")
-	generateKeyCmd.Flags().StringVarP(&genKeyOutFile, "out", "o", "", "File to write the key phrase to (defaults to stdout)")
-	generateKeyCmd.Flags().BoolVarP(&genKeyOutFileOverride, "force", "f", false, "Override the output file if it exists")
 }

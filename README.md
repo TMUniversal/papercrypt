@@ -123,7 +123,9 @@ features, please feel free to submit a pull request.
 
 ## License
 
-PaperCrypt is not yet licensed.
+PaperCrypt is licensed under the terms of the [GNU AGPL-3.0-or-later](COPYING).
+
+[![License Logo](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
 ## Acknowledgments
 

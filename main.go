@@ -7,6 +7,16 @@ import (
 	"github.com/tmuniversal/papercrypt/cmd"
 )
 
+// LicenseText is the license of the application as a string
+//
+//go:embed COPYING
+var LicenseText string
+
+// WordList is the eff.org large word list as a string
+//
+//go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
+var WordList string
+
 // Version is the current version of the application
 //
 //go:generate sh -c "scripts/get_version.sh > version.gen.txt"
@@ -50,6 +60,9 @@ var OsArch string
 var OsType string
 
 func main() {
+	cmd.LicenseText = &LicenseText
+	cmd.WordListFile = &WordList
+
 	cmd.VersionInfo = cmd.VersionDetails{
 		Version:   strings.TrimSuffix(Version, "\n"),
 		BuildDate: strings.TrimSuffix(BuildDate, "\n"),

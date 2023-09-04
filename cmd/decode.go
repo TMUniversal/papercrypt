@@ -29,26 +29,25 @@ var decodeCmd = &cobra.Command{
 The data should be read from a file or stdin, you will be required to provide a passphrase.`,
 	Example: `papercrypt decode -i <file>.txt -o <file>.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// 0. check if outfile exists
-		if _, err := os.Stat(outFileName); err == nil {
-			if overrideOutFile {
-				internal.L.Printf("Overriding existing file \"%s\"!\n", outFileName)
-			} else {
-				fmt.Printf("File %s already exists, use --force to override\n", outFileName)
-				os.Exit(1)
-			}
+		// 1. Open output file
+		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		if err != nil {
+			cmd.Println("Error opening output file:", err)
+			os.Exit(1)
 		}
+		defer outFile.Close()
 
+		// 2. Inform of input source
 		if inFileName == "" || inFileName == "-" {
-			internal.L.Printf("Reading from stdin\n")
+			cmd.Printf("Reading from stdin\n")
 		} else {
-			internal.L.Printf("Reading from %s\n", inFileName)
+			cmd.Printf("Reading from %s\n", inFileName)
 		}
 
 		// 3. Read inFile
 		paperCryptFileContents, err := os.ReadFile(inFileName)
 		if err != nil && err != io.EOF {
-			internal.L.Printf("Error opening file: %s\n", err)
+			cmd.Printf("Error opening file: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -68,7 +67,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			for _, headerLine := range headerLines {
 				headerLineSplit := bytes.SplitN(headerLine, []byte(": "), 2)
 				if len(headerLineSplit) != 2 {
-					internal.L.Printf("Error parsing header line: %s\n", headerLine)
+					cmd.Printf("Error parsing header line: %s\n", headerLine)
 					os.Exit(1)
 				}
 
@@ -80,14 +79,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 5. Run Header Validation
-
 		versionLine, ok := headers["PaperCrypt Version"]
 		if !ok {
 			if !ignoreVersionMismatch {
-				internal.L.Println("Error parsing headers: PaperCrypt Version not present in header.")
+				cmd.Println("Error parsing headers: PaperCrypt Version not present in header.")
 				os.Exit(1)
 			} else {
-				internal.L.Println("Warning: PaperCrypt Version not present in header.")
+				cmd.Println("Warning: PaperCrypt Version not present in header.")
 			}
 		}
 
@@ -96,17 +94,17 @@ The data should be read from a file or stdin, you will be required to provide a 
 		majorVersion := strings.Split(versionLine, ".")[0]
 		majorVersion = strings.TrimPrefix(majorVersion, "v")
 		if !ignoreVersionMismatch && majorVersion != "1" {
-			internal.L.Printf("Error parsing headers: unsupported PaperCrypt Version %s\n", versionLine)
+			cmd.Printf("Error parsing headers: unsupported PaperCrypt Version %s\n", versionLine)
 			os.Exit(1)
 		}
 
 		headerCrc, ok := headers["Header CRC-32"]
 		if !ok {
 			if !ignoreChecksumMismatch {
-				internal.L.Println("Error parsing headers: Header CRC-32 not present in header")
+				cmd.Println("Error parsing headers: Header CRC-32 not present in header")
 				os.Exit(1)
 			} else {
-				internal.L.Println("Warning: Header CRC-32 not present in header")
+				cmd.Println("Warning: Header CRC-32 not present in header")
 			}
 		}
 
@@ -115,7 +113,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		headerCrc = strings.ReplaceAll(headerCrc, " ", "")
 		headerCrc32, err := internal.ParseHexUint32(headerCrc)
 		if err != nil {
-			internal.L.Printf("Error parsing headers: invalid crc-32 format %s\n", err)
+			cmd.Printf("Error parsing headers: invalid crc-32 format %s\n", err)
 			os.Exit(1)
 		}
 
@@ -123,23 +121,23 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
-				internal.L.Printf("Error parsing headers: header is invalid: Header CRC-32 mismatch\n")
+				cmd.Printf("Error parsing headers: header is invalid: Header CRC-32 mismatch\n")
 				os.Exit(1)
 			} else {
-				internal.L.Printf("Warning: Header CRC-32 mismatch\n")
+				cmd.Printf("Warning: Header CRC-32 mismatch\n")
 			}
 		}
 
 		// 6. Read Body
 		serializationType, ok := headers["Serialization Type"]
 		if !ok {
-			internal.L.Printf("Warning: Serialization Type not present in header, assuming 'papercrypt/base16+crc'\n")
+			cmd.Printf("Warning: Serialization Type not present in header, assuming 'papercrypt/base16+crc'\n")
 			serializationType = "papercrypt/base16+crc"
 		}
 
 		var pgpMessage *crypto.PGPMessage
 		if serializationType == "papercrypt/base16+crc" {
-			internal.L.Println("Decoding body as papercrypt/base16+crc")
+			cmd.Println("Decoding body as papercrypt/base16+crc")
 			var body []byte
 			body, err = internal.DeserializeBinary(&paperCryptFileContentsSplit[1])
 			if err == nil {
@@ -148,108 +146,108 @@ The data should be read from a file or stdin, you will be required to provide a 
 		} else if serializationType == "openpgp/armor" {
 			pgpMessage, err = crypto.NewPGPMessageFromArmored(string(paperCryptFileContentsSplit[1]))
 		} else {
-			internal.L.Printf("Error: unknown serialization type %s\n", serializationType)
+			cmd.Printf("Error: unknown serialization type %s\n", serializationType)
 			os.Exit(1)
 		}
 
 		if err != nil {
-			internal.L.Printf("Error parsing body: %s\n", err)
+			cmd.Printf("Error parsing body: %s\n", err)
 			os.Exit(1)
 		}
 
 		// 7. Verify Body Hashes
 		body := pgpMessage.GetBinary()
 
-		// 7.0 Verify Content Length
+		// 7.1 Verify Content Length
 		bodyLength, ok := headers["Content Length"]
 		if !ok {
-			internal.L.Printf("Error parsing headers: Content Length not present in header\n")
+			cmd.Printf("Error parsing headers: Content Length not present in header\n")
 			os.Exit(1)
 		}
 
 		if fmt.Sprint(len(body)) != bodyLength {
-			internal.L.Printf("Validation failure: Content Length mismatch!\n")
+			cmd.Printf("Validation failure: Content Length mismatch!\n")
 			os.Exit(1)
 		}
 
-		// 7.1 Verify CRC-32
+		// 7.2 Verify CRC-32
 		bodyCrc32, ok := headers["Content CRC-32"]
 		if !ok {
-			internal.L.Printf("Error parsing headers: Content CRC-32 not present in header\n")
+			cmd.Printf("Error parsing headers: Content CRC-32 not present in header\n")
 			os.Exit(1)
 
 		}
 
 		bodyCrc32Uint32, err := internal.ParseHexUint32(bodyCrc32)
 		if err != nil {
-			internal.L.Printf("Error parsing headers: %s\n", err)
+			cmd.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
 		}
 
 		if !internal.ValidateCRC32(body, bodyCrc32Uint32) {
 			if !ignoreChecksumMismatch {
-				internal.L.Printf("Validation failure: Content CRC-32 mismatch!\n")
+				cmd.Printf("Validation failure: Content CRC-32 mismatch!\n")
 				os.Exit(1)
 			} else {
-				internal.L.Printf("Warning: Content CRC-32 mismatch\n")
+				cmd.Printf("Warning: Content CRC-32 mismatch\n")
 			}
 		}
 
-		// 7.2 Verify CRC-24
+		// 7.3 Verify CRC-24
 		bodyCrc24, ok := headers["Content CRC-24"]
 		if !ok {
-			internal.L.Printf("Error parsing headers: Content CRC-24 not present in header\n")
+			cmd.Printf("Error parsing headers: Content CRC-24 not present in header\n")
 			os.Exit(1)
 
 		}
 
 		bodyCrc24Uint32, err := internal.ParseHexUint32(bodyCrc24)
 		if err != nil {
-			internal.L.Printf("Error parsing headers: %s\n", err)
+			cmd.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
 		}
 
 		if !internal.ValidateCRC24(body, bodyCrc24Uint32) {
 			if !ignoreChecksumMismatch {
-				internal.L.Printf("Validation failure: Content CRC-24 mismatch\n")
+				cmd.Printf("Validation failure: Content CRC-24 mismatch\n")
 				os.Exit(1)
 			} else {
-				internal.L.Printf("Warning: Content CRC-24 mismatch\n")
+				cmd.Printf("Warning: Content CRC-24 mismatch\n")
 			}
 		}
 
-		// 7.3 Verify SHA-256
+		// 7.4 Verify SHA-256
 		bodySha256, ok := headers["Content SHA-256"]
 		if !ok {
-			internal.L.Printf("Error parsing headers: Content SHA-256 not present in header\n")
+			cmd.Printf("Error parsing headers: Content SHA-256 not present in header\n")
 			os.Exit(1)
 		}
 
 		bodySha256Bytes, err := internal.BytesFromBase64(bodySha256)
 		if err != nil {
-			internal.L.Printf("Error parsing headers: %s\n", err)
+			cmd.Printf("Error parsing headers: %s\n", err)
 			os.Exit(1)
 		}
 
 		actualSha256 := sha256.Sum256(body)
 		if !bytes.Equal(actualSha256[:], bodySha256Bytes) {
 			if !ignoreChecksumMismatch {
-				internal.L.Printf("Error parsing headers: Content SHA-256 mismatch\n")
+				cmd.Printf("Error parsing headers: Content SHA-256 mismatch\n")
 				os.Exit(1)
 			} else {
-				internal.L.Printf("Warning: Content SHA-256 mismatch\n")
+				cmd.Printf("Warning: Content SHA-256 mismatch\n")
 			}
 		}
 
 		// 8. Construct PaperCrypt object
 		headerDate, ok := headers["Date"]
 		if !ok {
-			internal.L.Printf("Warning: Date not present in header\n")
+			cmd.Printf("Warning: Date not present in header\n")
 		}
 
 		timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", headerDate)
 		if err != nil {
-			internal.L.Printf("Error parsing headers: invalid date format: %s\n", err)
+			cmd.Printf("Error parsing headers: invalid date format: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -263,22 +261,22 @@ The data should be read from a file or stdin, you will be required to provide a 
 		)
 
 		// 9. Print PaperCrypt object
-		internal.L.Printf("Understood the following PaperCrypt document:\n")
+		cmd.Printf("Understood the following PaperCrypt document:\n")
 
 		jsonBytes, err := json.MarshalIndent(paperCrypt, "", "  ")
 		if err != nil {
-			internal.L.Printf("Error encoding JSON: %s\n", err)
+			cmd.Printf("Error encoding JSON: %s\n", err)
 			os.Exit(1)
 		}
-		internal.L.Printf("%s\n", jsonBytes)
+		cmd.Printf("%s\n", jsonBytes)
 
 		// 10. Read passphrase from stdin
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			reader := bufio.NewReader(os.Stdin)
-			internal.L.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data): ")
+			cmd.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data): ")
 			passphrase, err = reader.ReadString('\n')
 			if err != nil && err != io.EOF {
-				internal.L.Printf("Error reading passphrase: %s\n", err)
+				cmd.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
 			}
 
@@ -289,45 +287,26 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 11. Decrypt secretContents
 		decryptedContents, err := crypto.DecryptMessageWithPassword(pgpMessage, []byte(passphrase))
 		if err != nil {
-			internal.L.Printf("Error decrypting secret contents: %s\n", err)
+			cmd.Printf("Error decrypting secret contents: %s\n", err)
 			os.Exit(1)
 		}
 
 		passphrase = "" // clear passphrase
 
 		// 12. Write decryptedContents to outFile
-		var outFile *os.File
-
-		if outFileName == "" || outFileName == "-" {
-			outFile = os.Stdout
-		} else {
-			outFile, err = os.OpenFile(outFileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
-			if err != nil {
-				internal.L.Printf("Error opening file: %s\n", err)
-				os.Exit(1)
-			}
-			defer outFile.Close()
-		}
-
 		n, err := outFile.Write(decryptedContents.GetBinary())
 		if err != nil {
-			internal.L.Printf("Error writing to file: %s\n", err)
+			cmd.Printf("Error writing to file: %s\n", err)
 			os.Exit(1)
 		}
 
-		internal.L.Printf("Wrote %d bytes to %s\n", n, outFileName)
+		cmd.Printf("Wrote %d bytes to %s\n", n, outFileName)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(decodeCmd)
 
-	decodeCmd.Flags().StringVarP(&inFileName, "in", "i", "", "Input file to read from, or stdin if not provided")
-	decodeCmd.MarkFlagRequired("in")
-	decodeCmd.Flags().StringVarP(&outFileName, "out", "o", "", "Output file to write to, or stdout if not provided")
-	decodeCmd.MarkFlagRequired("out")
-
-	decodeCmd.Flags().BoolVarP(&overrideOutFile, "force", "f", false, "Force override of existing file")
 	decodeCmd.Flags().BoolVar(&ignoreVersionMismatch, "ignore-version-mismatch", false, "Ignore version mismatch and continue anyway")
 	decodeCmd.Flags().BoolVar(&ignoreChecksumMismatch, "ignore-header-checksum-mismatch", false, "Ignore header checksum mismatches and continue anyway")
 

@@ -1,29 +1,31 @@
-PaperCrypt Version: v1.0.0-beta0-23-gdced528-dirty
-Content Serial: DDUDNC
+PaperCrypt Version: v1.0.0-beta0-28-gb7c394f-dirty
+Content Serial: AFZRFQ
 Purpose: Example Sheet
 Comment: Armoured Text Output Example
-Date: Thu, 17 Aug 2023 17:14:57.858798600 CEST
+Date: Mon, 04 Sep 2023 19:22:49.604493200 CEST
 Serialization Type: openpgp/armor
-Content Length: 732
-Content CRC-24: 7a3a66
-Content CRC-32: 65337079
-Content SHA-256: uPs53KvFRPkWfKsDpjX1zdqyvUv/2+39XxcS7exTQ1A=
-Header CRC-32: 51ffd6a0
+Content Length: 838
+Content CRC-24: ca281a
+Content CRC-32: 92e6c364
+Content SHA-256: RsuRs3DDy6rh4nLbKcj9YkA+1myjf1EiW9Vl53w2PfM=
+Header CRC-32: 2472c4a8
 
 
 -----BEGIN PGP MESSAGE-----
+Version: GopenPGP 2.7.3
 Comment: https://gopenpgp.org
-Version: GopenPGP 2.7.2
 
-wy4ECQMI5YNVXq5cII3gPEA9RxTjZ55gCVkZwiH1pemxAQMbEsH99UKkng+1YXgo
-0sDVAS2q0lzMHQNMzumcX/eAEKWFtBgsqUaeFWUcLRkSTZJJzQxnDhFc5bfETuCp
-HJ608QxAHsMb+aQkkhChp8WXgPy9x3uNJTgOlU3capZxPF9c8fTM57RJCZ2YPT75
-2ygQ1woOTTvJr19s9ElRREbk2M0U0jfruXkMH7fQqRPEjp8G+UdPPl2RNvC/Npv0
-mnd5e82NWvo4wNBYtNMjOJ1n//ImvGxa8b2etMbiSBmrMwc+rTyBMN6H957ZOOig
-hvzeI4dk81o0u7yJl/6Jd4PeMRncwSqM/fxYnawfXJqbbJ57WEYa8maBPDJlA9oV
-0BAL+ll6FkCNmUYQvj4jVaTOT7tZjrwwAh+7bnC63RwTskTcBDVtYKI7CqiX3XIk
-ovGwtkQ/95tTI1NdRoWFf2CFa7jdYqZJty9rxWO9aIirJagg277w3bU31b7DaoxN
-Y6q4jOMeGlQorseDrxM2SIIeX/MAqk0O1n7d2Z59h07IetcCcaRgZT8xUXJcPVhn
-N87IEWwmELH46e4QrZQRM2u/RSxv/PNE
-=UFG5
+wy4ECQMIAxy0jLt07dTgHbAY98hZ8SM5gseQHsjHl/AHb1x5GDR3NLvKxocqkieo
+0sEiAdRHj56ylwoAB3OgjU1lA7vkfiB1mAYkrD++XtAo9nJSCaFnH25u/3EwBmbo
+WYZ55qdHwzQY4Z7H+S3JeW7xFKr0elVcsXY7g+gRyhNqNPVgXLqTKV/xfrfglDOg
+pVBLJS11wJ71ZmI7izzl3opD1oUkK3bKPIaehkcg0rqiVZHtgnQ2KfNrTB8e3xZd
+I1vwpy2eyE5NhDIpUNw62flaPd8VskWRnLir2eQr0qqr3cFCMJx+A0YhqwdVYmb9
+yqhhxrZpGM8x/qFLun8uDgpvPea1hhxTODu9RztVMNBJBsyFhwBW9kcmV4NyjB05
+L+8G7eASkjqzUTuiES7ySeHAL47xYE/b3NKRtuAKrtCVD6FI9d/JoRFLRRfUuBXj
+ZqdkV25qS/ccVuDT9rAJD+ietCHxxs5/tebRnzuutyivh3ljg9GCzyo8vgMDtMoQ
+wC5FWl6jaFa71oQNBsQ8LWH4o/NVyp0z5QMwNt+luSCsRIbLBqdxFr7Iq1XPy+Ls
+hMteCI/Ikhh7ZGuSEeMKAARLu+Z6eBIERDQXGJTcDtV4EWMTdWK5mGzXX2pkVncy
+e9vmCmMXoZmlzCJJ0fUbY1d3AK6aoShkrogZTVe8jkr+GUy2BAjUOWg4o0Y0z8lp
+UiRwnXo=
+=msV9
 -----END PGP MESSAGE-----
