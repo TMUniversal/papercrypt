@@ -300,11 +300,6 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 	dataCRC32 := crc32.ChecksumIEEE(data)
 	dataSHA256 := sha256.Sum256(data)
 
-	serializationType := "papercrypt/base16+crc"
-	if asciiArmor {
-		serializationType = "openpgp/armor"
-	}
-
 	header := fmt.Sprintf(
 		`PaperCrypt Version: %s
 Content Serial: %s
