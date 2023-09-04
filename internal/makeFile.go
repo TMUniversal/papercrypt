@@ -218,7 +218,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	{
 		// generate a data matrix with the sheet id
 		enc := datamatrix.NewDataMatrixWriter()
-		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 100, 100, nil)
+		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 256, 256, nil)
 		if err != nil {
 			return nil, errors.Errorf("error generating Data Matrix code: %s", err)
 		}
