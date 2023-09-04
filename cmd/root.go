@@ -45,7 +45,8 @@ and then prepare a printable document that is optimized for being able to restor
 		cmd.Println("This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.")
 		cmd.Println("This is free software, and you are welcome to redistribute it")
 		cmd.Println("under certain conditions; type `papercrypt show c' for details.")
-		cmd.Println("PaperCrypt's source code can be found at https://github.com/TMUniversal/PaperCrypt\n")
+		cmd.Println("PaperCrypt's source code can be found at https://github.com/TMUniversal/PaperCrypt")
+		cmd.Println()
 		cmd.Help()
 	},
 }

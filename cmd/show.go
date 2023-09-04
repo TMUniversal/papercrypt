@@ -37,7 +37,8 @@ var showCmdWarranty = &cobra.Command{
 	Short: "Show warranty info",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
-		cmd.Println("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.\n")
+		cmd.Println("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.")
+		cmd.Println()
 		fmt.Println(`  15. Disclaimer of Warranty.
 
   THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
