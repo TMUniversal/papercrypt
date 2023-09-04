@@ -38,14 +38,22 @@ The data should be read from a file or stdin, you will be required to provide a 
 		defer outFile.Close()
 
 		// 2. Inform of input source
+		var inFile *os.File
 		if inFileName == "" || inFileName == "-" {
 			cmd.Printf("Reading from stdin\n")
+			inFile = os.Stdin
 		} else {
 			cmd.Printf("Reading from %s\n", inFileName)
+			inFile, err = os.Open(inFileName)
+			if err != nil {
+				cmd.Println("Error opening input file:", err)
+				os.Exit(1)
+			}
+			defer inFile.Close()
 		}
 
 		// 3. Read inFile
-		paperCryptFileContents, err := os.ReadFile(inFileName)
+		paperCryptFileContents, err := io.ReadAll(inFile)
 		if err != nil && err != io.EOF {
 			cmd.Printf("Error opening file: %s\n", err)
 			os.Exit(1)
@@ -300,7 +308,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
-		cmd.Printf("Wrote %d bytes to %s\n", n, outFileName)
+		cmd.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
 	},
 }
 
