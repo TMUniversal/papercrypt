@@ -33,7 +33,7 @@ import (
 
 // qrCmd represents the data command
 var qrCmd = &cobra.Command{
-	Use:   "qr <path>",
+	Use:   "qr <input>",
 	Short: "Decode a document from a QR code.",
 	Long: `Decode a document from a QR code.
 

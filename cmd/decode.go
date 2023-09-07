@@ -21,7 +21,6 @@
 package cmd
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/json"
@@ -275,7 +274,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		)
 
 		// 9. Print PaperCrypt object
-		cmd.Printf("Understood the following PaperCrypt document:\n")
+		cmd.Println("Understood the following PaperCrypt document:")
 
 		jsonBytes, err := json.MarshalIndent(paperCrypt, "", "  ")
 		if err != nil {
@@ -286,16 +285,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		// 10. Read passphrase from stdin
 		if !cmd.Flags().Lookup("passphrase").Changed {
-			reader := bufio.NewReader(os.Stdin)
-			cmd.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data): ")
-			passphrase, err = reader.ReadString('\n')
-			if err != nil && err != io.EOF {
+			cmd.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data)")
+			cmd.Printf("Passphrase: ")
+			passphrase, err = internal.ReadTtyLine()
+			if err != nil {
 				cmd.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
 			}
-
-			passphrase = strings.ReplaceAll(passphrase, "\r", "")
-			passphrase = strings.ReplaceAll(passphrase, "\n", "")
 		}
 
 		// 11. Decrypt secretContents

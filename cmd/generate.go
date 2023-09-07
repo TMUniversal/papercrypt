@@ -21,10 +21,8 @@
 package cmd
 
 import (
-	"bufio"
 	"io"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/tmuniversal/papercrypt/internal"
@@ -106,16 +104,17 @@ encrypted data.`,
 
 		// 5. Read passphrase from stdin
 		if !cmd.Flags().Lookup("passphrase").Changed {
-			reader := bufio.NewReader(os.Stdin)
-			cmd.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`): ")
-			passphrase, err = reader.ReadString('\n')
-			if err != nil && err != io.EOF {
+			cmd.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`)")
+			cmd.Printf("Passphrase: ")
+			passphrase, err = internal.ReadTtyLine()
+			if err != nil {
 				cmd.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
 			}
 
-			cmd.Println("Enter your encryption passphrase again: ")
-			passphraseAgain, err := reader.ReadString('\n')
+			cmd.Println("Enter your encryption passphrase again to confirm")
+			cmd.Printf("Passphrase (again): ")
+			passphraseAgain, err := internal.ReadTtyLine()
 			if err != nil && err != io.EOF {
 				cmd.Printf("Error reading passphrase: %s\n", err)
 				os.Exit(1)
@@ -125,9 +124,6 @@ encrypted data.`,
 				os.Exit(1)
 			}
 			passphraseAgain = "" // clear passphraseAgain
-
-			passphrase = strings.ReplaceAll(passphrase, "\r", "")
-			passphrase = strings.ReplaceAll(passphrase, "\n", "")
 		}
 
 		// 6. Encrypt secretContentsMinimal with passphrase
