@@ -37,10 +37,8 @@ var purpose string
 var comment string
 var date string
 
-var outputPdf bool
 var noQR bool
 var lowerCasedBase16 bool
-var asciiArmor bool
 
 var passphrase string
 
