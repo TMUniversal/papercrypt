@@ -106,7 +106,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 5. Run Header Validation
-		versionLine, ok := headers["PaperCrypt Version"]
+		versionLine, ok := headers[internal.HeaderFieldVersion]
 		if !ok {
 			if !ignoreVersionMismatch {
 				cmd.Println("Error parsing headers: PaperCrypt Version not present in header.")
@@ -144,7 +144,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
-		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\nHeader CRC-32: "+headers["Header CRC-32"]), []byte(""))
+		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\nHeader CRC-32: "+headers[internal.HeaderFieldHeaderCRC32]), []byte(""))
 
 		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
@@ -172,7 +172,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		body = pgpMessage.GetBinary()
 
 		// 7.1 Verify Content Length
-		bodyLength, ok := headers["Content Length"]
+		bodyLength, ok := headers[internal.HeaderFieldLength]
 		if !ok {
 			cmd.Printf("Error parsing headers: Content Length not present in header\n")
 			os.Exit(1)
@@ -184,7 +184,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 7.2 Verify CRC-32
-		bodyCrc32, ok := headers["Content CRC-32"]
+		bodyCrc32, ok := headers[internal.HeaderFieldCRC32]
 		if !ok {
 			cmd.Printf("Error parsing headers: Content CRC-32 not present in header\n")
 			os.Exit(1)
@@ -207,7 +207,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 7.3 Verify CRC-24
-		bodyCrc24, ok := headers["Content CRC-24"]
+		bodyCrc24, ok := headers[internal.HeaderFieldCRC24]
 		if !ok {
 			cmd.Printf("Error parsing headers: Content CRC-24 not present in header\n")
 			os.Exit(1)
@@ -230,7 +230,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 7.4 Verify SHA-256
-		bodySha256, ok := headers["Content SHA-256"]
+		bodySha256, ok := headers[internal.HeaderFieldSHA256]
 		if !ok {
 			cmd.Printf("Error parsing headers: Content SHA-256 not present in header\n")
 			os.Exit(1)
@@ -253,7 +253,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		// 8. Construct PaperCrypt object
-		headerDate, ok := headers["Date"]
+		headerDate, ok := headers[internal.HeaderFieldDate]
 		if !ok {
 			cmd.Printf("Warning: Date not present in header\n")
 		}
@@ -264,12 +264,14 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
+		// we don't need to pass the checksums, as they are already verified
+		// and will just be recalculated
 		paperCrypt := internal.NewPaperCrypt(
 			versionLine,
 			pgpMessage,
-			headers["Content Serial"],
-			headers["Purpose"],
-			headers["Comment"],
+			headers[internal.HeaderFieldSerial],
+			headers[internal.HeaderFieldPurpose],
+			headers[internal.HeaderFieldComment],
 			timestamp,
 		)
 

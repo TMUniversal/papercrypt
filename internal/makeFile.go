@@ -46,6 +46,28 @@ const (
 	PdfMonoFont  = "Courier"
 )
 
+const (
+	HeaderFieldVersion              = "PaperCrypt Version"
+	HeaderFieldSerial               = "Content Serial"
+	HeaderFieldPurpose              = "Purpose"
+	HeaderFieldComment              = "Comment"
+	HeaderFieldDate                 = "Date"
+	HeaderFieldLength               = "Content Length"
+	HeaderFieldCRC24                = "Content CRC-24"
+	HeaderFieldCRC32                = "Content CRC-32"
+	HeaderFieldSHA256               = "Content SHA-256"
+	HeaderFieldHeaderCRC32          = "Header CRC-32"
+	PDFHeaderSheetId                = "Sheet ID"
+	PDFHeading                      = "PaperCrypt Recovery Sheet"
+	PDFSectionDescriptionHeading    = "What is this?"
+	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
+	PDFSectionRepresentationHeading = "Binary Data Representation"
+	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used."
+	PDFSectionRecoveryHeading       = "Recovering the data"
+	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+)
+
 type PaperCrypt struct {
 	// Version is the version of papercrypt used to generate the document.
 	Version string
@@ -238,7 +260,11 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
-		pdf.CellFormat(0, 10, fmt.Sprintf("Sheet ID: %s - %s - Purpose: %s", p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"), p.Purpose),
+		headerLine := fmt.Sprintf("%s: %s - %s", PDFHeaderSheetId, p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"))
+		if p.Purpose != "" {
+			headerLine += fmt.Sprintf(" - %s", p.Purpose)
+		}
+		pdf.CellFormat(0, 10, headerLine,
 			"", 0, "C", false, 0, "")
 
 		{
@@ -261,30 +287,30 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	{
 		// Info text
 		pdf.SetFont(PdfTextFont, "", 16)
-		pdf.CellFormat(0, 10, "PaperCrypt Recovery Sheet", "", 0, "C", false, 0, "")
+		pdf.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
 		pdf.Ln(10)
 		pdf.SetFont(PdfTextFont, "", 12)
 		// enter the markdown information
-		pdf.CellFormat(0, 5, "What is this?", "", 0, "L", false, 0, "")
+		pdf.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
-		pdf.MultiCell(0, 5, "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed.", "", "", false)
+		pdf.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 12)
-		pdf.CellFormat(0, 5, "Binary Data Representation", "", 0, "L", false, 0, "")
+		pdf.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
-		pdf.MultiCell(0, 5, fmt.Sprintf("Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used.", BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
+		pdf.MultiCell(0, 5, fmt.Sprintf(PDFSectionRepresentationContent, BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 12)
-		pdf.CellFormat(0, 5, "Recovering the data", "", 0, "L", false, 0, "")
+		pdf.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
-		qrInstruction := ""
-		if !noQR {
-			qrInstruction = "scan the QR code, or "
+		recoverInstruction := PDFSectionRecoveryContent
+		if noQR {
+			recoverInstruction = PDFSectionRecoveryContentNoQR
 		}
-		pdf.MultiCell(0, 5, fmt.Sprintf("Firstly, %scopy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software.", qrInstruction), "", "", false)
+		pdf.MultiCell(0, 5, recoverInstruction, "", "", false)
 		pdf.Ln(10)
 	}
 
@@ -326,25 +352,34 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 // GetText returns the text representation of the paper crypt
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 	header := fmt.Sprintf(
-		`PaperCrypt Version: %s
-Content Serial: %s
-Purpose: %s
-Comment: %s
-Date: %s
-Content Length: %d
-Content CRC-24: %x
-Content CRC-32: %x
-Content SHA-256: %s`,
+		`%s: %s
+%s: %s
+%s: %s
+%s: %s
+%s: %s
+%s: %d
+%s: %x
+%s: %x
+%s: %s`,
+		HeaderFieldVersion,
 		p.Version,
+		HeaderFieldSerial,
 		p.SerialNumber,
+		HeaderFieldPurpose,
 		p.Purpose,
+		HeaderFieldComment,
 		p.Comment,
+		HeaderFieldDate,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
+		HeaderFieldLength,
 		p.GetLength(),
+		HeaderFieldCRC24,
 		p.DataCRC24,
+		HeaderFieldCRC32,
 		p.DataCRC32,
+		HeaderFieldSHA256,
 		base64.StdEncoding.EncodeToString(p.DataSHA256[:]))
 
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
@@ -356,12 +391,13 @@ Content SHA-256: %s`,
 
 	return []byte(
 		fmt.Sprintf(`%s
-Header CRC-32: %x
+%s: %x
 
 
 %s
 `,
 			header,
+			HeaderFieldHeaderCRC32,
 			headerCRC32,
 			serializedData)), nil
 }
