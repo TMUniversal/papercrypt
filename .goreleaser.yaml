@@ -40,7 +40,7 @@ archives:
       - goos: windows
         format: zip
     files:
-      - LICENSE
+      - COPYING
       - README.md
       - CHANGELOG.md
 

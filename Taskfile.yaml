@@ -45,6 +45,22 @@ tasks:
       - go vet ./...
       - go test -v ./... -cover
 
+#  release:
+#    desc: Create a release
+#    deps:
+#      - build
+#      - deps:goreleaser
+#    cmds:
+#      - goreleaser release --clean
+
+  reltest:
+    desc: Create a release
+    deps:
+      - build
+      - deps:goreleaser
+    cmds:
+      - goreleaser release --snapshot --clean --skip-publish
+
   examples:
     desc: Run the examples
     deps:

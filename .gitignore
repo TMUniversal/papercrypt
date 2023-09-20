@@ -26,6 +26,8 @@ go.work
 ### Genrated files
 
 /.task/
+/bin/
+/dist/
 /local/
 /man/
 *.gen.txt
