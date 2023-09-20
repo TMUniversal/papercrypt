@@ -25,6 +25,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -34,6 +35,58 @@ type LineData struct {
 	LineNumber uint32
 	Data       []byte
 	CRC24      uint32
+}
+
+// SerializeBinary returns the encrypted binary data,
+// formatted for restoration
+// lines will hold 22 bytes of data, prefaces by the line number, followed by the CRC-24 of the line,
+// bytes are printed as two base16 (hex) digits, separated by a space.
+// Example:
+//
+//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 <CRC-24 of this line>
+//	2: ... <CRC-24 of this line>
+//
+// 10: ... <CRC-24 of this line>
+// ...
+// n-1: ... <CRC-24 of this line>
+// n: <CRC-24 of the block>
+//
+// See [example.pdf](example.pdf) for an example.
+func SerializeBinary(data *[]byte) string {
+	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
+	lineNumberDigits := int(math.Floor(math.Log10(lines)))
+
+	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
+
+	for i := 0; i < len(*data); i += BytesPerLine {
+		lineNumber := (i / BytesPerLine) + 1
+		lineNumberPadding := lineNumberDigits - int(math.Floor(math.Log10(float64(lineNumber))))
+
+		line := fmt.Sprintf("%s%d: ", string(bytes.Repeat([]byte{' '}, lineNumberPadding)), lineNumber)
+
+		dataLine := make([]byte, 0, BytesPerLine)
+
+		for j := 0; j < BytesPerLine; j++ {
+			if i+j >= len(*data) {
+				break
+			}
+
+			dataLine = append(dataLine, (*data)[i+j])
+			line += fmt.Sprintf("%02X ", (*data)[i+j])
+		}
+
+		lineCRC24 := Crc24Checksum(dataLine)
+		line += fmt.Sprintf("%06X\n", lineCRC24)
+
+		dataBlock = append(dataBlock, []byte(line)...)
+	}
+
+	dataCRC24 := Crc24Checksum(*data)
+	finalLineNumber := int(math.Ceil(float64(len(*data))/BytesPerLine)) + 1
+	finalLinePadding := lineNumberDigits - int(math.Floor(math.Log10(lines+1)))
+	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%s%d: %06X\n", string(bytes.Repeat([]byte{' '}, finalLinePadding)), finalLineNumber, dataCRC24))...)
+
+	return string(dataBlock)
 }
 
 func DeserializeBinary(data *[]byte) ([]byte, error) {

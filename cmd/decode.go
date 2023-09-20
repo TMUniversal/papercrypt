@@ -312,7 +312,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			os.Exit(1)
 		}
 
-		cmd.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
+		cmd.Printf("Wrote %s to %s\n", internal.SprintBinarySize(n), outFile.Name())
 	},
 }
 

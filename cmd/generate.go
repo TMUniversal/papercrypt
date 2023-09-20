@@ -150,7 +150,7 @@ encrypted data.`,
 			os.Exit(1)
 		}
 
-		cmd.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
+		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
 
 		cmd.Println("Done!")
 	},

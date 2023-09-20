@@ -21,12 +21,14 @@
 package cmd
 
 import (
+	"bytes"
+	"image/png"
+	"os"
+
 	"github.com/karmdip-mi/go-fitz"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
-	"image/png"
-	"os"
 )
 
 // pdf2pngCmd represents the pdf2png command
@@ -63,31 +65,37 @@ var pdf2pngCmd = &cobra.Command{
 		}
 		defer outFile.Close()
 
-		err = pdf2png(inFile, outFile)
+		n, err := pdf2png(inFile, outFile)
 		if err != nil {
 			cmd.Println("Error converting pdf to png:", err)
 			os.Exit(1)
 		}
 
-		cmd.Println("Successfully wrote", outFile.Name())
+		cmd.Printf("Successfully wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
 	},
 }
 
-func pdf2png(inFile *os.File, outFile *os.File) error {
+func pdf2png(inFile *os.File, outFile *os.File) (int, error) {
 	doc, err := fitz.NewFromReader(inFile)
 	if err != nil {
-		return errors.Wrap(err, "error opening pdf file")
+		return 0, errors.Wrap(err, "error opening pdf file")
 	}
 	defer doc.Close()
 
 	// Convert the first page to a png
 	img, err := doc.Image(0)
 	if err != nil {
-		return errors.Wrap(err, "error converting pdf to png")
+		return 0, errors.Wrap(err, "error converting pdf to png")
 	}
 
 	// Write the png to the output file
-	return png.Encode(outFile, img)
+	tmp := new(bytes.Buffer)
+	err = png.Encode(tmp, img)
+	if err != nil {
+		return 0, errors.Wrap(err, "error encoding png")
+	}
+
+	return outFile.Write(tmp.Bytes())
 }
 
 func init() {

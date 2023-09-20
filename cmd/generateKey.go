@@ -22,11 +22,12 @@ package cmd
 
 import (
 	"crypto/rand"
-	_ "embed"
-	"github.com/tmuniversal/papercrypt/internal"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/tmuniversal/papercrypt/internal"
 
 	"github.com/spf13/cobra"
 )
@@ -64,40 +65,38 @@ which can be found here: https://www.eff.org/files/2016/07/18/eff_large_wordlist
 			os.Exit(1)
 		}
 
-		cmd.Printf("\nWrote %d bytes to %s\n", n, out.Name())
+		cmd.Printf("\nWrote %s bytes to %s\n", internal.SprintBinarySize(n), out.Name())
 	},
+}
+
+func generateWordList() {
+	wordListArray := strings.Split(*WordListFile, "\n")
+
+	for i, word := range wordListArray {
+		wordListArray[i] = strings.TrimSpace(strings.Split(word, "\t")[1])
+	}
+
+	for _, word := range wordListArray {
+		if strings.TrimSpace(word) == "" {
+			continue
+		}
+
+		wordList = append(wordList, word)
+	}
 }
 
 func generateMnemonic(amount int) ([]string, error) {
 	if len(wordList) == 0 {
-		wordListArray := strings.Split(*WordListFile, "\n")
-
-		for i, word := range wordListArray {
-			wordListArray[i] = strings.TrimSpace(strings.Split(word, "\t")[1])
-		}
-
-		for _, word := range wordListArray {
-			if strings.TrimSpace(word) == "" {
-				continue
-			}
-
-			wordList = append(wordList, word)
-		}
+		generateWordList()
 	}
 
 	// choose `amount` random words from wordListArray
-
-	words := make([]string, amount)
-	for i := 0; i < amount; i++ {
-		randInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(wordList))))
-		if err != nil {
-			return nil, err
-		}
-
-		words[i] = wordList[randInt.Int64()]
+	randInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(wordList))))
+	if err != nil {
+		return nil, errors.Wrap(err, "Error generating random seed")
 	}
 
-	return words, nil
+	return GenerateFromSeed(randInt.Int64(), amount)
 }
 
 func init() {

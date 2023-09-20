@@ -62,7 +62,7 @@ const (
 	PDFSectionDescriptionHeading    = "What is this?"
 	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
 	PDFSectionRepresentationHeading = "Binary Data Representation"
-	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask 0x%x and initial value 0x%x are used."
+	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
 	PDFSectionRecoveryHeading       = "Recovering the data"
 	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
@@ -129,58 +129,6 @@ func (p *PaperCrypt) GetBinarySerialized() string {
 
 func (p *PaperCrypt) GetLength() int {
 	return len(p.GetBinary())
-}
-
-// SerializeBinary returns the encrypted binary data,
-// formatted for restoration
-// lines will hold 22 bytes of data, prefaces by the line number, followed by the CRC-24 of the line,
-// bytes are printed as two base16 (hex) digits, separated by a space.
-// Example:
-//
-//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 <CRC-24 of this line>
-//	2: ... <CRC-24 of this line>
-//
-// 10: ... <CRC-24 of this line>
-// ...
-// n-1: ... <CRC-24 of this line>
-// n: <CRC-24 of the block>
-//
-// See [example.pdf](example.pdf) for an example.
-func SerializeBinary(data *[]byte) string {
-	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
-	lineNumberDigits := int(math.Floor(math.Log10(lines)))
-
-	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
-
-	for i := 0; i < len(*data); i += BytesPerLine {
-		lineNumber := (i / BytesPerLine) + 1
-		lineNumberPadding := lineNumberDigits - int(math.Floor(math.Log10(float64(lineNumber))))
-
-		line := fmt.Sprintf("%s%d: ", string(bytes.Repeat([]byte{' '}, lineNumberPadding)), lineNumber)
-
-		dataLine := make([]byte, 0, BytesPerLine)
-
-		for j := 0; j < BytesPerLine; j++ {
-			if i+j >= len(*data) {
-				break
-			}
-
-			dataLine = append(dataLine, (*data)[i+j])
-			line += fmt.Sprintf("%02X ", (*data)[i+j])
-		}
-
-		lineCRC24 := Crc24Checksum(dataLine)
-		line += fmt.Sprintf("%06X\n", lineCRC24)
-
-		dataBlock = append(dataBlock, []byte(line)...)
-	}
-
-	dataCRC24 := Crc24Checksum(*data)
-	finalLineNumber := int(math.Ceil(float64(len(*data))/BytesPerLine)) + 1
-	finalLinePadding := lineNumberDigits - int(math.Floor(math.Log10(lines+1)))
-	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%s%d: %06X\n", string(bytes.Repeat([]byte{' '}, finalLinePadding)), finalLineNumber, dataCRC24))...)
-
-	return string(dataBlock)
 }
 
 // GetPDF returns the binary representation of the paper crypt
@@ -318,7 +266,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	if !noQR {
 		pdf.RegisterImageReader("qr.png", "PNG", qr)
 		imageSize := 167.0
-		pdf.ImageOptions("qr.png", 20.5, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.ImageOptions("qr.png", 20, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		pdf.Ln(50)
 	}
 
@@ -358,8 +306,8 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 %s: %s
 %s: %s
 %s: %d
-%s: %x
-%s: %x
+%s: %06x
+%s: %08x
 %s: %s`,
 		HeaderFieldVersion,
 		p.Version,
@@ -391,7 +339,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 
 	return []byte(
 		fmt.Sprintf(`%s
-%s: %x
+%s: %08x
 
 
 %s

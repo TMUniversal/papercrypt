@@ -108,8 +108,6 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		}
 
 		// 6. Write to file
-		// binData := pc.Data.GetBinary()
-		// output := internal.SerializeBinary(&binData)
 		output, err := pc.GetText(false)
 		if err != nil {
 			cmd.Println("Error serializing data:", err)
@@ -121,7 +119,7 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 			os.Exit(1)
 		}
 
-		cmd.Printf("Wrote %d bytes to %s\n", n, outFile.Name())
+		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
 	},
 }
 
