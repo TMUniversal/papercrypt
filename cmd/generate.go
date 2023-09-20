@@ -94,9 +94,14 @@ encrypted data.`,
 		}
 
 		// 4. Read input file as bytes
-		secretContentsFile, err := os.ReadFile(inFileName)
+		var secretContentsFile []byte
+		if inFileName == "" || inFileName == "-" {
+			secretContentsFile, err = io.ReadAll(os.Stdin)
+		} else {
+			secretContentsFile, err = os.ReadFile(inFileName)
+		}
 		if err != nil {
-			cmd.Printf("Error reading file: %s\n", err)
+			cmd.Println(errors.Wrap(err, "error reading input file"))
 			os.Exit(1)
 		}
 
