@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/tmuniversal/papercrypt/cmd"
+	"github.com/tmuniversal/papercrypt/internal"
 )
 
 // LicenseText is the license of the application as a string
@@ -83,7 +84,7 @@ func main() {
 	cmd.LicenseText = &LicenseText
 	cmd.WordListFile = &WordList
 
-	cmd.VersionInfo = cmd.VersionDetails{
+	internal.VersionInfo = internal.VersionDetails{
 		Version:   strings.TrimSuffix(Version, "\n"),
 		BuildDate: strings.TrimSuffix(BuildDate, "\n"),
 		GitCommit: strings.TrimSuffix(GitCommit, "\n"),

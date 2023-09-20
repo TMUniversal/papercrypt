@@ -26,6 +26,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"github.com/tmuniversal/papercrypt/internal"
 )
 
 // manCmd represents the man command
@@ -53,7 +54,7 @@ Generated pages will be placed in the directory specified by --out, defaulting t
 
 func GenerateManPage(dir string) error {
 	header := &doc.GenManHeader{
-		Source: "PaperCrypt " + VersionInfo.Version,
+		Source: "PaperCrypt " + internal.VersionInfo.Version,
 	}
 
 	return doc.GenManTree(rootCmd, header, dir)

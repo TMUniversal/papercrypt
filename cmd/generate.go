@@ -134,7 +134,7 @@ encrypted data.`,
 		passphrase = "" // clear passphrase
 
 		// 7. Write encryptedSecretContents to outFile
-		crypt := internal.NewPaperCrypt(VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
+		crypt := internal.NewPaperCrypt(internal.VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
 
 		var text []byte
 

@@ -18,30 +18,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cmd
+package internal
 
-import (
-	"fmt"
-
-	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/internal"
-)
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Shows the version of the application",
-	Long:  `Shows the version of the application, as well as the build date, git commit hash, git ref, Go version, os/arch and os type.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("PaperCrypt Version %s,\nbuilt on %s, from commit %s,\nfor %s/%s (Go %s)\n",
-			internal.VersionInfo.Version,
-			internal.VersionInfo.BuildDate,
-			internal.VersionInfo.GitCommit,
-			internal.VersionInfo.OsType,
-			internal.VersionInfo.OsArch,
-			internal.VersionInfo.GoVersion)
-	},
+type VersionDetails struct {
+	Version   string
+	BuildDate string
+	GitCommit string
+	GitRef    string
+	GoVersion string
+	OsArch    string
+	OsType    string
 }
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-}
+var VersionInfo VersionDetails
