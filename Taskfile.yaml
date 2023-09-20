@@ -42,6 +42,7 @@ tasks:
     deps:
       - build
     cmds:
+      - go vet ./...
       - go test -v ./... -cover
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o - --passphrase "example" --purpose "Example Sheet" --comment "Regular Text Output Example" | bin/papercrypt{{exeExt}} pdf2png | bin/papercrypt{{exeExt}} qr | bin/papercrypt{{exeExt}} decode -o examples/test.json -f --passphrase "example" && diff -u examples/input.json examples/test.json && rm examples/test.json || (echo "Test failed" && rm -f examples/test.json ; exit 1)'
 
@@ -61,6 +62,7 @@ tasks:
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"'
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr'
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase'
+      - 'bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA='
 
   clean:
     desc: Remove all generated files
@@ -71,4 +73,4 @@ tasks:
   clean_examples:
     desc: Remove all generated files
     cmds:
-      - "rm -f examples/output.txt examples/output.pdf examples/armoured.txt examples/armoured.pdf"
+      - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf phrase.pdf"
