@@ -49,19 +49,17 @@ tasks:
     desc: Run the examples
     deps:
       - build
+      - deps:pdfcpu
     generates:
-      - "examples/output.txt"
-      - "examples/armoured.txt"
-      - "examples/lowercase.txt"
       - "examples/output.pdf"
       - "examples/no_qr.pdf"
-      - "examples/armoured.pdf"
       - "examples/lowercase.pdf"
+      - "examples/phrase.pdf"
     cmds:
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"'
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr'
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase'
-      - 'bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA='
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
+      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
+      - 'bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf'
 
   man:
     desc: Generate man pages
@@ -70,13 +68,25 @@ tasks:
     cmds:
       - 'bin/papercrypt{{exeExt}} man'
 
+  deps:pdfcpu:
+    desc: Install pdfcpu
+    internal: true
+    cmds:
+      - 'pdfcpu version || go install github.com/pdfcpu/pdfcpu/cmd/pdfcpu@latest && pdfcpu version'
+
+  deps:goreleaser:
+    desc: Install goreleaser
+    internal: true
+    cmds:
+      - 'goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version'
+
   clean:
     desc: Remove all generated files
     cmds:
       - "rm -f *.gen.txt"
-      - "rm -f bin/papercrypt{{exeExt}}"
+      - "rm -rf dist bin man"
 
-  clean_examples:
+  clean:examples:
     desc: Remove all generated files
     cmds:
-      - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf phrase.pdf"
+      - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf examples/phrase.pdf"
