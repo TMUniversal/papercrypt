@@ -64,6 +64,13 @@ tasks:
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase'
       - 'bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA='
 
+  man:
+    desc: Generate man pages
+    deps:
+      - build
+    cmds:
+      - 'bin/papercrypt{{exeExt}} man'
+
   clean:
     desc: Remove all generated files
     cmds:
