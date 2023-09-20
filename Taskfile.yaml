@@ -80,6 +80,11 @@ tasks:
     cmds:
       - 'goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version'
 
+  standard_version:
+    desc: Generate a changelog
+    cmds:
+      - 'npx --yes standard-version'
+
   clean:
     desc: Remove all generated files
     cmds:
