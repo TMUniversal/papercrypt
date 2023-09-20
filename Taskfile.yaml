@@ -50,17 +50,18 @@ tasks:
         && if [ -n "${WITH_COVERAGE}" ]; then go tool cover -html=coverage.out -o coverage.html; fi
         && rm coverage.out
       # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
+      # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
+      # if running on windows, install it in WSL
       - >-
-        bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json'
-        && cat test-in.json | bin/papercrypt{{exeExt}} generate --purpose "Test" --comment "Test" --passphrase "test" --force -o test.pdf
-        && bash -c "mkdir -vp test_images"
-        && pdfcpu extract -m image test.pdf test_images
-        && rm test.pdf
-        && bash -c "find test_images -maxdepth 1 -type f -printf '%s %p\n' | sort -nr | head -n 1 | cut -d \" \" -f 2 | xargs -I {} mv {} test.png"
-        && rm -rf test_images
-        && cat test.png | bin/papercrypt{{exeExt}} qr | bin/papercrypt{{exeExt}} decode -f -o test.json --passphrase "test"
-        && bash -c "diff -u test.json test-in.json"
-        ; rm -f test.png test.json test-in.json
+        bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
+        && cat test-in.json
+        | bin/papercrypt{{exeExt}} generate --purpose "Test" --comment "Test" --passphrase "test"
+        | pdftoppm -png -r 300 - t
+        && cat t-1.png
+        | bin/papercrypt{{exeExt}} qr
+        | bin/papercrypt{{exeExt}} decode -f -o test.json --passphrase "test"
+        && diff -u test.json test-in.json
+        ; rm -f test.json test-in.json t-*.png'
 
   # release:
   #   desc: Create a release
@@ -100,12 +101,6 @@ tasks:
       - build
     cmds:
       - 'bin/papercrypt{{exeExt}} man'
-
-  deps:pdfcpu:
-    desc: Install pdfcpu
-    internal: true
-    cmds:
-      - 'pdfcpu version || go install github.com/pdfcpu/pdfcpu/cmd/pdfcpu@latest && pdfcpu version'
 
   deps:goreleaser:
     desc: Install goreleaser
