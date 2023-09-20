@@ -71,7 +71,7 @@ var pdf2pngCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cmd.Printf("Successfully wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
+		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
 	},
 }
 

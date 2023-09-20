@@ -65,7 +65,7 @@ which can be found here: https://www.eff.org/files/2016/07/18/eff_large_wordlist
 			os.Exit(1)
 		}
 
-		cmd.Printf("\nWrote %s bytes to %s\n", internal.SprintBinarySize(n), out.Name())
+		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), out.Name())
 	},
 }
 

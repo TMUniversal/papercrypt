@@ -151,8 +151,6 @@ encrypted data.`,
 		}
 
 		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
-
-		cmd.Println("Done!")
 	},
 }
 
@@ -161,7 +159,7 @@ func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
 
 	encrypted, err := crypto.EncryptMessageWithPassword(message, passphrase)
 	if err != nil {
-		return nil, errors.Errorf("error encrypting message: %s", err)
+		return nil, errors.Wrap(err, "error encrypting message")
 	}
 
 	return encrypted, nil

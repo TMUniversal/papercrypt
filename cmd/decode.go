@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/tmuniversal/papercrypt/internal"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -59,7 +61,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 2. Inform of input source
 		var inFile *os.File
 		if inFileName == "" || inFileName == "-" {
-			cmd.Printf("Reading from stdin\n")
+			cmd.Println("Reading from stdin")
 			inFile = os.Stdin
 		} else {
 			cmd.Printf("Reading from %s\n", inFileName)
@@ -74,7 +76,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 3. Read inFile
 		paperCryptFileContents, err := io.ReadAll(inFile)
 		if err != nil && err != io.EOF {
-			cmd.Printf("Error reading file: %s\n", err)
+			cmd.Println(errors.Wrap(err, "Error reading file"))
 			os.Exit(1)
 		}
 
@@ -156,7 +158,6 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		var pgpMessage *crypto.PGPMessage
-		cmd.Println("Decoding body as papercrypt/base16+crc")
 		var body []byte
 		body, err = internal.DeserializeBinary(&paperCryptFileContentsSplit[1])
 		if err == nil {
@@ -174,26 +175,26 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 7.1 Verify Content Length
 		bodyLength, ok := headers[internal.HeaderFieldLength]
 		if !ok {
-			cmd.Printf("Error parsing headers: Content Length not present in header\n")
+			cmd.Println("Error parsing headers: Content Length not present in header!")
 			os.Exit(1)
 		}
 
 		if fmt.Sprint(len(body)) != bodyLength {
-			cmd.Printf("Validation failure: Content Length mismatch!\n")
+			cmd.Println("Validation failure: Content Length mismatch!")
 			os.Exit(1)
 		}
 
 		// 7.2 Verify CRC-32
 		bodyCrc32, ok := headers[internal.HeaderFieldCRC32]
 		if !ok {
-			cmd.Printf("Error parsing headers: Content CRC-32 not present in header\n")
+			cmd.Println("Error parsing headers: Content CRC-32 not present in header!")
 			os.Exit(1)
 
 		}
 
 		bodyCrc32Uint32, err := internal.ParseHexUint32(bodyCrc32)
 		if err != nil {
-			cmd.Printf("Error parsing headers: %s\n", err)
+			cmd.Println(errors.Wrap(err, "Error parsing headers"))
 			os.Exit(1)
 		}
 
@@ -202,21 +203,21 @@ The data should be read from a file or stdin, you will be required to provide a 
 				cmd.Printf("Validation failure: Content CRC-32 mismatch!\n")
 				os.Exit(1)
 			} else {
-				cmd.Printf("Warning: Content CRC-32 mismatch\n")
+				cmd.Println("Warning: Content CRC-32 mismatch!")
 			}
 		}
 
 		// 7.3 Verify CRC-24
 		bodyCrc24, ok := headers[internal.HeaderFieldCRC24]
 		if !ok {
-			cmd.Printf("Error parsing headers: Content CRC-24 not present in header\n")
+			cmd.Println("Error parsing headers: Content CRC-24 not present in header!")
 			os.Exit(1)
 
 		}
 
 		bodyCrc24Uint32, err := internal.ParseHexUint32(bodyCrc24)
 		if err != nil {
-			cmd.Printf("Error parsing headers: %s\n", err)
+			cmd.Println(errors.Wrap(err, "Error parsing headers"))
 			os.Exit(1)
 		}
 
@@ -275,15 +276,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 			timestamp,
 		)
 
-		// 9. Print PaperCrypt object
-		cmd.Println("Understood the following PaperCrypt document:")
-
-		jsonBytes, err := json.MarshalIndent(paperCrypt, "", "  ")
+		// 9. Serialize PaperCrypt object
+		_, err = json.MarshalIndent(paperCrypt, "", "  ")
 		if err != nil {
 			cmd.Printf("Error encoding JSON: %s\n", err)
 			os.Exit(1)
 		}
-		cmd.Printf("%s\n", jsonBytes)
+		//cmd.Printf("Understood the following PaperCrypt document: %s\n", jsonBytes) // print the JSON
 
 		// 10. Read passphrase from stdin
 		if !cmd.Flags().Lookup("passphrase").Changed {
