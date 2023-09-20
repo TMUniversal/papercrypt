@@ -41,17 +41,34 @@ tasks:
     desc: Run the tests
     deps:
       - build
+    vars:
+      WITH_COVERAGE: "0"
     cmds:
       - go vet ./...
-      - go test -v ./... -cover
+      - >-
+        go test -v ./... -coverprofile=coverage.out -covermode=atomic
+        && if [ -n "${WITH_COVERAGE}" ]; then go tool cover -html=coverage.out -o coverage.html; fi
+        && rm coverage.out
+      # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
+      - >-
+        bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json'
+        && cat test-in.json | bin/papercrypt{{exeExt}} generate --purpose "Test" --comment "Test" --passphrase "test" --force -o test.pdf
+        && bash -c "mkdir -vp test_images"
+        && pdfcpu extract -m image test.pdf test_images
+        && rm test.pdf
+        && bash -c "find test_images -maxdepth 1 -type f -printf '%s %p\n' | sort -nr | head -n 1 | cut -d \" \" -f 2 | xargs -I {} mv {} test.png"
+        && rm -rf test_images
+        && cat test.png | bin/papercrypt{{exeExt}} qr | bin/papercrypt{{exeExt}} decode -f -o test.json --passphrase "test"
+        && bash -c "diff -u test.json test-in.json"
+        ; rm -f test.png test.json test-in.json
 
-#  release:
-#    desc: Create a release
-#    deps:
-#      - build
-#      - deps:goreleaser
-#    cmds:
-#      - goreleaser release --clean
+  # release:
+  #   desc: Create a release
+  #   deps:
+  #     - build
+  #     - deps:goreleaser
+  #   cmds:
+  #     - goreleaser release --clean
 
   reltest:
     desc: Create a release
