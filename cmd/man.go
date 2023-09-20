@@ -31,8 +31,9 @@ import (
 
 // manCmd represents the man command
 var manCmd = &cobra.Command{
-	Use:   "man",
-	Short: "Generate man page",
+	Aliases: []string{"man", "m"},
+	Use:     "manual",
+	Short:   "Generate man page",
 	Long: `Generate man pages for PaperCrypt commands.
 
 Generated pages will be placed in the directory specified by --out, defaulting to './man'.`,

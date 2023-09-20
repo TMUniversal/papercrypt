@@ -41,6 +41,7 @@ const (
 
 // phraseSheetCmd represents the phraseSheet command
 var phraseSheetCmd = &cobra.Command{
+	Aliases: []string{"ps", "p"},
 	Use:     "phraseSheet [base64 seed]",
 	Short:   "Generate a passphrase sheet.",
 	Example: "papercrypt phraseSheet -o phraseSheet.pdf",

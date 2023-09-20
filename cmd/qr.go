@@ -33,8 +33,9 @@ import (
 
 // qrCmd represents the data command
 var qrCmd = &cobra.Command{
-	Use:   "qr <input>",
-	Short: "Decode a document from a QR code.",
+	Aliases: []string{"q"},
+	Use:     "qr <input>",
+	Short:   "Decode a document from a QR code.",
 	Long: `Decode a document from a QR code.
 
 This command allows you to decode data saved by PaperCrypt.

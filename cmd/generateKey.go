@@ -38,7 +38,7 @@ var WordListFile *string
 var wordList = make([]string, 0)
 
 var generateKeyCmd = &cobra.Command{
-	Aliases: []string{"key", "gk"},
+	Aliases: []string{"key", "gen", "k"},
 	Use:     "generateKey",
 	Short:   "Generates a mnemonic key phrase",
 	Long: `This command generates a mnemonic key phrase base on the eff.org large word list,

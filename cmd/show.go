@@ -28,9 +28,10 @@ import (
 
 // urlCmd represents the url command
 var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "Show commands: 'w', 'c'",
-	Long:  `Use 'show [w/c]' to view warranty or copyright info`,
+	Aliases: []string{"s"},
+	Use:     "show",
+	Short:   "Show commands: 'w', 'c'",
+	Long:    `Use 'show [w/c]' to view warranty or copyright info`,
 }
 
 var showCmdWarranty = &cobra.Command{
