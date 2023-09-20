@@ -24,9 +24,10 @@ package internal
 
 import (
 	"bufio"
-	"github.com/pkg/errors"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func ReadTtyLine() (string, error) {

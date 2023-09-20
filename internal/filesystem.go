@@ -21,9 +21,10 @@
 package internal
 
 import (
-	"github.com/pkg/errors"
 	"log"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 var l = log.New(os.Stderr, "", 0)

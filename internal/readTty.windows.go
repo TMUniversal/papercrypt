@@ -24,10 +24,11 @@ package internal
 
 import (
 	"bufio"
-	"github.com/pkg/errors"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // ReadTtyLine since we can't open /dev/tty on Windows, we'll just read from stdin
