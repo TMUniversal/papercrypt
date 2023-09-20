@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.3
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
-	github.com/karmdip-mi/go-fitz v0.0.0-20210702102225-a530a79566e9
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0

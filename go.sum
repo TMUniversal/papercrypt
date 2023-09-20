@@ -17,8 +17,6 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jung-kurt/gofpdf/v2 v2.17.3 h1:otZXZby2gXJ7uU6pzprXHq/R57lsHLi0WtH79VabWxY=
 github.com/jung-kurt/gofpdf/v2 v2.17.3/go.mod h1:Qx8ZNg4cNsO5i6uLDiBngnm+ii/FjtAqjRNO6drsoYU=
-github.com/karmdip-mi/go-fitz v0.0.0-20210702102225-a530a79566e9 h1:w2zV18MDGv67JnuHgNQk7CG6ipj9HEBtuZGwy6TrJEE=
-github.com/karmdip-mi/go-fitz v0.0.0-20210702102225-a530a79566e9/go.mod h1:2aHtXmu2gpljEpoBoFMFr+C5GpdHIT8aI1l1UcyvEP4=
 github.com/makiuchi-d/gozxing v0.1.1 h1:xxqijhoedi+/lZlhINteGbywIrewVdVv2wl9r5O9S1I=
 github.com/makiuchi-d/gozxing v0.1.1/go.mod h1:eRIHbOjX7QWxLIDJoQuMLhuXg9LAuw6znsUtRkNw9DU=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
