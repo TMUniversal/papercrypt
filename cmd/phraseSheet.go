@@ -183,19 +183,14 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		{
 			// add the data matrix code
 			pdf.RegisterImageReader("dm.png", "PNG", dm)
-			scale := 1.0
 			width := float64(dmDims[0])
 			height := float64(dmDims[1])
 
-			// adjust size to make smaller dimension equal 7mm
-			if width < height {
-				scale = 7.0 / width
-			} else {
-				scale = 7.0 / height
-			}
+			// code is like to come out as 16px*16px (2x2 modules), but can also be 8px*32px (1x4 modules)
+			scale := 0.5 // so we choose scale = 0.5 to get 8mm*8mm, or 4mm*16mm
 
-			imageWidth := width * scale   // w * size = w * (5 / w) = 5
-			imageHeight := height * scale // or h * size = h * (5 / h) = 5
+			imageWidth := width * scale
+			imageHeight := height * scale
 
 			pdf.ImageOptions("dm.png", 170, 7, imageWidth, imageHeight, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		}
