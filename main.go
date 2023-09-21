@@ -81,7 +81,7 @@ var arch string
 var os string
 
 // builtBy is the tool used to build the application
-var builtBy string = "go build"
+var builtBy = "go build"
 
 func main() {
 	cmd.LicenseText = &LicenseText
