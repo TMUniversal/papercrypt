@@ -9,6 +9,9 @@ permissions:
   contents: write
   packages: write
 
+env:
+  DEBIAN_FRONTEND: noninteractive
+
 jobs:
   Build:
     runs-on: ubuntu-22.04
