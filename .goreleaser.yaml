@@ -97,7 +97,7 @@ brews:
     repository:
       owner: tmuniversal
       name: homebrew-tap
-      token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
+      token: "{{ .Env.GORELEASER_TOKEN_TAP }}"
     commit_author:
       name: TMUniversal
       email: 10200399+TMUniversal@users.noreply.github.com
