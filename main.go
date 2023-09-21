@@ -38,44 +38,46 @@ var LicenseText string
 //go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
 var WordList string
 
-// version is the current version of the application
-var version = "dev"
+var (
+	// version is the current version of the application
+	version = "dev"
 
-// date is the date the application was built
-var date = "unknown"
+	// date is the date the application was built
+	date = "unknown"
 
-// commit is the git commit hash the application was built from
-var commit = "HEAD"
+	// commit is the git commit hash the application was built from
+	commit = "HEAD"
 
-// ref is the git ref the application was built from
-var ref = "HEAD"
+	// ref is the git ref the application was built from
+	ref = "HEAD"
 
-// branch is the git branch the application was built from
-var branch = "HEAD"
+	// branch is the git branch the application was built from
+	branch = "HEAD"
 
-// tag is the git tag the application was built from
-var tag = "HEAD"
+	// tag is the git tag the application was built from
+	tag = "HEAD"
 
-// summary is the git describe summary
-var summary = "HEAD"
+	// summary is the git describe summary
+	summary = "HEAD"
 
-// repo is the git repository url
-var repo = "https://github.com/TMUniversal/PaperCrypt"
+	// repo is the git repository url
+	repo = "https://github.com/TMUniversal/PaperCrypt"
 
-// dirty is whether the git repository was dirty when the application was built
-var dirty = "false"
+	// dirty is whether the git repository was dirty when the application was built
+	dirty = "false"
 
-// GoVersion is the version of the Go compiler used to build the application
-var GoVersion = "unknown"
+	// GoVersion is the version of the Go compiler used to build the application
+	GoVersion = "unknown"
 
-// arch is the os/arch the application was built for
-var arch = "unknown"
+	// arch is the os/arch the application was built for
+	arch = "unknown"
 
-// os is the os the application was built for
-var os = "unknown"
+	// os is the os the application was built for
+	os = "unknown"
 
-// builtBy is the tool used to build the application
-var builtBy = "go build"
+	// builtBy is the tool used to build the application
+	builtBy = "go build"
+)
 
 func main() {
 	cmd.LicenseText = &LicenseText
