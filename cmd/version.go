@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
@@ -48,6 +49,14 @@ for %s/%s using %s.
 			internal.VersionInfo.OsArch,
 			internal.VersionInfo.GoVersion,
 		)
+		fmt.Println()
+
+		buildInfo, ok := debug.ReadBuildInfo()
+		if !ok {
+			return
+		}
+
+		fmt.Println(buildInfo.String())
 	},
 }
 
