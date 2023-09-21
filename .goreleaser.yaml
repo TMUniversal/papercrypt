@@ -38,7 +38,7 @@ upx:
   - enabled: true
     compress: best
     lzma: true
-    brute: true
+    brute: false
 
 archives:
   - format: tar.gz
