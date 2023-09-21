@@ -34,7 +34,7 @@ var crc24Table [CRC24TableSize]uint32
 
 func generateCRCTable() {
 	for i := uint32(0); i < CRC24TableSize; i++ {
-		crc := uint32(i) << 16
+		crc := i << 16
 		for j := 0; j < 8; j++ {
 			if (crc & 0x800000) != 0 {
 				crc = (crc << 1) ^ CRC24Polynomial
