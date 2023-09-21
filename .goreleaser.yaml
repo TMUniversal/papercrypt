@@ -3,11 +3,11 @@ report_sizes: true
 before:
   hooks:
     - go mod tidy
-    - task generate
+
 release:
   github:
     owner: tmuniversal
-    name: PaperCrypt
+    name: papercrypt
   draft: false
   # If set to auto, will mark the release as not ready for production
   # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
@@ -77,8 +77,8 @@ signs:
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
     args:
       - "sign-blob"
-      - "--key=cosign.pub"
-      - "--output-signature==${signature}"
+      - "--key=cosign.key"
+      - "--output-signature=${signature}"
       - "${artifact}"
       - "--yes"
     artifacts: all
@@ -87,17 +87,36 @@ docker_signs:
   - artifacts: all
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
 
-#brews:
-#  - name: papercrypt
-#    tap:
-#      owner: tmuniversal
-#      name: homebrew-tap
-#      token: "{{ .Env.GORELEASER_TOKEN_TAP }}"
-#    commit_author:
-#      name: TMUniversal
-#      email: me@tmuniversal.eu
-#    homepage: https://github.com/TMUniversal/PaperCrypt
-#    description: "A tool to generate paper backups of your passwords and other secrets."
+brews:
+  - name: papercrypt
+    # alternative_names:
+    #   - papercrypt@{{ .Version }}
+    #   - papercrypt@{{ .Major }}.{{ .Minor }}
+    #   - papercrypt@{{ .Major }}
+    skip_upload: auto
+    repository:
+      owner: tmuniversal
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
+    commit_author:
+      name: TMUniversal
+      email: 10200399+TMUniversal@users.noreply.github.com
+    homepage: https://github.com/TMUniversal/papercrypt
+    description: "A tool to generate paper backups of your passwords and other secrets."
+    license: AGPL-3.0-or-later
+    caveats: |
+      To get started, run:
+        papercrypt help
+    test: |
+      system "#{bin}/papercrypt version"
+    # we want to install the shell completions and man pages, so we need to
+    # generate them first
+    post_install: |
+      system "#{bin}/papercrypt completion bash > #{bash_completion}/papercrypt"
+      system "#{bin}/papercrypt completion zsh > #{zsh_completion}/_papercrypt"
+      system "#{bin}/papercrypt completion fish > #{fish_completion}/papercrypt.fish"
+      system "#{bin}/papercrypt man #{man1}"
+      
 
 dockers:
   - image_templates:
