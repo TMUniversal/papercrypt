@@ -3,7 +3,7 @@ name: PaperCrypt Release
 on:
   push:
     tags:
-      - "*"
+      - '*'
 
 permissions:
   contents: write
@@ -13,17 +13,25 @@ env:
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
-  Build:
+  release:
     runs-on: ubuntu-22.04
     env:
       DOCKER_BUILDKIT: 1
     steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all tags
+        run: git fetch --force --tags
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: ./go.mod
+          go-version-file: go.mod
           check-latest: true
-          cache-dependency-path: "**/*.sum"
+          cache-dependency-path: '**/*.sum'
 
       - name: Install dependencies
         run: |
@@ -35,14 +43,6 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Source checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Fetch all tags
-        run: git fetch --force --tags
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
