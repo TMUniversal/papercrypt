@@ -6,7 +6,7 @@ These documents, referred to as "PaperCrypt" Documents, combine the robust
 encryption capabilities of the [OpenPGP](https://gopenpgp.org/)
 with the resilience and simplicity of a physical hardcopy.
 This ensures the confidentiality and integrity of your data,
-while also providing a physical backup that is not susceptible to digital threats.
+while also providing a physical backup that 's not susceptible to digital threats.
 
 > Please note that to decrypt the data from a PaperCrypt Document, you will need the original passphrase used during the
 > encryption process.
@@ -18,22 +18,21 @@ while also providing a physical backup that is not susceptible to digital threat
   techniques, securing your data with industry-standard algorithms.
 
 - **PDF Generation**: PaperCrypt can output PDF documents ready for printing, that include all the information needed to
-  recover the encrypted data. Alternatively, you can also output a text file containing only headers and encrypted data.
+  recover the encrypted data.
 
-- **Data Integrity**: To verify the integrity of the data, PaperCrypt embeds checksums within the encrypted data portion
+- **Data Integrity**: To verify the integrity of the data, PaperCrypt embeds checksums within the encrypted data section
   of its documents. This ensures that the data remains unaltered during backup and restoration processes.
 
-- **Offline Security**: By generating printable backup documents, PaperCrypt offers an offline storage to
-  safeguards your sensitive data against online threats, as well as an option to store your data in an off-site
-  location.
-  This provides an additional layer of security, as it ensures that your data remains safe and accessible even in the
+- **Offline Security**: By generating printable backup documents, PaperCrypt offers an offline solution to
+  safeguard your sensitive data against online threats, as well as an option to store your data in an off-site
+  location. This provides a layer of security, as it ensures that your data remains safe and accessible even in the
   event of a catastrophic failure, malicious attack, or natural disaster.
 
 ## Installation
 
 TODO(2023-08-11): Add installation instructions.
 
-### From Source
+### From source
 
 1. **Install Go**: Ensure you have Go installed. If not, you can download it from [here](https://go.dev/dl/).
 
@@ -71,7 +70,7 @@ task build
 
 Generating a new key:
 
-A 24 word mnemonic phrase is suitable for our purposes,
+A 24 word mnemonic phrase is suitable for real-world use,
 but you can use any string of words or characters.
 
 Generate one with your tool of choice,
@@ -89,7 +88,7 @@ papercrypt generateKey --words 24 --out mnemonic.txt
 
 to generate a 24 word mnemonic phrase.
 
-Save your data as a JSON file, let's call it `data.json`.
+Save your data as a JSON file: `data.json`, for example.
 
 Example `data.json` file:
 
@@ -113,7 +112,7 @@ papercrypt generate --in data.json --out output.pdf
 
 to generate the file containing your data, and the decryption instructions.
 
-The program will ask you for an encryption key,
+The program then asks you for an encryption key,
 for which you can use your mnemonic phrase from earlier.
 
 ## Contributing
@@ -123,13 +122,14 @@ features, please feel free to submit a pull request.
 
 ## License
 
-PaperCrypt is licensed under the terms of the [GNU AGPL-3.0-or-later](COPYING).
+PaperCrypt is licensed under the terms of the GNU Affero General Public License, version 3.0 or
+later ([GNU AGPL-3.0-or-later](COPYING)).
 
 [![License Logo](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
 ## Acknowledgments
 
-PaperCrypt was developed leveraging the power of Go and a suite of dependable open-source libraries.
+PaperCrypt is developed leveraging the power of Go and a suite of dependable open source libraries.
 We extend our gratitude to the developers behind
 [GopenPGP](https://github.com/ProtonMail/gopenpgp), [GoFPDF](https://github.com/jung-kurt/gofpdf),
 and other foundational components.
