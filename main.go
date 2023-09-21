@@ -39,44 +39,25 @@ var LicenseText string
 var WordList string
 
 // version is the current version of the application
-//
-//go:generate sh -c "git describe --tags --dirty --always > version.gen.txt"
-//go:embed version.gen.txt
-var version string
+var version = "dev"
 
 // date is the date the application was built
-//
-//go:generate sh -c "date +%FT%T%z > build_date.gen.txt"
-//go:embed build_date.gen.txt
-var date string
+var date = "unknown"
 
 // commit is the git commit hash the application was built from
-//
-//go:generate sh -c "git rev-parse HEAD > git_commit.gen.txt"
-//go:embed git_commit.gen.txt
-var commit string
+var commit = "HEAD"
 
 // ref is the git ref the application was built from
-//
-//go:generate sh -c "(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD) > git_ref.gen.txt"
-//go:embed git_ref.gen.txt
-var ref string
+var ref = "HEAD"
 
 // branch is the git branch the application was built from
-//
-//go:embed git_ref.gen.txt
-var branch string
+var branch = "HEAD"
 
 // tag is the git tag the application was built from
-//
-//go:generate sh -c "(git describe --tags --exact-match 2>/dev/null || echo 'no tag') > git_tag.gen.txt"
-//go:embed git_tag.gen.txt
-var tag string
+var tag = "HEAD"
 
 // summary is the git describe summary
-//
-//go:embed version.gen.txt
-var summary string
+var summary = "HEAD"
 
 // repo is the git repository url
 var repo = "https://github.com/TMUniversal/PaperCrypt"
@@ -85,22 +66,13 @@ var repo = "https://github.com/TMUniversal/PaperCrypt"
 var dirty = "false"
 
 // GoVersion is the version of the Go compiler used to build the application
-//
-//go:generate sh -c "go version > go_version.gen.txt"
-//go:embed go_version.gen.txt
-var GoVersion string
+var GoVersion = "unknown"
 
 // arch is the os/arch the application was built for
-//
-//go:generate sh -c "go env GOARCH > os_arch.gen.txt"
-//go:embed os_arch.gen.txt
-var arch string
+var arch = "unknown"
 
 // os is the os the application was built for
-//
-//go:generate sh -c "go env GOOS > os_type.gen.txt"
-//go:embed os_type.gen.txt
-var os string
+var os = "unknown"
 
 // builtBy is the tool used to build the application
 var builtBy = "go build"

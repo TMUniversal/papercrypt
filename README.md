@@ -67,15 +67,16 @@ go mod tidy
 
 5. **Build PaperCrypt**:
 
-```bash
-go generate ./... && \
-go build -o bin/papercrypt
-```
-
-or using [`task`](https://taskfile.dev/#/installation):
+Build using [`task`](https://taskfile.dev/#/installation):
 
 ```bash
 task build
+```
+
+or through [`goreleaser`](https://goreleaser.com/install/):
+
+```bash
+goreleaser build --snapshot --clean --single-target
 ```
 
 ## Usage

@@ -1,31 +1,8 @@
 version: "3"
 
 tasks:
-  generate:
-    desc: Generate the code
-    generates:
-      - "build_date.gen.txt"
-      - "git_ref.gen.txt"
-      - "git_commit.gen.txt"
-      - "go_version.gen.txt"
-      - "os_arch.gen.txt"
-      - "os_type.gen.txt"
-      - "version.gen.txt"
-    sources:
-      - "*.go"
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".git/HEAD"
-      - ".git/refs/heads/*"
-      - ".git/refs/tags/*"
-    cmds:
-      - go generate ./...
-
   build:
     desc: Build the app
-    deps:
-      - generate
     sources:
       - "*.go"
       - "**/*.go"
@@ -33,30 +10,11 @@ tasks:
       - "go.sum"
     generates:
       - "bin/papercrypt{{exeExt}}"
-    env:
-      CGO_ENABLED: "0"
-    vars:
-      SUMMARY:
-        sh: git describe --tags --dirty --always
-      BUILT_AT:
-        sh: date -u '+%Y-%m-%dT%H:%M:%SZ'
-      BUILT_BY: Taskfile
-      COMMIT:
-        sh: git rev-parse HEAD
-      GIT_BRANCH:
-        sh: git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD
-      GIT_TAG:
-        sh: git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD
-      GIT_DIRTY:
-        sh: git diff --quiet || echo "true"
-      GO_VERSION:
-        sh: go version
-      GOOS:
-        sh: go env GOOS
-      GOARCH:
-        sh: go env GOARCH
+    dotenv:
+      - .env
     cmds:
-      - go build --ldflags "-s -w -X main.GoVersion='{{.GO_VERSION}}' -X main.version='{{.SUMMARY}}' -X main.commit='{{.COMMIT}}' -X main.branch='{{.GIT_BRANCH}}' -X main.tag='{{.GIT_TAG}}' -X main.dirty='{{.GIT_DIRTY}}' -X main.date='{{.BUILT_AT}}' -X main.builtBy='{{.BUILT_BY}}' -X main.os='{{.GOOS}}' -X main.arch='{{.GOARCH}}'" -v -o bin/papercrypt{{exeExt}} main.go
+      - bash -c "mkdir -vp bin"
+      - goreleaser build --snapshot --clean --single-target --output bin/papercrypt{{exeExt}}
 
   test:
     desc: Run the tests
@@ -86,17 +44,19 @@ tasks:
         ; rm -f test.json test-in.json t-*.png'
 
   release:
-    desc: Create a release
+    desc: Create a release. Will install goreleaser through go install if not present in PATH.
+    dotenv:
+      - .env
     deps:
-      - build
       - deps:goreleaser
     cmds:
       - goreleaser release --clean
 
   reltest:
-    desc: Create a release
+    desc: Create a test release. Will install goreleaser through go install if not present in PATH.
+    dotenv:
+      - .env
     deps:
-      - build
       - deps:goreleaser
     cmds:
       - goreleaser release --snapshot --clean --skip-publish
@@ -105,7 +65,6 @@ tasks:
     desc: Run the examples
     deps:
       - build
-      - deps:pdfcpu
     generates:
       - "examples/output.pdf"
       - "examples/no_qr.pdf"
