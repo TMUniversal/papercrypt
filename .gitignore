@@ -23,6 +23,12 @@
 # Go workspace file
 go.work
 
+/styles/
+
+### Secrets
+.env
+cosign.key
+
 ### Genrated files
 
 /.task/

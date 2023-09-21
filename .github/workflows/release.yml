@@ -58,6 +58,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Write signing key to disk
+        run: 'echo "$KEY" > cosign.key'
+        shell: bash
+        env:
+          KEY: ${{ secrets.COSIGN_KEY }}
+
       - uses: goreleaser/goreleaser-action@v5
         name: Publish to GitHub Container Registry
         with:
@@ -66,4 +72,5 @@ jobs:
           args: release --timeout 50m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           GORELEASER_TOKEN_TAP: ${{ secrets.GORELEASER_TOKEN_TAP }}

@@ -72,6 +72,21 @@ changelog:
       - "^docs:"
       - "^test:"
 
+signs:
+  - cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    args:
+      - "sign-blob"
+      - "--key=cosign.pub"
+      - "--output-signature==${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: all
+
+docker_signs:
+  - artifacts: all
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+
 #brews:
 #  - name: papercrypt
 #    tap:
