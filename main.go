@@ -69,7 +69,7 @@ var branch string
 
 // tag is the git tag the application was built from
 //
-//go:generate sh -c "git describe --tags --exact-match > git_tag.gen.txt"
+//go:generate sh -c "git describe --tags --exact-match 2>/dev/null || echo 'no tag' > git_tag.gen.txt"
 //go:embed git_tag.gen.txt
 var tag string
 
