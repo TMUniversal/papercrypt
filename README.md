@@ -115,6 +115,8 @@ to generate the file containing your data, and the decryption instructions.
 The program then asks you for an encryption key,
 for which you can use your mnemonic phrase from earlier.
 
+Please see the [examples](examples) directory for the generated PDF files.
+
 ## Contributing
 
 Contributions to PaperCrypt are welcomed and encouraged! If you have suggestions for improvements, bug fixes, or new
