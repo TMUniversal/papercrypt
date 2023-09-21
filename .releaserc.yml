@@ -1,0 +1,19 @@
+preset: angular
+branches:
+  - "+([0-9])?(.{+([0-9]),x}).x"
+  - "master"
+  - "main"
+  - "next"
+  - "next-major"
+  - { name: "beta", prerelease: true }
+  - { name: "alpha", prerelease: true }
+
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/changelog"
+  - "@semantic-release/git"
+  - - "@semantic-release/exec"
+    - publishCmd: |
+        echo "${nextRelease.notes}" > /tmp/release-notes.md
+        goreleaser release --release-notes /tmp/release-notes.md --clean

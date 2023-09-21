@@ -55,10 +55,14 @@ tasks:
     desc: Create a release. Will install goreleaser through go install if not present in PATH.
     dotenv:
       - .env
+    env:
+      GORELEASER_TOKEN_TAP: "{{.Env.GORELEASER_TOKEN_TAP}}"
+      GITHUB_TOKEN: "{{.Env.GITHUB_TOKEN}}"
+      COSIGN_PASSWORD: "{{.Env.COSIGN_PASSWORD}}"
     deps:
       - deps:goreleaser
     cmds:
-      - goreleaser release --clean
+      - "npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release"
 
   reltest:
     desc: Create a test release. Will install goreleaser through go install if not present in PATH.
@@ -98,11 +102,6 @@ tasks:
     run: once
     cmds:
       - "goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version"
-
-  standard_version:
-    desc: Generate a changelog
-    cmds:
-      - "npx --yes standard-version"
 
   clean:
     desc: Remove all generated files

@@ -2,8 +2,8 @@ name: PaperCrypt Release
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -32,6 +32,16 @@ jobs:
           go-version-file: go.mod
           check-latest: true
           cache-dependency-path: '**/*.sum'
+
+      - name: Save `go version`
+        id: go-version
+        run: echo "GOVERSION=$(go version)" >> $GITHUB_OUTPUT
+
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: sigstore/cosign-installer@v3
       - name: Confirm cosign installation
@@ -70,13 +80,15 @@ jobs:
         env:
           KEY: ${{ secrets.COSIGN_KEY }}
 
-      - uses: goreleaser/goreleaser-action@v5
-        name: Publish to GitHub Container Registry
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v5
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --timeout 50m --release-notes CHANGELOG.md
+          install-only: true
+
+      - name: Publish Release
+        run: task release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           GORELEASER_TOKEN_TAP: ${{ secrets.GORELEASER_TOKEN_TAP }}
+          GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
