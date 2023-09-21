@@ -1,5 +1,10 @@
 # PaperCrypt - Printable Backup Documents
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/TMUniversal/PaperCrypt)](https://goreportcard.com/report/github.com/TMUniversal/PaperCrypt)
+[![Go Reference](https://pkg.go.dev/badge/github.com/TMUniversal/PaperCrypt.svg)](https://pkg.go.dev/github.com/TMUniversal/PaperCrypt)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TMUniversal/PaperCrypt?sort=semver)](https://github.com/TMUniversal/PaperCrypt/releases)
+[![GitHub](https://img.shields.io/github/license/TMUniversal/PaperCrypt)](https://github.com/TMUniversal/PaperCrypt)
+
 PaperCrypt is a Go-based command-line tool designed to enhance the security of your sensitive data through the
 generation of printable backup documents.
 These documents, referred to as "PaperCrypt" Documents, combine the robust
@@ -45,7 +50,7 @@ git clone https://github.com/TMUniversal/PaperCrypt.git
 3. **Navigate to the Directory**:
 
 ```bash
-cd papercrypt
+cd PaperCrypt
 ```
 
 4. **Install Dependencies**: Run the following command to install the required dependencies:
@@ -57,6 +62,7 @@ go mod tidy
 5. **Build PaperCrypt**:
 
 ```bash
+go generate ./... && \
 go build -o bin/papercrypt
 ```
 
