@@ -1,5 +1,9 @@
 version: "3"
 
+env:
+  GOVERSION:
+    sh: go version
+
 tasks:
   build:
     desc: Build the app
