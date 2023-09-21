@@ -58,7 +58,7 @@ var commit string
 
 // ref is the git ref the application was built from
 //
-//go:generate sh -c "git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD > git_ref.gen.txt"
+//go:generate sh -c "(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD) > git_ref.gen.txt"
 //go:embed git_ref.gen.txt
 var ref string
 
@@ -69,7 +69,7 @@ var branch string
 
 // tag is the git tag the application was built from
 //
-//go:generate sh -c "git describe --tags --exact-match 2>/dev/null || echo 'no tag' > git_tag.gen.txt"
+//go:generate sh -c "(git describe --tags --exact-match 2>/dev/null || echo 'no tag') > git_tag.gen.txt"
 //go:embed git_tag.gen.txt
 var tag string
 
