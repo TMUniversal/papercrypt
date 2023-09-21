@@ -27,6 +27,7 @@ import (
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )
@@ -34,6 +35,7 @@ import (
 // qrCmd represents the data command
 var qrCmd = &cobra.Command{
 	Aliases: []string{"q"},
+	Args:    cobra.MaximumNArgs(1),
 	Use:     "qr <input>",
 	Short:   "Decode a document from a QR code.",
 	Long: `Decode a document from a QR code.
@@ -42,39 +44,19 @@ This command allows you to decode data saved by PaperCrypt.
 The QR code in a PaperCrypt document contains a JSON serialized object
 that contains the encrypted data and the PaperCrypt metadata.`,
 	Example: `papercrypt qr ./qr.png | papercrypt decode -o ./out.json -P passphrase`,
-	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// 1. get data from either argument or inFileName
-		var inFile *os.File
 		if len(args) != 0 {
 			inFileName = args[0]
 		}
 
-		if inFileName == "" || inFileName == "-" {
-			cmd.Println("Reading from stdin")
-			inFile = os.Stdin
-		} else {
-			cmd.Printf("Reading from %s\n", inFileName)
-			var err error
-			inFile, err = os.Open(inFileName)
-			if err != nil {
-				cmd.Println("Error opening input file:", err)
-				os.Exit(1)
-			}
-		}
+		inFile := internal.PrintInputAndGetReader(cmd, inFileName)
+		defer inFile.Close()
 
 		img, _, err := image.Decode(inFile)
 		if err != nil {
 			cmd.Println("Error decoding image:", err)
 			os.Exit(1)
-		}
-
-		if inFileName != "" && inFileName != "-" {
-			err = inFile.Close()
-			if err != nil {
-				cmd.Println("Error closing input file:", err)
-				os.Exit(1)
-			}
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
@@ -91,11 +73,7 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		}
 
 		// 2. Open output file
-		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
-		if err != nil {
-			cmd.Println("Error opening output file:", err)
-			os.Exit(1)
-		}
+		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
 		defer outFile.Close()
 
 		data := result.GetText()
@@ -104,23 +82,20 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		pc := internal.PaperCrypt{}
 		err = json.Unmarshal([]byte(data), &pc)
 		if err != nil {
-			cmd.Println("Error deserializing data:", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error deserializing data"))
 		}
 
 		// 6. Write to file
 		output, err := pc.GetText(false)
 		if err != nil {
-			cmd.Println("Error serializing data:", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error deserializing data"))
 		}
 		n, err := outFile.Write(output)
 		if err != nil {
-			cmd.Println("Error writing to file:", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error writing output"))
 		}
 
-		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
+		internal.PrintWrittenSize(cmd, n, outFile)
 	},
 }
 

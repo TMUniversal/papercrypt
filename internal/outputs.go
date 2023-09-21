@@ -20,7 +20,33 @@
 
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+func Fatal(cmd *cobra.Command, err error) {
+	cmd.Println(err)
+	os.Exit(1)
+}
+
+func PrintInputSource(cmd *cobra.Command, inFileName string) {
+	if inFileName == "" || inFileName == "-" {
+		cmd.Println("Reading from stdin")
+	} else {
+		cmd.Printf("Reading from %s\n", inFileName)
+	}
+}
+
+func PrintWrittenSize(cmd *cobra.Command, size int, file *os.File) {
+	if size == 0 {
+		cmd.Println("No data written.")
+	} else {
+		cmd.Printf("Wrote %s to %s\n", SprintBinarySize(size), file.Name())
+	}
+}
 
 func SprintBinarySize64(size int64) string {
 	if size < 1024 {

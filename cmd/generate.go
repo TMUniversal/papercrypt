@@ -22,14 +22,12 @@ package cmd
 
 import (
 	"io"
-	"os"
 	"time"
-
-	"github.com/tmuniversal/papercrypt/internal"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/tmuniversal/papercrypt/internal"
 )
 
 var serialNumber string
@@ -45,6 +43,7 @@ var passphrase string
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Aliases: []string{"gen", "g"},
+	Args:    cobra.NoArgs,
 	Use:     "generate",
 	Short:   "Generate a PaperCrypt document",
 	Long: `The 'generate' command takes a JSON file as input and encrypts the data within. It then embeds the encrypted data in a 
@@ -56,11 +55,7 @@ encrypted data.`,
 	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
 	Run: func(cmd *cobra.Command, args []string) {
 		// 1. Open output file
-		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
-		if err != nil {
-			cmd.Println("Error opening output file:", err)
-			os.Exit(1)
-		}
+		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
 		defer outFile.Close()
 
 		// 2. generate serial number if not provided
@@ -68,8 +63,7 @@ encrypted data.`,
 			var err error
 			serialNumber, err = internal.GenerateSerial(6)
 			if err != nil {
-				cmd.Printf("Error generating serial number: %s\n", err)
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error generating serial number"))
 			}
 		}
 
@@ -86,45 +80,32 @@ encrypted data.`,
 				if err != nil {
 					timestamp, err = time.Parse("2006-01-02", date)
 					if err != nil {
-						cmd.Printf("Error parsing date: %s\n", err)
-						os.Exit(1)
+						internal.Fatal(cmd, errors.Wrap(err, "error parsing date"))
 					}
 				}
 			}
 		}
 
 		// 4. Read input file as bytes
-		var secretContentsFile []byte
-		if inFileName == "" || inFileName == "-" {
-			secretContentsFile, err = io.ReadAll(os.Stdin)
-		} else {
-			secretContentsFile, err = os.ReadFile(inFileName)
-		}
-		if err != nil {
-			cmd.Println(errors.Wrap(err, "error reading input file"))
-			os.Exit(1)
-		}
+		secretContentsFile := internal.PrintInputAndRead(cmd, inFileName)
 
 		// 5. Read passphrase from stdin
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			cmd.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`)")
 			cmd.Printf("Passphrase: ")
-			passphrase, err = internal.ReadTtyLine()
+			passphrase, err := internal.ReadTtyLine()
 			if err != nil {
-				cmd.Printf("Error reading passphrase: %s\n", err)
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error reading passphrase"))
 			}
 
 			cmd.Println("Enter your encryption passphrase again to confirm")
 			cmd.Printf("Passphrase (again): ")
 			passphraseAgain, err := internal.ReadTtyLine()
 			if err != nil && err != io.EOF {
-				cmd.Printf("Error reading passphrase: %s\n", err)
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error reading passphrase"))
 			}
 			if passphrase != passphraseAgain {
-				cmd.Printf("Passphrases do not match! Aborting.\n")
-				os.Exit(1)
+				internal.Fatal(cmd, errors.New("passphrases do not match"))
 			}
 			passphraseAgain = "" // clear passphraseAgain
 		}
@@ -132,8 +113,7 @@ encrypted data.`,
 		// 6. Encrypt secretContentsMinimal with passphrase
 		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsFile)
 		if err != nil {
-			cmd.Printf("Error encrypting secret contents: %s\n", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error encrypting secret contents"))
 		}
 
 		passphrase = "" // clear passphrase
@@ -145,17 +125,15 @@ encrypted data.`,
 
 		text, err = crypt.GetPDF(noQR, lowerCasedBase16)
 		if err != nil {
-			cmd.Printf("Error creating file contents: %s\n", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error generating PDF"))
 		}
 
 		n, err := outFile.Write(text)
 		if err != nil {
-			cmd.Printf("Error writing file: %s\n", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error writing to file"))
 		}
 
-		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
+		internal.PrintWrittenSize(cmd, n, outFile)
 	},
 }
 

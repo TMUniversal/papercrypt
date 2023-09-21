@@ -21,8 +21,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -32,12 +30,12 @@ import (
 // manCmd represents the man command
 var manCmd = &cobra.Command{
 	Aliases: []string{"man", "m"},
+	Args:    cobra.NoArgs,
 	Use:     "manual",
 	Short:   "Generate man page",
 	Long: `Generate man pages for PaperCrypt commands.
 
 Generated pages will be placed in the directory specified by --out, defaulting to './man'.`,
-	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 1. outFileName is the directory here, if it is unset, default to man
 		if outFileName == "" {
@@ -47,8 +45,7 @@ Generated pages will be placed in the directory specified by --out, defaulting t
 		// 2. Generate files
 		err := GenerateManPage(outFileName)
 		if err != nil {
-			cmd.Print(errors.Wrap(err, "Error generating man page"))
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error generating man pages"))
 		}
 	},
 }

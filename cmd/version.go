@@ -29,6 +29,7 @@ import (
 
 var versionCmd = &cobra.Command{
 	Aliases: []string{"v"},
+	Args:    cobra.NoArgs,
 	Use:     "version",
 	Short:   "Shows the version of the application",
 	Long:    `Shows the version of the application, as well as the build date, git commit hash, git ref, Go version, os/arch and os type.`,

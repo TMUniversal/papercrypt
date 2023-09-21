@@ -23,13 +23,11 @@ package cmd
 import (
 	"crypto/rand"
 	"math/big"
-	"os"
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/tmuniversal/papercrypt/internal"
-
 	"github.com/spf13/cobra"
+	"github.com/tmuniversal/papercrypt/internal"
 )
 
 var words int
@@ -39,33 +37,28 @@ var wordList = make([]string, 0)
 
 var generateKeyCmd = &cobra.Command{
 	Aliases: []string{"key", "gen", "k"},
+	Args:    cobra.NoArgs,
 	Use:     "generateKey",
 	Short:   "Generates a mnemonic key phrase",
 	Long: `This command generates a mnemonic key phrase base on the eff.org large word list,
 which can be found here: https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		out, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
-		if err != nil {
-			cmd.Println("Error opening output file:", err)
-			os.Exit(1)
-		}
+		out := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
 		defer out.Close()
 
 		cmd.Println("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
 		if err != nil {
-			cmd.Println("An error occurred:", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error generating key phrase"))
 		}
 		cmd.Println("Key phrase generated.")
 
 		n, err := out.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
-			cmd.Println("Error writing file:", err)
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error writing key phrase"))
 		}
 
-		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), out.Name())
+		internal.PrintWrittenSize(cmd, n, out)
 	},
 }
 

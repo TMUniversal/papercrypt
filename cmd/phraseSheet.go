@@ -27,7 +27,6 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -42,17 +41,14 @@ const (
 // phraseSheetCmd represents the phraseSheet command
 var phraseSheetCmd = &cobra.Command{
 	Aliases: []string{"ps", "p"},
+	Args:    cobra.MaximumNArgs(1),
 	Use:     "phraseSheet [base64 seed]",
 	Short:   "Generate a passphrase sheet.",
 	Example: "papercrypt phraseSheet -o phraseSheet.pdf",
-	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// 1. Open output file
-		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
-		if err != nil {
-			cmd.Println("Error opening output file:", err)
-			os.Exit(1)
-		}
+		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
+		defer outFile.Close()
 
 		if len(wordList) == 0 {
 			generateWordList()
@@ -63,45 +59,39 @@ var phraseSheetCmd = &cobra.Command{
 		if len(args) == 0 {
 			random, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
 			if err != nil {
-				cmd.Println(errors.Wrap(err, "Error generating random seed"))
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error generating random seed"))
 			}
 			seed = random.Int64()
 		} else {
 			seedBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(args[0]))
 			if err != nil {
-				cmd.Println(errors.Wrap(err, "Error decoding seed"))
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error decoding seed"))
 			}
 			seed = int64(binary.BigEndian.Uint64(seedBytes))
 			if err != nil {
-				cmd.Println(errors.Wrap(err, "Error converting seed to int64"))
-				os.Exit(1)
+				internal.Fatal(cmd, errors.Wrap(err, "error converting seed to int64"))
 			}
 		}
 
 		// 3. Get words
 		words, err := GenerateFromSeed(seed, passphraseSheetWordCount)
 		if err != nil {
-			cmd.Println(errors.Wrap(err, "Error generating words"))
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error generating words"))
 		}
 
 		// 4. Generate PDF
 		data, err := internal.GeneratePassphraseSheetPDF(seed, words)
 		if err != nil {
-			cmd.Println(errors.Wrap(err, "Error generating PDF"))
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error generating PDF"))
 		}
 
 		// 5. Write PDF
 		n, err := outFile.Write(data)
 		if err != nil {
-			cmd.Println(errors.Wrap(err, "Error writing PDF"))
-			os.Exit(1)
+			internal.Fatal(cmd, errors.Wrap(err, "error writing PDF"))
 		}
 
-		cmd.Printf("Wrote %s bytes to %s\n", internal.SprintBinarySize(n), outFile.Name())
+		internal.PrintWrittenSize(cmd, n, outFile)
 	},
 }
 
