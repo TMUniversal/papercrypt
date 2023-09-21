@@ -19,7 +19,6 @@ tasks:
       - ".git/HEAD"
       - ".git/refs/heads/*"
       - ".git/refs/tags/*"
-      - "scripts/*.sh"
     cmds:
       - go generate ./...
 
@@ -34,8 +33,30 @@ tasks:
       - "go.sum"
     generates:
       - "bin/papercrypt{{exeExt}}"
+    env:
+      CGO_ENABLED: "0"
+    vars:
+      SUMMARY:
+        sh: git describe --tags --dirty --always
+      BUILT_AT:
+        sh: date -u '+%Y-%m-%dT%H:%M:%SZ'
+      BUILT_BY: Taskfile
+      COMMIT:
+        sh: git rev-parse HEAD
+      GIT_BRANCH:
+        sh: git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD
+      GIT_TAG:
+        sh: git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD
+      GIT_DIRTY:
+        sh: git diff --quiet || echo "true"
+      GO_VERSION:
+        sh: go version
+      GOOS:
+        sh: go env GOOS
+      GOARCH:
+        sh: go env GOARCH
     cmds:
-      - go build --ldflags "-X main.builtBy=Taskfile" -v -o bin/papercrypt{{exeExt}} main.go
+      - go build --ldflags "-s -w -X main.GoVersion='{{.GO_VERSION}}' -X main.version='{{.SUMMARY}}' -X main.commit='{{.COMMIT}}' -X main.branch='{{.GIT_BRANCH}}' -X main.tag='{{.GIT_TAG}}' -X main.dirty='{{.GIT_DIRTY}}' -X main.date='{{.BUILT_AT}}' -X main.builtBy='{{.BUILT_BY}}' -X main.os='{{.GOOS}}' -X main.arch='{{.GOARCH}}'" -v -o bin/papercrypt{{exeExt}} main.go
 
   test:
     desc: Run the tests
@@ -64,13 +85,13 @@ tasks:
         && echo "Successfully reconstructed input document."
         ; rm -f test.json test-in.json t-*.png'
 
-  # release:
-  #   desc: Create a release
-  #   deps:
-  #     - build
-  #     - deps:goreleaser
-  #   cmds:
-  #     - goreleaser release --clean
+  release:
+    desc: Create a release
+    deps:
+      - build
+      - deps:goreleaser
+    cmds:
+      - goreleaser release --clean
 
   reltest:
     desc: Create a release
@@ -94,25 +115,25 @@ tasks:
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
-      - 'bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf'
+      - "bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
 
   man:
     desc: Generate man pages
     deps:
       - build
     cmds:
-      - 'bin/papercrypt{{exeExt}} man'
+      - "bin/papercrypt{{exeExt}} man"
 
   deps:goreleaser:
     desc: Install goreleaser
     internal: true
     cmds:
-      - 'goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version'
+      - "goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version"
 
   standard_version:
     desc: Generate a changelog
     cmds:
-      - 'npx --yes standard-version'
+      - "npx --yes standard-version"
 
   clean:
     desc: Remove all generated files
