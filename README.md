@@ -1,9 +1,15 @@
-# PaperCrypt - Printable Backup Documents
+<p align="center">
+  <h3 align="center">PaperCrypt</h3>
+    <p align="center">Printable Backup Documents</p>
+    <p align="center">
+      <a href="https://goreportcard.com/report/github.com/TMUniversal/papercrypt"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/TMUniversal/papercrypt" /></a>
+      <a href="https://pkg.go.dev/github.com/TMUniversal/papercrypt"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/TMUniversal/papercrypt.svg" /></a>
+      <a href="https://github.com/TMUniversal/papercrypt/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/TMUniversal/papercrypt?sort=semver" /></a>
+      <a href="https://github.com/TMUniversal/papercrypt"><img alt="GitHub" src="https://img.shields.io/github/license/TMUniversal/papercrypt" /></a>
+    </p>
+</p>
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/TMUniversal/PaperCrypt)](https://goreportcard.com/report/github.com/TMUniversal/PaperCrypt)
-[![Go Reference](https://pkg.go.dev/badge/github.com/TMUniversal/PaperCrypt.svg)](https://pkg.go.dev/github.com/TMUniversal/PaperCrypt)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/TMUniversal/PaperCrypt?sort=semver)](https://github.com/TMUniversal/PaperCrypt/releases)
-[![GitHub](https://img.shields.io/github/license/TMUniversal/PaperCrypt)](https://github.com/TMUniversal/PaperCrypt)
+---
 
 PaperCrypt is a Go-based command-line tool designed to enhance the security of your sensitive data through the
 generation of printable backup documents.
@@ -44,13 +50,13 @@ TODO(2023-08-11): Add installation instructions.
 2. **Clone the Repository**: Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/TMUniversal/PaperCrypt.git
+git clone https://github.com/TMUniversal/papercrypt.git
 ```
 
 3. **Navigate to the Directory**:
 
 ```bash
-cd PaperCrypt
+cd papercrypt
 ```
 
 4. **Install Dependencies**: Run the following command to install the required dependencies:
