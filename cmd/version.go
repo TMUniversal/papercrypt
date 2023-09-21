@@ -34,14 +34,20 @@ var versionCmd = &cobra.Command{
 	Short:   "Shows the version of the application",
 	Long:    `Shows the version of the application, as well as the build date, git commit hash, git ref, Go version, os/arch and os type.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("PaperCrypt Version %s,\nbuilt on %s by %s, from commit %s,\nfor %s/%s using %s.\n",
+		fmt.Printf(
+			`PaperCrypt Version %s,
+built on %s by %s, from %s branch (%s),
+for %s/%s using %s.
+`,
 			internal.VersionInfo.Version,
 			internal.VersionInfo.BuildDate,
 			internal.VersionInfo.BuiltBy,
-			internal.VersionInfo.GitCommit,
+			internal.VersionInfo.GitBranch,
+			internal.VersionInfo.GitSummary,
 			internal.VersionInfo.OsType,
 			internal.VersionInfo.OsArch,
-			internal.VersionInfo.GoVersion)
+			internal.VersionInfo.GoVersion,
+		)
 	},
 }
 

@@ -21,14 +21,19 @@
 package internal
 
 type VersionDetails struct {
-	Version   string
-	BuildDate string
-	GitCommit string
-	GitRef    string
-	GoVersion string
-	OsArch    string
-	OsType    string
-	BuiltBy   string
+	Version    string
+	BuildDate  string
+	GitCommit  string
+	GitBranch  string
+	GitTag     string
+	GitRef     string
+	GitRepo    string
+	GitIsDirty bool
+	GitSummary string
+	GoVersion  string
+	OsArch     string
+	OsType     string
+	BuiltBy    string
 }
 
 var VersionInfo VersionDetails

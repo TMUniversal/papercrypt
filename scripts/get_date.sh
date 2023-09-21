@@ -1,1 +1,0 @@
-date +%FT%T%z

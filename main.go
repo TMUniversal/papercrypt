@@ -40,27 +40,49 @@ var WordList string
 
 // version is the current version of the application
 //
-//go:generate sh -c "scripts/get_version.sh > version.gen.txt"
+//go:generate sh -c "git describe --tags --dirty --always > version.gen.txt"
 //go:embed version.gen.txt
 var version string
 
 // date is the date the application was built
 //
-//go:generate sh -c "scripts/get_date.sh > build_date.gen.txt"
+//go:generate sh -c "date +%FT%T%z > build_date.gen.txt"
 //go:embed build_date.gen.txt
 var date string
 
 // commit is the git commit hash the application was built from
 //
-//go:generate sh -c "scripts/get_git_commit.sh > git_commit.gen.txt"
+//go:generate sh -c "git rev-parse HEAD > git_commit.gen.txt"
 //go:embed git_commit.gen.txt
 var commit string
 
 // ref is the git ref the application was built from
 //
-//go:generate sh -c "scripts/get_git_ref.sh > git_ref.gen.txt"
+//go:generate sh -c "git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null || git rev-parse HEAD > git_ref.gen.txt"
 //go:embed git_ref.gen.txt
 var ref string
+
+// branch is the git branch the application was built from
+//
+//go:embed git_ref.gen.txt
+var branch string
+
+// tag is the git tag the application was built from
+//
+//go:generate sh -c "git describe --tags --exact-match > git_tag.gen.txt"
+//go:embed git_tag.gen.txt
+var tag string
+
+// summary is the git describe summary
+//
+//go:embed version.gen.txt
+var summary string
+
+// repo is the git repository url
+var repo = "https://github.com/TMUniversal/PaperCrypt"
+
+// dirty is whether the git repository was dirty when the application was built
+var dirty = "false"
 
 // GoVersion is the version of the Go compiler used to build the application
 //
@@ -88,14 +110,19 @@ func main() {
 	cmd.WordListFile = &WordList
 
 	internal.VersionInfo = internal.VersionDetails{
-		Version:   strings.TrimSuffix(version, "\n"),
-		BuildDate: strings.TrimSuffix(date, "\n"),
-		GitCommit: strings.TrimSuffix(commit, "\n"),
-		GitRef:    strings.TrimSuffix(ref, "\n"),
-		GoVersion: strings.TrimSuffix(GoVersion, "\n"),
-		OsArch:    strings.TrimSuffix(arch, "\n"),
-		OsType:    strings.TrimSuffix(os, "\n"),
-		BuiltBy:   strings.TrimSuffix(builtBy, "\n"),
+		Version:    strings.TrimSuffix(version, "\n"),
+		BuildDate:  strings.TrimSuffix(date, "\n"),
+		GitCommit:  strings.TrimSuffix(commit, "\n"),
+		GitRef:     strings.TrimSuffix(ref, "\n"),
+		GitBranch:  strings.TrimSuffix(branch, "\n"),
+		GitTag:     strings.TrimSuffix(tag, "\n"),
+		GitRepo:    repo,
+		GitIsDirty: dirty == "true",
+		GitSummary: strings.TrimSuffix(summary, "\n"),
+		GoVersion:  strings.TrimSuffix(GoVersion, "\n"),
+		OsArch:     strings.TrimSuffix(arch, "\n"),
+		OsType:     strings.TrimSuffix(os, "\n"),
+		BuiltBy:    strings.TrimSuffix(builtBy, "\n"),
 	}
 
 	cmd.Execute()
