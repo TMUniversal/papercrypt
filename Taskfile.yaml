@@ -3,8 +3,6 @@ version: "3"
 tasks:
   generate:
     desc: Generate the code
-    cmds:
-      - go generate ./...
     generates:
       - "build_date.gen.txt"
       - "git_ref.gen.txt"
@@ -22,6 +20,8 @@ tasks:
       - ".git/refs/heads/*"
       - ".git/refs/tags/*"
       - "scripts/*.sh"
+    cmds:
+      - go generate ./...
 
   build:
     desc: Build the app
@@ -35,7 +35,7 @@ tasks:
     generates:
       - "bin/papercrypt{{exeExt}}"
     cmds:
-      - go build -v -o bin/papercrypt{{exeExt}} main.go
+      - go build --ldflags "-X main.builtBy=Taskfile" -v -o bin/papercrypt{{exeExt}} main.go
 
   test:
     desc: Run the tests

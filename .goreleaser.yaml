@@ -1,5 +1,5 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
+report_sizes: true
+
 before:
   hooks:
     - go mod tidy
@@ -16,7 +16,7 @@ release:
   prerelease: auto
 
 builds:
-  - main: ./main.go
+  - main: .
     binary: papercrypt
     env:
       - CGO_ENABLED=0
@@ -24,6 +24,21 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X main.os={{.Os}} -X main.arch={{.Arch}}'
+
+gomod:
+  proxy: true
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+  mod: mod
+
+upx:
+  - enabled: true
+    compress: best
+    lzma: true
+    brute: true
 
 archives:
   - format: tar.gz

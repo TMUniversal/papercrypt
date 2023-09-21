@@ -28,6 +28,7 @@ type VersionDetails struct {
 	GoVersion string
 	OsArch    string
 	OsType    string
+	BuiltBy   string
 }
 
 var VersionInfo VersionDetails

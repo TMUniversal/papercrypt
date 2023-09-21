@@ -38,29 +38,29 @@ var LicenseText string
 //go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
 var WordList string
 
-// Version is the current version of the application
+// version is the current version of the application
 //
 //go:generate sh -c "scripts/get_version.sh > version.gen.txt"
 //go:embed version.gen.txt
-var Version string
+var version string
 
-// BuildDate is the date the application was built
+// date is the date the application was built
 //
 //go:generate sh -c "scripts/get_date.sh > build_date.gen.txt"
 //go:embed build_date.gen.txt
-var BuildDate string
+var date string
 
-// GitCommit is the git commit hash the application was built from
+// commit is the git commit hash the application was built from
 //
 //go:generate sh -c "scripts/get_git_commit.sh > git_commit.gen.txt"
 //go:embed git_commit.gen.txt
-var GitCommit string
+var commit string
 
-// GitRef is the git ref the application was built from
+// ref is the git ref the application was built from
 //
 //go:generate sh -c "scripts/get_git_ref.sh > git_ref.gen.txt"
 //go:embed git_ref.gen.txt
-var GitRef string
+var ref string
 
 // GoVersion is the version of the Go compiler used to build the application
 //
@@ -68,30 +68,34 @@ var GitRef string
 //go:embed go_version.gen.txt
 var GoVersion string
 
-// OsArch is the os/arch the application was built for
+// arch is the os/arch the application was built for
 //
 //go:generate sh -c "go env GOARCH > os_arch.gen.txt"
 //go:embed os_arch.gen.txt
-var OsArch string
+var arch string
 
-// OsType is the os the application was built for
+// os is the os the application was built for
 //
 //go:generate sh -c "go env GOOS > os_type.gen.txt"
 //go:embed os_type.gen.txt
-var OsType string
+var os string
+
+// builtBy is the tool used to build the application
+var builtBy string = "go build"
 
 func main() {
 	cmd.LicenseText = &LicenseText
 	cmd.WordListFile = &WordList
 
 	internal.VersionInfo = internal.VersionDetails{
-		Version:   strings.TrimSuffix(Version, "\n"),
-		BuildDate: strings.TrimSuffix(BuildDate, "\n"),
-		GitCommit: strings.TrimSuffix(GitCommit, "\n"),
-		GitRef:    strings.TrimSuffix(GitRef, "\n"),
+		Version:   strings.TrimSuffix(version, "\n"),
+		BuildDate: strings.TrimSuffix(date, "\n"),
+		GitCommit: strings.TrimSuffix(commit, "\n"),
+		GitRef:    strings.TrimSuffix(ref, "\n"),
 		GoVersion: strings.TrimSuffix(GoVersion, "\n"),
-		OsArch:    strings.TrimSuffix(OsArch, "\n"),
-		OsType:    strings.TrimSuffix(OsType, "\n"),
+		OsArch:    strings.TrimSuffix(arch, "\n"),
+		OsType:    strings.TrimSuffix(os, "\n"),
+		BuiltBy:   strings.TrimSuffix(builtBy, "\n"),
 	}
 
 	cmd.Execute()
