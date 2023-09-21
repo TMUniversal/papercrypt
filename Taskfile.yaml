@@ -3,6 +3,8 @@ version: "3"
 tasks:
   build:
     desc: Build the app
+    deps:
+      - deps:goreleaser
     sources:
       - "*.go"
       - "**/*.go"
