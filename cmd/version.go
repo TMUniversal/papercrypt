@@ -49,14 +49,13 @@ for %s/%s using %s.
 			internal.VersionInfo.OsArch,
 			internal.VersionInfo.GoVersion,
 		)
-		fmt.Println()
 
-		buildInfo, ok := debug.ReadBuildInfo()
-		if !ok {
-			return
+		if verbosity > 0 {
+			fmt.Println()
+			if info, ok := debug.ReadBuildInfo(); ok {
+				fmt.Println(info)
+			}
 		}
-
-		fmt.Println(buildInfo.String())
 	},
 }
 

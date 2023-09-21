@@ -30,6 +30,8 @@ var inFileName string
 var outFileName string
 var overrideOutFile bool
 
+var verbosity int
+
 var LicenseText *string
 
 // rootCmd represents the base command when called without any subcommands
@@ -64,4 +66,5 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&inFileName, "in", "i", "", "Input file to read from, or stdin if not provided")
 	rootCmd.PersistentFlags().StringVarP(&outFileName, "out", "o", "", "Output file to write to, or stdout if not provided")
 	rootCmd.PersistentFlags().BoolVarP(&overrideOutFile, "force", "f", false, "Force override of existing file")
+	rootCmd.PersistentFlags().CountVarP(&verbosity, "verbose", "v", "Increase verbosity level")
 }
