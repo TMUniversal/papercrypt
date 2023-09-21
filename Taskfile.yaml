@@ -47,7 +47,7 @@ tasks:
       - go vet ./...
       - >-
         go test -v ./... -coverprofile=coverage.out -covermode=atomic
-        && if [ -n "${WITH_COVERAGE}" ]; then go tool cover -html=coverage.out -o coverage.html; fi
+        && bash -c 'if [ -n "${WITH_COVERAGE}" ]; then go tool cover -html=coverage.out -o coverage.html; fi'
         && rm coverage.out
       # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
       # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
@@ -61,6 +61,7 @@ tasks:
         | bin/papercrypt{{exeExt}} qr
         | bin/papercrypt{{exeExt}} decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document."
         ; rm -f test.json test-in.json t-*.png'
 
   # release:
