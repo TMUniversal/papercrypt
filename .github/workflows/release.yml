@@ -34,6 +34,8 @@ jobs:
           cache-dependency-path: '**/*.sum'
 
       - uses: sigstore/cosign-installer@v3
+      - name: Confirm cosign installation
+        run: cosign version
 
       - name: Install dependencies
         run: |
