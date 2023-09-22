@@ -56,7 +56,7 @@ tasks:
     dotenv:
       - .env
     env:
-      GORELEASER_TOKEN_TAP: "{{.Env.GORELEASER_TOKEN_TAP}}"
+      GORELEASER_TOKEN: "{{.Env.GORELEASER_TOKEN}}"
       GITHUB_TOKEN: "{{.Env.GITHUB_TOKEN}}"
       COSIGN_PASSWORD: "{{.Env.COSIGN_PASSWORD}}"
     deps:

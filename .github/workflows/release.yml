@@ -127,5 +127,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-          GORELEASER_TOKEN_TAP: ${{ secrets.GORELEASER_TOKEN_TAP }}
+          GORELEASER_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
           GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
