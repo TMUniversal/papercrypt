@@ -88,12 +88,21 @@ tasks:
       - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
       - "bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
 
-  man:
-    desc: Generate man pages
-    deps:
-      - build
+  completions:
+    desc: Generate shell completions. Running on Windows requires Go installed in WSL.
+    generates:
+      - completions/papercrypt.bash
+      - completions/papercrypt.fish
+      - completions/papercrypt.zsh
     cmds:
-      - "bin/papercrypt{{exeExt}} man"
+      - bash scripts/completions.sh
+
+  manpages:
+    desc: Generate man pages. Running on Windows requires Go installed in WSL.
+    generates:
+      - manpages/papercrypt.1.gz
+    cmds:
+      - bash scripts/manpages.sh
 
   deps:goreleaser:
     desc: Install goreleaser
@@ -107,7 +116,7 @@ tasks:
     desc: Remove all generated files
     cmds:
       - "rm -f *.gen.txt"
-      - "rm -rf dist bin man"
+      - "rm -rf dist bin manpages completions"
 
   clean:examples:
     desc: Remove all generated files

@@ -21,41 +21,32 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+	"os"
+
+	mcobra "github.com/muesli/mango-cobra"
+	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
-	"github.com/tmuniversal/papercrypt/internal"
 )
 
 // manCmd represents the man command
 var manCmd = &cobra.Command{
-	Aliases: []string{"man", "m"},
-	Args:    cobra.NoArgs,
-	Use:     "manual",
-	Short:   "Generate man page",
-	Long: `Generate man pages for PaperCrypt commands.
-
-Generated pages will be placed in the directory specified by --out, defaulting to './man'.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// 1. outFileName is the directory here, if it is unset, default to man
-		if outFileName == "" {
-			outFileName = "man"
-		}
-
-		// 2. Generate files
-		err := GenerateManPage(outFileName)
+	Aliases:               []string{"man", "m"},
+	Args:                  cobra.NoArgs,
+	Short:                 "Generate man pages",
+	SilenceUsage:          true,
+	DisableFlagsInUseLine: true,
+	Hidden:                true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		manPage, err := mcobra.NewManPage(1, rootCmd.Root())
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error generating man pages"))
+			return err
 		}
+
+		_, err = fmt.Fprint(os.Stdout, manPage.Build(roff.NewDocument()))
+
+		return err
 	},
-}
-
-func GenerateManPage(dir string) error {
-	header := &doc.GenManHeader{
-		Source: "PaperCrypt " + internal.VersionInfo.Version,
-	}
-
-	return doc.GenManTree(rootCmd, header, dir)
 }
 
 func init() {

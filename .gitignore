@@ -33,7 +33,8 @@ cosign.key
 
 /.task/
 /bin/
+/completions/
 /dist/
 /local/
-/man/
+/manpages/
 *.gen.txt

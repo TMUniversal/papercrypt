@@ -3,6 +3,8 @@ report_sizes: true
 before:
   hooks:
     - go mod tidy
+    - task completions
+    - task manpages
 
 release:
   github:
@@ -58,6 +60,8 @@ archives:
       - COPYING
       - README.md
       - CHANGELOG.md
+      - completions/*
+      - manpages/*
 
 checksum:
   name_template: "checksums.txt"
@@ -109,13 +113,12 @@ brews:
         papercrypt help
     test: |
       system "#{bin}/papercrypt version"
-    # we want to install the shell completions and man pages, so we need to
-    # generate them first
-    post_install: |
-      system "#{bin}/papercrypt completion bash > #{bash_completion}/papercrypt"
-      system "#{bin}/papercrypt completion zsh > #{zsh_completion}/_papercrypt"
-      system "#{bin}/papercrypt completion fish > #{fish_completion}/papercrypt.fish"
-      system "#{bin}/papercrypt man #{man1}"
+    # we want to install the shell completions and man pages
+    extra_install: |
+      bash_completion.install "completions/papercrypt.bash" => "papercrypt"
+      fish_completion.install "completions/papercrypt.fish"
+      zsh_completion.install "completions/papercrypt.zsh" => "_papercrypt"
+      man1.install "manpages/papercrypt.1.gz"
 
 scoops:
   - name: papercrypt
