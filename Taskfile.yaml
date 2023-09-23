@@ -95,14 +95,14 @@ tasks:
       - completions/papercrypt.fish
       - completions/papercrypt.zsh
     cmds:
-      - bash scripts/completions.sh
+      - bash -c "./scripts/completions.sh"
 
   manpages:
     desc: Generate man pages. Running on Windows requires Go installed in WSL.
     generates:
       - manpages/papercrypt.1.gz
     cmds:
-      - bash scripts/manpages.sh
+      - bash -c "./scripts/manpages.sh"
 
   deps:goreleaser:
     desc: Install goreleaser
