@@ -102,12 +102,15 @@ brews:
       owner: tmuniversal
       name: homebrew-tap
       token: "{{ .Env.GORELEASER_TOKEN }}"
-    commit_author:
+    commit_author: &commit_author
       name: TMUniversal
       email: 10200399+TMUniversal@users.noreply.github.com
-    homepage: https://github.com/TMUniversal/papercrypt
-    description: "A tool to generate paper backups of your passwords and other secrets."
-    license: AGPL-3.0-or-later
+    homepage: &homepage >
+      https://github.com/TMUniversal/papercrypt
+    description: &description >
+      A tool to generate paper backups of your passwords and other secrets.
+    license: &license >
+      AGPL-3.0-or-later
     caveats: |
       To get started, run:
         papercrypt help
@@ -128,11 +131,10 @@ scoops:
       name: scoop-bucket
       token: "{{ .Env.GORELEASER_TOKEN }}"
     commit_author:
-      name: TMUniversal
-      email: 10200399+TMUniversal@users.noreply.github.com
-    homepage: https://github.com/TMUniversal/papercrypt
-    description: "A tool to generate paper backups of your passwords and other secrets."
-    license: AGPL-3.0-or-later
+      <<: *commit_author
+    homepage: *homepage
+    description: *description
+    license: *license
     shortcuts: [["papercrypt.exe", "papercrypt"]]
 
 dockers:
