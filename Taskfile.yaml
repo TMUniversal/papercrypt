@@ -71,7 +71,7 @@ tasks:
     deps:
       - deps:goreleaser
     cmds:
-      - goreleaser release --snapshot --clean --skip-publish
+      - goreleaser release --snapshot --clean --skip=publish
 
   examples:
     desc: Run the examples
