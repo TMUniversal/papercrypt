@@ -41,11 +41,11 @@ while also providing a physical backup that 's not susceptible to digital threat
 
 ## Installation
 
-### Pre-built Binaries
+### Pre-built binaries
 
 Pre-built binaries for PaperCrypt are available for download from the [releases](https://github.com/TMUniversal/papercrypt/releases) page.
 
-> The pre-built binaries are prefered over manual installation, as they include version information. The GitHub releases also included signatures for the binaries.
+> The pre-built binaries are preferred over manual installation, as they include version information. The GitHub releases also included signatures for the binaries.
 
 #### Homebrew (Linux, macOS)
 
@@ -95,9 +95,9 @@ goreleaser build --snapshot --clean --single-target
 
 ### From source (go install)
 
-> This method is not recommended, as it will not include the version information in the binary.
+> This method is not recommended, as it won't include the version information in the binary.
 
-1. **Ensure Go is installed**: See step 1 above.
+1. **Ensure Go is installed**: See [step 1 from manual installation](#from-source-manual).
 2. **Install PaperCrypt**: Run the following command to install PaperCrypt:
 
 ```bash
@@ -106,13 +106,13 @@ go install github.com/TMUniversal/papercrypt@latest
 
 ### Running with Docker
 
-PaperCrypt can also be run using Docker, using the following command:
+You can also run PaperCrypt using Docker, with the following command:
 
 ```bash
 docker run --rm -it -v $(pwd):/data ghcr.io/tmuniversal/papercrypt:latest
 ```
 
-This will mount the current working directory as `/data` in the container, allowing the container to read and write to host storage.
+With `-v $(pwd):/data` mounting the current working directory as `/data` in the container, allowing the container to read and write to host storage.
 
 On Windows, the command is slightly different:
 
@@ -120,9 +120,9 @@ On Windows, the command is slightly different:
 docker run --rm -it -v ${PWD}:/data ghcr.io/tmuniversal/papercrypt:latest
 ```
 
-Note that `-t` is required, so that the program can prompt for a passphrase.
+Note that `-t` is required so that the program can prompt for a passphrase.
 
-~~If you don't want to mount any volumes, you can pass data through stdin and stdout:~~
+~~If you don't want to mount any volumes, you can pass data through `stdin` and `stdout`:~~
 
 ```bash
 echo "{\"secret\":\"my-data\"}" \
@@ -130,7 +130,7 @@ echo "{\"secret\":\"my-data\"}" \
 > output.pdf
 ```
 
-> Warning: The above command doesn't currently work with Docker, as passing data through stdin like above prevents the container from receiving proper TTY.
+> Warning: The preceding command doesn't currently work with Docker, as passing data through `stdin` like so prevents the container from receiving the proper `TTY`.
 
 ### Verifying artifacts
 
@@ -160,11 +160,11 @@ cosign verify-blob \
 
 General notes:
 
-- `--in` and `--out` can be omitted, in which case stdin and stdout are used.
+- `--in` and `--out` can be omitted, in which case `stdin` and `stdout` are used.
 - This means `papercrypt decode --in - --out - < qr.txt > data.json` is equivalent to `papercrypt decode < qr.txt > data.json`
 - Commands, as well as their flags, can be abbreviated to their shortest unique prefix:
   - `papercrypt generate` can be abbreviated to `papercrypt g`
-- i.e. `papercrypt generate --in data.json --out output.pdf` can be abbreviated to `papercrypt g -i data.json -o output.pdf`
+- that is `papercrypt generate --in data.json --out output.pdf` can be abbreviated to `papercrypt g -i data.json -o output.pdf`
 
 ### Generating a key phrase
 
@@ -186,7 +186,7 @@ papercrypt generateKey --words 24 --out mnemonic.txt
 
 to generate a 24 word mnemonic phrase.
 
-#### The Passphrase Sheet
+#### The passphrase sheet
 
 PaperCrypt is able to generate a printable _Phrase Sheet_,
 which is a two-page document containing 135 words from the EFF large word list,
@@ -200,15 +200,14 @@ If no seed is passed to the command, one will be generated using the system's en
 papercrypt phraseSheet --out phrase-sheet.pdf ExampleAbcA=
 ```
 
-Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will also be present on the generated PDF document.
+Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will is also present on the generated PDF document,
+so you can regenerate the same word list later, even if you allowed the seed to be chosen at random.
 
 Using the phrase sheet, you can select a number of words from to form your mnemonic phrase.
 
 ### Generating a PaperCrypt document
 
-Save your data as a JSON file: `data.json`, for example.
-
-Example `data.json` file:
+Save your data as a file, `data.json`, for example:
 
 ```json
 {
@@ -233,6 +232,10 @@ to generate the file containing your data, and the decryption instructions.
 The program then asks you for an encryption key,
 for which you can use your mnemonic phrase from earlier.
 
+> You can also pass the data through `stdin`, simply omit the `--in` flag.
+> The caveat is that, when on Windows, you can't be prompted for your passphrase,
+> so you would have to pass it with the `--passphrase` flag.
+
 Please see the [examples](examples) directory for the generated PDF files.
 
 ### Restoring a PaperCrypt document
@@ -240,7 +243,7 @@ Please see the [examples](examples) directory for the generated PDF files.
 To restore your data from a PaperCrypt document,
 you must first re-construct the document from the printed copy.
 This can be done either by saving the QR code as an image file,
-and [passing it to the cli](#using-the-qr-code), or by copy-pasting the text from the printed document (would have to run OCR).
+and [passing it to the command-line](#using-the-qr-code), or by copy-pasting the text from the printed document (would have to run [OCR](https://www.adobe.com/acrobat/guides/what-is-ocr.html "optical character recognition")).
 
 #### Using the QR code
 
@@ -249,7 +252,7 @@ Save the QR code as an image file (a screenshot should do), for example `qr.png`
 Then, run
 
 ```bash
-papercrypt qr --in qr.png --out qr.txt
+papercrypt qr --in qr.png --out data.txt
 ```
 
 #### Decoding from text
@@ -301,13 +304,13 @@ Note the two empty lines between the header and the data.
 Decode and decompress the data:
 
 ```bash
-papercrypt decode --in qr.txt --out data.json
+papercrypt decode --in data.txt --out data.json
 ```
 
 The command prompts for the encryption key, which you could specify with `--passphrase|-P`:
 
 ```bash
-papercrypt decode -i qr.txt -o data.json -P "super-secret-key"
+papercrypt decode -i data.txt -o data.json -P "super-secret-key"
 ```
 
 ## Contributing
