@@ -135,7 +135,7 @@ scoops:
     homepage: *homepage
     description: *description
     license: *license
-    shortcuts: [["papercrypt.exe", "papercrypt"]]
+    shortcuts: [ [ "papercrypt.exe", "papercrypt" ] ]
 
 winget:
   - name: papercrypt
@@ -163,6 +163,12 @@ winget:
       owner: tmuniversal
       name: winget-pkgs
       token: "{{ .Env.GORELEASER_TOKEN }}"
+
+blobs:
+  - provider: s3
+    endpoint: "{{.Env.S3_ENDPOINT}}"
+    bucket: "{{.Env.S3_BUCKET}}"
+    folder: "papercrypt/{{.Version}}"
 
 dockers:
   - image_templates:
