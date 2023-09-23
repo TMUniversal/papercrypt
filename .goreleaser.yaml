@@ -132,7 +132,7 @@ scoops:
     homepage: *homepage
     description: *description
     license: *license
-    shortcuts: [ [ "papercrypt.exe", "papercrypt" ] ]
+    shortcuts: [["papercrypt.exe", "papercrypt"]]
 
 winget:
   - name: papercrypt

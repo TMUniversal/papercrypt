@@ -188,7 +188,7 @@ to generate a 24 word mnemonic phrase.
 
 #### The Passphrase Sheet
 
-PaperCrypt is able to generate a printable *Phrase Sheet*,
+PaperCrypt is able to generate a printable _Phrase Sheet_,
 which is a two-page document containing 135 words from the EFF large word list,
 chosen with a seeded random number generator.
 
@@ -295,6 +295,7 @@ which should look something like this:
 ```
 
 Note the two empty lines between the header and the data.
+
 </details>
 
 Decode and decompress the data:
