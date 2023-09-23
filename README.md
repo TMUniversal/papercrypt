@@ -186,6 +186,24 @@ papercrypt generateKey --words 24 --out mnemonic.txt
 
 to generate a 24 word mnemonic phrase.
 
+#### The Passphrase Sheet
+
+PaperCrypt is able to generate a printable *Phrase Sheet*,
+which is a two-page document containing 135 words from the EFF large word list,
+chosen with a seeded random number generator.
+
+If no seed is passed to the command, one will be generated using the system's entropy source.
+
+[Example](examples/phrase.pdf):
+
+```bash
+papercrypt phraseSheet --out phrase-sheet.pdf ExampleAbcA=
+```
+
+Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will also be present on the generated PDF document.
+
+Using the phrase sheet, you can select a number of words from to form your mnemonic phrase.
+
 ### Generating a PaperCrypt document
 
 Save your data as a JSON file: `data.json`, for example.
