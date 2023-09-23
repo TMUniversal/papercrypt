@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -254,8 +255,22 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		passphrase = "" // clear passphrase
 
-		// 10. Write decryptedContents to outFile
-		n, err := outFile.Write(decryptedContents.GetBinary())
+		// 10. Decompress content
+		gzipReader, err := gzip.NewReader(bytes.NewReader(decryptedContents.GetBinary()))
+		if err != nil {
+			internal.Fatal(cmd, errors.Wrap(err, "error creating gzip reader"))
+		}
+
+		decompressed := new(bytes.Buffer)
+		_, err = decompressed.ReadFrom(gzipReader)
+		if err != nil {
+			internal.Fatal(cmd, errors.Wrap(err, "error reading from gzip reader"))
+		}
+		gzipReader.Close()
+		decryptedContents = nil // clear decryptedContents
+
+		// 11. Write decompressed to outFile
+		n, err := outFile.Write(decompressed.Bytes())
 		if err != nil {
 			internal.Fatal(cmd, errors.Wrap(err, "error writing to file"))
 		}

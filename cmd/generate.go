@@ -21,6 +21,8 @@
 package cmd
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 	"time"
 
@@ -110,15 +112,31 @@ encrypted data.`,
 			passphraseAgain = "" // clear passphraseAgain
 		}
 
-		// 6. Encrypt secretContentsMinimal with passphrase
-		encryptedSecretContents, err := encrypt([]byte(passphrase), secretContentsFile)
+		// 6. Compress secret data
+		compressedData := new(bytes.Buffer)
+		gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
+		if err != nil {
+			internal.Fatal(cmd, errors.Wrap(err, "error creating gzip writer"))
+		}
+
+		_, err = gzipWriter.Write(secretContentsFile)
+		if err != nil {
+			internal.Fatal(cmd, errors.Wrap(err, "error writing to gzip writer"))
+		}
+		gzipWriter.Close()
+
+		secretContentsFile = nil // clear secretContentsFile
+
+		// 7. Encrypt secretContentsMinimal with passphrase
+		encryptedSecretContents, err := encrypt([]byte(passphrase), compressedData.Bytes())
 		if err != nil {
 			internal.Fatal(cmd, errors.Wrap(err, "error encrypting secret contents"))
 		}
 
-		passphrase = "" // clear passphrase
+		compressedData = nil // clear compressedData
+		passphrase = ""      // clear passphrase
 
-		// 7. Write encryptedSecretContents to outFile
+		// 8. Write encryptedSecretContents to outFile
 		crypt := internal.NewPaperCrypt(internal.VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
 
 		var text []byte
