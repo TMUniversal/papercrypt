@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/TMUniversal/papercrypt/compare/v1.0.6...v1.1.0) (2023-09-23)
+
+
+### Bug Fixes
+
+* **goreleaser:** add missing git-describe details to binary ([2fbeb10](https://github.com/TMUniversal/papercrypt/commit/2fbeb1032f0d7e8f3c4305132750cae73a12f204))
+
+
+### Features
+
+* compress secret data before encryption ([b733303](https://github.com/TMUniversal/papercrypt/commit/b733303a4950f4d0fb630adade7480544cbb029c))
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
