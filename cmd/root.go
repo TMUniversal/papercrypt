@@ -23,7 +23,9 @@ package cmd
 import (
 	"os"
 
+	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
+	"github.com/tmuniversal/papercrypt/internal"
 )
 
 var inFileName string
@@ -32,7 +34,7 @@ var overrideOutFile bool
 
 var verbosity int
 
-var LicenseText *string
+const repo = "https://github.com/TMUniversal/papercrypt"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -40,16 +42,21 @@ var rootCmd = &cobra.Command{
 	Short: "PaperCrypt lets you prepare encrypted messages for printing on paper",
 	Long: `PaperCrypt lets you prepare encrypted messages for printing on paper.
 
-It is designed to let you enter any JSON data, encrypt it with a passphrase,
+It is designed to let you enter data, encrypt it with a passphrase,
 and then prepare a printable document that is optimized for being able to restore the data.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	PersistentPostRun: func(_ *cobra.Command, _ []string) {
+		log.Info("thank you for using papercrypt!")
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.Println("PaperCrypt  Copyright (C) 2023  TMUniversal <me@tmuniversal.eu>")
 		cmd.Println("This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.")
 		cmd.Println("This is free software, and you are welcome to redistribute it")
 		cmd.Println("under certain conditions; type `papercrypt show c' for details.")
-		cmd.Println("PaperCrypt's source code can be found at https://github.com/TMUniversal/PaperCrypt")
+		cmd.Print("PaperCrypt's source code can be found at ")
+		cmd.Print(internal.URL(repo))
+		cmd.Println(".")
 		cmd.Println()
-		cmd.Help()
+		return cmd.Help()
 	},
 }
 

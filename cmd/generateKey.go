@@ -22,9 +22,11 @@ package cmd
 
 import (
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"strings"
 
+	"github.com/caarlos0/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
@@ -35,30 +37,39 @@ var words int
 var WordListFile *string
 var wordList = make([]string, 0)
 
+const wordListUrl = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt"
+
+var wordListUrlFormatted = internal.URL(wordListUrl)
+
 var generateKeyCmd = &cobra.Command{
 	Aliases: []string{"key", "gen", "k"},
 	Args:    cobra.NoArgs,
 	Use:     "generateKey",
 	Short:   "Generates a mnemonic key phrase",
-	Long: `This command generates a mnemonic key phrase base on the eff.org large word list,
-which can be found here: https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		out := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
+	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
+which can be found here: %s.`, wordListUrlFormatted),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		out, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		if err != nil {
+			return err
+		}
 		defer out.Close()
 
-		cmd.Println("Generating key phrase...")
+		log.Info("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error generating key phrase"))
+			return errors.Wrap(err, "error generating key phrase")
 		}
-		cmd.Println("Key phrase generated.")
+		log.Info("Key phrase generated.")
 
 		n, err := out.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error writing key phrase"))
+			return errors.Wrap(err, "error writing key phrase")
 		}
 
-		internal.PrintWrittenSize(cmd, n, out)
+		internal.PrintWrittenSize(n, out)
+
+		return nil
 	},
 }
 
@@ -95,5 +106,5 @@ func generateMnemonic(amount int) ([]string, error) {
 func init() {
 	rootCmd.AddCommand(generateKeyCmd)
 
-	generateKeyCmd.Flags().IntVarP(&words, "words", "w", 24, "Number of words to include in the key phrase (defaults to 24)")
+	generateKeyCmd.Flags().IntVarP(&words, "words", "w", 24, "Number of words to include in the key phrase")
 }

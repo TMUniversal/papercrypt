@@ -22,7 +22,6 @@ package cmd
 
 import (
 	"fmt"
-	"runtime/debug"
 
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
@@ -32,30 +31,11 @@ var versionCmd = &cobra.Command{
 	Aliases: []string{"v"},
 	Args:    cobra.NoArgs,
 	Use:     "version",
-	Short:   "Shows the version of the application",
-	Long:    `Shows the version of the application, as well as the build date, git commit hash, git ref, Go version, os/arch and os type.`,
+	Short:   "Shows the version and build information of the application",
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf(
-			`PaperCrypt Version %s,
-built on %s by %s, from %s branch (%s),
-for %s/%s using %s.
-`,
-			internal.VersionInfo.Version,
-			internal.VersionInfo.BuildDate,
-			internal.VersionInfo.BuiltBy,
-			internal.VersionInfo.GitBranch,
-			internal.VersionInfo.GitSummary,
-			internal.VersionInfo.OsType,
-			internal.VersionInfo.OsArch,
-			internal.VersionInfo.GoVersion,
-		)
-
-		if verbosity > 0 {
-			fmt.Println()
-			if info, ok := debug.ReadBuildInfo(); ok {
-				fmt.Println(info)
-			}
-		}
+		fmt.Println(internal.VersionInfo.String())
 	},
 }
 

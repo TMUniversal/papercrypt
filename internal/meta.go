@@ -20,20 +20,8 @@
 
 package internal
 
-type VersionDetails struct {
-	Version    string
-	BuildDate  string
-	GitCommit  string
-	GitBranch  string
-	GitTag     string
-	GitRef     string
-	GitRepo    string
-	GitIsDirty bool
-	GitSummary string
-	GoVersion  string
-	OsArch     string
-	OsType     string
-	BuiltBy    string
-}
+import (
+	goversion "github.com/caarlos0/go-version"
+)
 
-var VersionInfo VersionDetails
+var VersionInfo goversion.Info

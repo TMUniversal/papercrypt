@@ -23,8 +23,11 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 )
+
+var LicenseText *string
 
 // urlCmd represents the url command
 var showCmd = &cobra.Command{
@@ -80,7 +83,7 @@ var showCmdCopyright = &cobra.Command{
 	Use:   "c",
 	Short: "Show copyright info",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
+		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
 		fmt.Println(*LicenseText)
 	},
 }

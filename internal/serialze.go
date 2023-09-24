@@ -137,11 +137,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		// while the last part contains the checksum
 		checksumHex := lineParts[len(lineParts)-1]
 
-		//// debug
-		//fmt.Printf("line: %s\n", lineParts)
-		//fmt.Printf("bytesHex: %s\n", bytesHex)
-		//fmt.Printf("checksumHex: %s\n", checksumHex)
-
 		bytesData, err := hex.DecodeString(string(bytesHex))
 		if err != nil {
 			return nil, err

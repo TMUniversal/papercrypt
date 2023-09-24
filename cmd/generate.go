@@ -23,13 +23,15 @@ package cmd
 import (
 	"bytes"
 	"compress/gzip"
-	"io"
+	"os"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/caarlos0/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
+	"golang.org/x/term"
 )
 
 var serialNumber string
@@ -55,9 +57,12 @@ Please note, to decrypt the data from the output PaperCrypt PDF, you'll need the
 encryption process. Treat this passphrase with care; loss of the passphrase could result in the permanent loss of the 
 encrypted data.`,
 	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// 1. Open output file
-		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
+		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		if err != nil {
+			return err
+		}
 		defer outFile.Close()
 
 		// 2. generate serial number if not provided
@@ -65,7 +70,7 @@ encrypted data.`,
 			var err error
 			serialNumber, err = internal.GenerateSerial(6)
 			if err != nil {
-				internal.Fatal(cmd, errors.Wrap(err, "error generating serial number"))
+				return errors.Wrap(err, "error generating serial number")
 			}
 		}
 
@@ -82,76 +87,85 @@ encrypted data.`,
 				if err != nil {
 					timestamp, err = time.Parse("2006-01-02", date)
 					if err != nil {
-						internal.Fatal(cmd, errors.Wrap(err, "error parsing date"))
+						return errors.Wrap(err, "error parsing date")
 					}
 				}
 			}
 		}
 
 		// 4. Read input file as bytes
-		secretContentsFile := internal.PrintInputAndRead(cmd, inFileName)
+		secretContentsFile, err := internal.PrintInputAndRead(inFileName)
+		if err != nil {
+			return err
+		}
 
 		// 5. Read passphrase from stdin
+		var passphraseBytes []byte
 		if !cmd.Flags().Lookup("passphrase").Changed {
-			cmd.Println("Enter your encryption passphrase (i.e. the key phrase from `papercrypt generateKey`)")
+			log.Info("Enter your encryption passphrase")
 			cmd.Printf("Passphrase: ")
-			passphrase, err := internal.ReadTtyLine()
+			passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				internal.Fatal(cmd, errors.Wrap(err, "error reading passphrase"))
+				return errors.Wrap(err, "error reading passphrase")
 			}
 
-			cmd.Println("Enter your encryption passphrase again to confirm")
+			log.Info("Enter your encryption passphrase again to confirm")
 			cmd.Printf("Passphrase (again): ")
-			passphraseAgain, err := internal.ReadTtyLine()
-			if err != nil && err != io.EOF {
-				internal.Fatal(cmd, errors.Wrap(err, "error reading passphrase"))
+			passphraseAgain, err := term.ReadPassword(int(os.Stdin.Fd()))
+			if err != nil {
+				return errors.Wrap(err, "error reading passphrase")
 			}
-			if passphrase != passphraseAgain {
-				internal.Fatal(cmd, errors.New("passphrases do not match"))
+			if string(passphraseBytes) != string(passphraseAgain) {
+				return errors.New("passphrases do not match")
 			}
-			passphraseAgain = "" // clear passphraseAgain
+			passphraseAgain = nil // clear passphraseAgain
+		} else {
+			passphraseBytes = []byte(passphrase)
 		}
+		passphrase = "" // clear passphrase
 
 		// 6. Compress secret data
 		compressedData := new(bytes.Buffer)
 		gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error creating gzip writer"))
+			return errors.Wrap(err, "error creating gzip writer")
 		}
 
 		_, err = gzipWriter.Write(secretContentsFile)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error writing to gzip writer"))
+			return errors.Wrap(err, "error writing to gzip writer")
 		}
 		gzipWriter.Close()
 
 		secretContentsFile = nil // clear secretContentsFile
 
 		// 7. Encrypt secretContentsMinimal with passphrase
-		encryptedSecretContents, err := encrypt([]byte(passphrase), compressedData.Bytes())
+		encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error encrypting secret contents"))
+			return errors.Wrap(err, "error encrypting secret contents")
 		}
 
-		compressedData = nil // clear compressedData
-		passphrase = ""      // clear passphrase
+		compressedData = nil  // clear compressedData
+		passphraseBytes = nil // clear passphraseBytes
 
 		// 8. Write encryptedSecretContents to outFile
-		crypt := internal.NewPaperCrypt(internal.VersionInfo.Version, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
+		crypt := internal.NewPaperCrypt(internal.VersionInfo.GitVersion, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
 
 		var text []byte
 
 		text, err = crypt.GetPDF(noQR, lowerCasedBase16)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error generating PDF"))
+			return errors.Wrap(err, "error generating PDF")
 		}
 
 		n, err := outFile.Write(text)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error writing to file"))
+			return errors.Wrap(err, "error writing to file")
 		}
 
-		internal.PrintWrittenSize(cmd, n, outFile)
+		internal.PrintWrittenSize(n, outFile)
+
+		return nil
 	},
 }
 
@@ -174,7 +188,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
-	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits (optional, defaults to false)")
+	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
 
-	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")
+	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")
 }

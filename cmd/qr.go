@@ -23,7 +23,6 @@ package cmd
 import (
 	"encoding/json"
 	"image"
-	"os"
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
@@ -44,36 +43,39 @@ This command allows you to decode data saved by PaperCrypt.
 The QR code in a PaperCrypt document contains a JSON serialized object
 that contains the encrypted data and the PaperCrypt metadata.`,
 	Example: `papercrypt qr ./qr.png | papercrypt decode -o ./out.json -P passphrase`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// 1. get data from either argument or inFileName
 		if len(args) != 0 {
 			inFileName = args[0]
 		}
 
-		inFile := internal.PrintInputAndGetReader(cmd, inFileName)
+		inFile, err := internal.PrintInputAndGetReader(inFileName)
+		if err != nil {
+			return err
+		}
 		defer inFile.Close()
 
 		img, _, err := image.Decode(inFile)
 		if err != nil {
-			cmd.Println("Error decoding image:", err)
-			os.Exit(1)
+			return errors.Wrap(err, "error decoding image")
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 		if err != nil {
-			cmd.Println("Error creating binary bitmap:", err)
-			os.Exit(1)
+			return errors.Wrap(err, "error creating binary bitmap")
 		}
 
 		qrReader := qrcode.NewQRCodeReader()
 		result, err := qrReader.Decode(bmp, nil)
 		if err != nil {
-			cmd.Println("Error decoding QR code:", err)
-			os.Exit(1)
+			return errors.Wrap(err, "error decoding QR code")
 		}
 
 		// 2. Open output file
-		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
+		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		if err != nil {
+			return err
+		}
 		defer outFile.Close()
 
 		data := result.GetText()
@@ -82,20 +84,22 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		pc := internal.PaperCrypt{}
 		err = json.Unmarshal([]byte(data), &pc)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error deserializing data"))
+			return errors.Wrap(err, "error deserializing data")
 		}
 
 		// 6. Write to file
 		output, err := pc.GetText(false)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error deserializing data"))
+			return errors.Wrap(err, "error deserializing data")
 		}
 		n, err := outFile.Write(output)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error writing output"))
+			return errors.Wrap(err, "error writing output")
 		}
 
-		internal.PrintWrittenSize(cmd, n, outFile)
+		internal.PrintWrittenSize(n, outFile)
+
+		return nil
 	},
 }
 

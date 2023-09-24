@@ -24,27 +24,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/caarlos0/log"
 )
 
-func Fatal(cmd *cobra.Command, err error) {
-	cmd.Println(err)
-	os.Exit(1)
-}
-
-func PrintInputSource(cmd *cobra.Command, inFileName string) {
-	if inFileName == "" || inFileName == "-" {
-		cmd.Println("Reading from stdin")
-	} else {
-		cmd.Printf("Reading from %s\n", inFileName)
-	}
-}
-
-func PrintWrittenSize(cmd *cobra.Command, size int, file *os.File) {
+func PrintWrittenSize(size int, file *os.File) {
 	if size == 0 {
-		cmd.Println("No data written.")
+		log.Warn("No data written.")
 	} else {
-		cmd.Printf("Wrote %s to %s\n", SprintBinarySize(size), file.Name())
+		log.WithField("size", SprintBinarySize(size)).WithField("path", file.Name()).Info("Data written.")
 	}
 }
 

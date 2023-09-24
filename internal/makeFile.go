@@ -200,12 +200,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetCreator("PaperCrypt/"+VersionInfo.Version, true)
-	pdf.SetTopMargin(20)
-	pdf.SetLeftMargin(20)
-	pdf.SetRightMargin(20)
-	pdf.SetAutoPageBreak(true, 15)
+	pdf := getPdf()
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
@@ -230,7 +225,6 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.SetFont(PdfMonoFont, "", 10)
 		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
 	})
-	pdf.AliasNbPages("")
 	pdf.AddPage()
 
 	{
@@ -352,12 +346,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 }
 
 func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
-	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetCreator("PaperCrypt/"+VersionInfo.Version, true)
-	pdf.SetTopMargin(20)
-	pdf.SetLeftMargin(20)
-	pdf.SetRightMargin(20)
-	pdf.SetAutoPageBreak(true, 15)
+	pdf := getPdf()
 
 	dm := new(bytes.Buffer)
 	dmDims := [2]int{}
@@ -418,7 +407,6 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		pdf.SetFont(PdfMonoFont, "", 10)
 		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
 	})
-	pdf.AliasNbPages("")
 	pdf.AddPage()
 
 	{
@@ -490,4 +478,16 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		return nil, errors.Wrap(err, "error generating PDF")
 	}
 	return buf.Bytes(), nil
+}
+
+func getPdf() *gofpdf.Fpdf {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetCreator("PaperCrypt/"+VersionInfo.GitVersion, true)
+	pdf.SetTopMargin(20)
+	pdf.SetLeftMargin(20)
+	pdf.SetRightMargin(20)
+	pdf.SetAutoPageBreak(true, 15)
+	pdf.AliasNbPages("")
+
+	return pdf
 }

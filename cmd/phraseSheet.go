@@ -24,11 +24,11 @@ import (
 	crand "crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
-	"fmt"
 	"math/big"
 	"math/rand"
 	"strings"
 
+	"github.com/caarlos0/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
@@ -45,9 +45,12 @@ var phraseSheetCmd = &cobra.Command{
 	Use:     "phraseSheet [base64 seed]",
 	Short:   "Generate a passphrase sheet.",
 	Example: "papercrypt phraseSheet -o phraseSheet.pdf",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// 1. Open output file
-		outFile := internal.GetFileHandleCarefully(cmd, outFileName, overrideOutFile)
+		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		if err != nil {
+			return err
+		}
 		defer outFile.Close()
 
 		if len(wordList) == 0 {
@@ -59,39 +62,41 @@ var phraseSheetCmd = &cobra.Command{
 		if len(args) == 0 {
 			random, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
 			if err != nil {
-				internal.Fatal(cmd, errors.Wrap(err, "error generating random seed"))
+				return errors.Wrap(err, "error generating random seed")
 			}
 			seed = random.Int64()
 		} else {
 			seedBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(args[0]))
 			if err != nil {
-				internal.Fatal(cmd, errors.Wrap(err, "error decoding seed"))
+				return errors.Wrap(err, "error decoding seed")
 			}
 			seed = int64(binary.BigEndian.Uint64(seedBytes))
 			if err != nil {
-				internal.Fatal(cmd, errors.Wrap(err, "error converting seed to int64"))
+				return errors.Wrap(err, "error converting seed to int64")
 			}
 		}
 
 		// 3. Get words
 		words, err := GenerateFromSeed(seed, passphraseSheetWordCount)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error generating words"))
+			return errors.Wrap(err, "error generating words")
 		}
 
 		// 4. Generate PDF
 		data, err := internal.GeneratePassphraseSheetPDF(seed, words)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error generating PDF"))
+			return errors.Wrap(err, "error generating PDF")
 		}
 
 		// 5. Write PDF
 		n, err := outFile.Write(data)
 		if err != nil {
-			internal.Fatal(cmd, errors.Wrap(err, "error writing PDF"))
+			return errors.Wrap(err, "error writing PDF")
 		}
 
-		internal.PrintWrittenSize(cmd, n, outFile)
+		internal.PrintWrittenSize(n, outFile)
+
+		return nil
 	},
 }
 
@@ -109,7 +114,7 @@ func GenerateFromSeed(seed int64, amount int) ([]string, error) {
 
 		if internal.SliceHasString(words, w) {
 			// if the word is already in the slice, try again
-			fmt.Printf("Warning: Duplicate word (%d) appeared, trying again...\n", random)
+			log.WithField("word", w).WithField("index", i).Warn("Duplicate word appeared, trying again...")
 			i--
 			continue
 		}
