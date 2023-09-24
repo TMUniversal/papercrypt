@@ -53,11 +53,14 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		if err != nil {
 			return err
 		}
-		defer inFile.Close()
 
 		img, _, err := image.Decode(inFile)
 		if err != nil {
 			return errors.Wrap(err, "error decoding image")
+		}
+
+		if err := inFile.Close(); err != nil {
+			return errors.Wrap(err, "error closing input file")
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
@@ -76,7 +79,6 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		if err != nil {
 			return err
 		}
-		defer outFile.Close()
 
 		data := result.GetText()
 
@@ -98,6 +100,10 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
+
+		if err := outFile.Close(); err != nil {
+			return errors.Wrap(err, "error closing output file")
+		}
 
 		return nil
 	},

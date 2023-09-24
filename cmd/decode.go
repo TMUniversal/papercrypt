@@ -56,7 +56,6 @@ The data should be read from a file or stdin, you will be required to provide a 
 		if err != nil {
 			return err
 		}
-		defer outFile.Close()
 
 		// 2. Read inFile
 		paperCryptFileContents, err := internal.PrintInputAndRead(inFileName)
@@ -279,7 +278,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 		if err != nil {
 			return errors.Wrap(err, "error reading from gzip reader")
 		}
-		gzipReader.Close()
+		if err := gzipReader.Close(); err != nil {
+			return errors.Wrap(err, "error closing gzip reader")
+		}
 		decryptedContents = nil // clear decryptedContents
 
 		// 11. Write decompressed to outFile
@@ -289,6 +290,10 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		internal.PrintWrittenSize(n, outFile)
+
+		if err := outFile.Close(); err != nil {
+			return errors.Wrap(err, "error closing file")
+		}
 
 		return nil
 	},

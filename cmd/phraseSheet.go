@@ -51,7 +51,6 @@ var phraseSheetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer outFile.Close()
 
 		if len(wordList) == 0 {
 			generateWordList()
@@ -95,6 +94,10 @@ var phraseSheetCmd = &cobra.Command{
 		}
 
 		internal.PrintWrittenSize(n, outFile)
+
+		if err := outFile.Close(); err != nil {
+			return errors.Wrap(err, "error closing output file")
+		}
 
 		return nil
 	},

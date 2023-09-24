@@ -53,7 +53,6 @@ which can be found here: %s.`, wordListUrlFormatted),
 		if err != nil {
 			return err
 		}
-		defer out.Close()
 
 		log.Info("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
@@ -68,6 +67,10 @@ which can be found here: %s.`, wordListUrlFormatted),
 		}
 
 		internal.PrintWrittenSize(n, out)
+
+		if err := out.Close(); err != nil {
+			return errors.Wrap(err, "error closing output file")
+		}
 
 		return nil
 	},

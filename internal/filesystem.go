@@ -79,10 +79,15 @@ func PrintInputAndRead(inFileName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer inFile.Close()
+
 	contents, err := io.ReadAll(inFile)
 	if err != nil && err != io.EOF {
 		return nil, errors.Wrap(err, "error reading file")
 	}
+
+	if err := inFile.Close(); err != nil {
+		return nil, errors.Wrap(err, "error closing file")
+	}
+
 	return contents, nil
 }

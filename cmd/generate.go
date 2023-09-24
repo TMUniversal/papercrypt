@@ -63,7 +63,6 @@ encrypted data.`,
 		if err != nil {
 			return err
 		}
-		defer outFile.Close()
 
 		// 2. generate serial number if not provided
 		if serialNumber == "" {
@@ -135,7 +134,9 @@ encrypted data.`,
 		if err != nil {
 			return errors.Wrap(err, "error writing to gzip writer")
 		}
-		gzipWriter.Close()
+		if err := gzipWriter.Close(); err != nil {
+			return errors.Wrap(err, "error closing gzip writer")
+		}
 
 		secretContentsFile = nil // clear secretContentsFile
 
@@ -164,6 +165,10 @@ encrypted data.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
+
+		if err := outFile.Close(); err != nil {
+			return errors.Wrap(err, "error closing file")
+		}
 
 		return nil
 	},
