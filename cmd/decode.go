@@ -103,8 +103,8 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// releases are tagged as vX.Y.Z
 		majorVersion := strings.Split(versionLine, ".")[0]
 		majorVersion = strings.TrimPrefix(majorVersion, "v")
-		if !ignoreVersionMismatch && majorVersion != "1" {
-			return errors.Errorf("error parsing headers: unsupported PaperCrypt Version '%s'", versionLine)
+		if !ignoreVersionMismatch && majorVersion != "1" && majorVersion != "devel" {
+			return errors.Errorf("error parsing headers: unsupported PaperCrypt version '%s'", versionLine)
 		}
 
 		headerCrc, ok := headers["Header CRC-32"]
