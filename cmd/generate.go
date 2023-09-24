@@ -23,24 +23,28 @@ package cmd
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"os"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 	"golang.org/x/term"
 )
 
-var serialNumber string
-var purpose string
-var comment string
-var date string
+var (
+	serialNumber string
+	purpose      string
+	comment      string
+	date         string
+)
 
-var noQR bool
-var lowerCasedBase16 bool
+var (
+	noQR             bool
+	lowerCasedBase16 bool
+)
 
 var passphrase string
 
@@ -69,7 +73,7 @@ encrypted data.`,
 			var err error
 			serialNumber, err = internal.GenerateSerial(6)
 			if err != nil {
-				return errors.Wrap(err, "error generating serial number")
+				return errors.Join(errors.New("error generating serial number"), err)
 			}
 		}
 
@@ -86,7 +90,7 @@ encrypted data.`,
 				if err != nil {
 					timestamp, err = time.Parse("2006-01-02", date)
 					if err != nil {
-						return errors.Wrap(err, "error parsing date")
+						return errors.Join(errors.New("error parsing date"), err)
 					}
 				}
 			}
@@ -105,49 +109,42 @@ encrypted data.`,
 			cmd.Printf("Passphrase: ")
 			passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				return errors.Wrap(err, "error reading passphrase")
+				return errors.Join(errors.New("error reading passphrase"), err)
 			}
 
 			log.Info("Enter your encryption passphrase again to confirm")
 			cmd.Printf("Passphrase (again): ")
 			passphraseAgain, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				return errors.Wrap(err, "error reading passphrase")
+				return errors.Join(errors.New("error reading passphrase"), err)
 			}
 			if string(passphraseBytes) != string(passphraseAgain) {
 				return errors.New("passphrases do not match")
 			}
-			passphraseAgain = nil // clear passphraseAgain
 		} else {
 			passphraseBytes = []byte(passphrase)
 		}
-		passphrase = "" // clear passphrase
 
 		// 6. Compress secret data
 		compressedData := new(bytes.Buffer)
 		gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
 		if err != nil {
-			return errors.Wrap(err, "error creating gzip writer")
+			return errors.Join(errors.New("error creating gzip writer"), err)
 		}
 
 		_, err = gzipWriter.Write(secretContentsFile)
 		if err != nil {
-			return errors.Wrap(err, "error writing to gzip writer")
+			return errors.Join(errors.New("error writing to gzip writer"), err)
 		}
 		if err := gzipWriter.Close(); err != nil {
-			return errors.Wrap(err, "error closing gzip writer")
+			return errors.Join(errors.New("error closing gzip writer"), err)
 		}
-
-		secretContentsFile = nil // clear secretContentsFile
 
 		// 7. Encrypt secretContentsMinimal with passphrase
 		encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
 		if err != nil {
-			return errors.Wrap(err, "error encrypting secret contents")
+			return errors.Join(errors.New("error encrypting secret contents"), err)
 		}
-
-		compressedData = nil  // clear compressedData
-		passphraseBytes = nil // clear passphraseBytes
 
 		// 8. Write encryptedSecretContents to outFile
 		crypt := internal.NewPaperCrypt(internal.VersionInfo.GitVersion, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
@@ -156,18 +153,18 @@ encrypted data.`,
 
 		text, err = crypt.GetPDF(noQR, lowerCasedBase16)
 		if err != nil {
-			return errors.Wrap(err, "error generating PDF")
+			return errors.Join(errors.New("error generating PDF"), err)
 		}
 
 		n, err := outFile.Write(text)
 		if err != nil {
-			return errors.Wrap(err, "error writing to file")
+			return errors.Join(errors.New("error writing to file"), err)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
 
 		if err := outFile.Close(); err != nil {
-			return errors.Wrap(err, "error closing file")
+			return errors.Join(errors.New("error closing file"), err)
 		}
 
 		return nil
@@ -175,11 +172,11 @@ encrypted data.`,
 }
 
 func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
-	var message = crypto.NewPlainMessage(data)
+	message := crypto.NewPlainMessage(data)
 
 	encrypted, err := crypto.EncryptMessageWithPassword(message, passphrase)
 	if err != nil {
-		return nil, errors.Wrap(err, "error encrypting message")
+		return nil, errors.Join(errors.New("error encrypting message"), err)
 	}
 
 	return encrypted, nil

@@ -28,9 +28,11 @@ import (
 	"github.com/tmuniversal/papercrypt/internal"
 )
 
-var inFileName string
-var outFileName string
-var overrideOutFile bool
+var (
+	inFileName      string
+	outFileName     string
+	overrideOutFile bool
+)
 
 var verbosity int
 

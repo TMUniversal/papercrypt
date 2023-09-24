@@ -22,24 +22,26 @@ package cmd
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )
 
 var words int
 
-var WordListFile *string
-var wordList = make([]string, 0)
+var (
+	WordListFile *string
+	wordList     = make([]string, 0)
+)
 
-const wordListUrl = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt"
+const wordListURL = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt"
 
-var wordListUrlFormatted = internal.URL(wordListUrl)
+var wordListURLFormatted = internal.URL(wordListURL)
 
 var generateKeyCmd = &cobra.Command{
 	Aliases: []string{"key", "gen", "k"},
@@ -47,7 +49,7 @@ var generateKeyCmd = &cobra.Command{
 	Use:     "generateKey",
 	Short:   "Generates a mnemonic key phrase",
 	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
-which can be found here: %s.`, wordListUrlFormatted),
+which can be found here: %s.`, wordListURLFormatted),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		out, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
@@ -57,19 +59,19 @@ which can be found here: %s.`, wordListUrlFormatted),
 		log.Info("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
 		if err != nil {
-			return errors.Wrap(err, "error generating key phrase")
+			return errors.Join(errors.New("error generating key phrase"), err)
 		}
 		log.Info("Key phrase generated.")
 
 		n, err := out.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
-			return errors.Wrap(err, "error writing key phrase")
+			return errors.Join(errors.New("error writing key phrase"), err)
 		}
 
 		internal.PrintWrittenSize(n, out)
 
 		if err := out.Close(); err != nil {
-			return errors.Wrap(err, "error closing output file")
+			return errors.Join(errors.New("error closing output file"), err)
 		}
 
 		return nil
@@ -100,7 +102,7 @@ func generateMnemonic(amount int) ([]string, error) {
 	// choose `amount` random words from wordListArray
 	randInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(wordList))))
 	if err != nil {
-		return nil, errors.Wrap(err, "Error generating random seed")
+		return nil, errors.Join(errors.New("error generating random seed"), err)
 	}
 
 	return GenerateFromSeed(randInt.Int64(), amount)

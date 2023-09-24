@@ -25,6 +25,7 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -32,14 +33,21 @@ import (
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 	"golang.org/x/term"
 )
 
-var ignoreVersionMismatch bool
-var ignoreChecksumMismatch bool
+var (
+	ignoreVersionMismatch  bool
+	ignoreChecksumMismatch bool
+)
+
+var (
+	errorParsingHeader     = errors.New("error parsing header")
+	errorParsingBody       = errors.New("error parsing body")
+	errorValidationFailure = errors.New("validation failure")
+)
 
 // decodeCmd represents the decode command
 var decodeCmd = &cobra.Command{
@@ -79,7 +87,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			for _, headerLine := range headerLines {
 				headerLineSplit := bytes.SplitN(headerLine, []byte(": "), 2)
 				if len(headerLineSplit) != 2 {
-					return errors.Errorf("Error parsing header line: %s", headerLine)
+					return errors.Join(errorParsingHeader, fmt.Errorf("error parsing header line: %s", headerLine))
 				}
 
 				key := string(headerLineSplit[0])
@@ -93,10 +101,10 @@ The data should be read from a file or stdin, you will be required to provide a 
 		versionLine, ok := headers[internal.HeaderFieldVersion]
 		if !ok {
 			if !ignoreVersionMismatch {
-				return errors.Errorf("Error parsing headers: PaperCrypt Version not present in header.")
-			} else {
-				log.Warn("PaperCrypt Version not present in header.")
+				return errors.Join(errorParsingHeader, newFieldNotPresentError(internal.HeaderFieldVersion))
 			}
+
+			log.Warn("PaperCrypt Version not present in header.")
 		}
 
 		// parse git-describe version, look for major version <= 1
@@ -104,16 +112,16 @@ The data should be read from a file or stdin, you will be required to provide a 
 		majorVersion := strings.Split(versionLine, ".")[0]
 		majorVersion = strings.TrimPrefix(majorVersion, "v")
 		if !ignoreVersionMismatch && majorVersion != "1" && majorVersion != "devel" {
-			return errors.Errorf("error parsing headers: unsupported PaperCrypt version '%s'", versionLine)
+			return errors.Join(errorParsingHeader, fmt.Errorf("unsupported PaperCrypt version '%s'", versionLine))
 		}
 
-		headerCrc, ok := headers["Header CRC-32"]
+		headerCrc, ok := headers[internal.HeaderFieldHeaderCRC32]
 		if !ok {
 			if !ignoreChecksumMismatch {
-				return errors.Errorf("error parsing headers: Header CRC-32 not present in header")
-			} else {
-				log.Warn("Header CRC-32 not present in header")
+				return errors.Join(errorParsingHeader, newFieldNotPresentError(internal.HeaderFieldHeaderCRC32))
 			}
+
+			log.Warn("Header CRC-32 not present in header")
 		}
 
 		headerCrc = strings.ToLower(headerCrc)
@@ -121,17 +129,17 @@ The data should be read from a file or stdin, you will be required to provide a 
 		headerCrc = strings.ReplaceAll(headerCrc, " ", "")
 		headerCrc32, err := internal.ParseHexUint32(headerCrc)
 		if err != nil {
-			return errors.Wrap(errors.Wrap(err, "invalid CRC-32 format"), "error parsing headers")
+			return errors.Join(errorParsingHeader, errors.New("invalid CRC-32 format"), err)
 		}
 
-		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\nHeader CRC-32: "+headers[internal.HeaderFieldHeaderCRC32]), []byte(""))
+		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\n"+internal.HeaderFieldHeaderCRC32+": "+headers[internal.HeaderFieldHeaderCRC32]), []byte(""))
 
 		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
-				return errors.Wrap(errors.Wrap(errors.Errorf("header CRC-32 mismatch"), "header is invalid"), "error parsing headers")
-			} else {
-				log.Warn("Header CRC-32 mismatch!")
+				return errors.Join(errorParsingHeader, errorValidationFailure, errors.New("header CRC-32 mismatch"))
 			}
+
+			log.Warn("Header CRC-32 mismatch!")
 		}
 
 		var pgpMessage *crypto.PGPMessage
@@ -142,78 +150,78 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		if err != nil {
-			return errors.Wrap(err, "error parsing body")
+			return errors.Join(errorParsingBody, err)
 		}
 
 		// 5. Verify Body Hashes
 		body = pgpMessage.GetBinary()
 
 		// 5.1 Verify Content Length
-		bodyLength, ok := headers[internal.HeaderFieldLength]
+		bodyLength, ok := headers[internal.HeaderFieldContentLength]
 		if !ok {
-			return errors.Errorf("error parsing headers: Content Length not present in header")
+			return errors.Join(errorParsingBody, newFieldNotPresentError(internal.HeaderFieldContentLength))
 		}
 
 		if fmt.Sprint(len(body)) != bodyLength {
-			return errors.Errorf("content failed validation: Content Length mismatch")
+			return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch: expected %s, got %d", internal.HeaderFieldContentLength, bodyLength, len(body)))
 		}
 
 		// 5.2 Verify CRC-32
 		bodyCrc32, ok := headers[internal.HeaderFieldCRC32]
 		if !ok {
-			return errors.Errorf("error parsing headers: Content CRC-32 not present in header")
+			return errors.Join(errorValidationFailure, newFieldNotPresentError(internal.HeaderFieldCRC32))
 		}
 
 		bodyCrc32Uint32, err := internal.ParseHexUint32(bodyCrc32)
 		if err != nil {
-			return errors.Wrap(err, "error parsing headers")
+			return errors.Join(errorParsingBody, err)
 		}
 
 		if !internal.ValidateCRC32(body, bodyCrc32Uint32) {
 			if !ignoreChecksumMismatch {
-				return errors.Errorf("content failed validation: Content CRC-32 mismatch")
-			} else {
-				log.Warn("Content CRC-32 mismatch!")
+				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldCRC32))
 			}
+
+			log.Warn("Content CRC-32 mismatch!")
 		}
 
 		// 5.3 Verify CRC-24
 		bodyCrc24, ok := headers[internal.HeaderFieldCRC24]
 		if !ok {
-			return errors.Errorf("error parsing headers: Content CRC-24 not present in header")
+			return errors.Join(errorParsingBody, newFieldNotPresentError(internal.HeaderFieldCRC24))
 		}
 
 		bodyCrc24Uint32, err := internal.ParseHexUint32(bodyCrc24)
 		if err != nil {
-			return errors.Wrap(err, "error parsing headers")
+			return errors.Join(errorParsingBody, err)
 		}
 
 		if !internal.ValidateCRC24(body, bodyCrc24Uint32) {
 			if !ignoreChecksumMismatch {
-				return errors.Errorf("content failed validation: Content CRC-24 mismatch")
-			} else {
-				log.Warn("Content CRC-24 mismatch!")
+				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldCRC24))
 			}
+
+			log.Warn("Content CRC-24 mismatch!")
 		}
 
 		// 5.4 Verify SHA-256
 		bodySha256, ok := headers[internal.HeaderFieldSHA256]
 		if !ok {
-			return errors.Errorf("error parsing headers: Content SHA-256 not present in header")
+			return errors.Join(errorParsingBody, newFieldNotPresentError(internal.HeaderFieldSHA256))
 		}
 
 		bodySha256Bytes, err := internal.BytesFromBase64(bodySha256)
 		if err != nil {
-			return errors.Wrap(err, "error parsing headers")
+			return errors.Join(errorParsingBody, err)
 		}
 
 		actualSha256 := sha256.Sum256(body)
 		if !bytes.Equal(actualSha256[:], bodySha256Bytes) {
 			if !ignoreChecksumMismatch {
-				return errors.Errorf("content failed validation: Content SHA-256 mismatch")
-			} else {
-				log.Warn("Content SHA-256 mismatch!")
+				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldSHA256))
 			}
+
+			log.Warn("Content SHA-256 mismatch!")
 		}
 
 		// 6. Construct PaperCrypt object
@@ -224,7 +232,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", headerDate)
 		if err != nil {
-			return errors.Wrap(err, "invalid date format")
+			return errors.Join(errors.New("invalid date format"), err)
 		}
 
 		// we don't need to pass the checksums, as they are already verified
@@ -241,7 +249,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 7. Serialize PaperCrypt object
 		_, err = json.MarshalIndent(paperCrypt, "", "  ")
 		if err != nil {
-			return errors.Wrap(err, "error encoding JSON")
+			return errors.Join(errors.New("error encoding JSON"), err)
 		}
 		log.WithField("json", paperCrypt).Debug("Serialized PaperCrypt document")
 
@@ -252,7 +260,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			cmd.Printf("Passphrase: ")
 			passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				return errors.Wrap(err, "error reading passphrase")
+				return errors.Join(errors.New("error reading passphrase"), err)
 			}
 		} else {
 			passphraseBytes = []byte(passphrase)
@@ -262,41 +270,43 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 9. Decrypt secretContents
 		decryptedContents, err := crypto.DecryptMessageWithPassword(pgpMessage, passphraseBytes)
 		if err != nil {
-			return errors.Wrap(err, "error decrypting secret contents")
+			return errors.Join(errors.New("error decrypting secret contents"), err)
 		}
-
-		passphraseBytes = nil // clear passphraseBytes
 
 		// 10. Decompress content
 		gzipReader, err := gzip.NewReader(bytes.NewReader(decryptedContents.GetBinary()))
 		if err != nil {
-			return errors.Wrap(err, "error creating gzip reader")
+			return errors.Join(errors.New("error creating gzip reader"), err)
 		}
 
 		decompressed := new(bytes.Buffer)
 		_, err = decompressed.ReadFrom(gzipReader)
 		if err != nil {
-			return errors.Wrap(err, "error reading from gzip reader")
+			return errors.Join(errors.New("error reading from gzip reader"), err)
 		}
 		if err := gzipReader.Close(); err != nil {
-			return errors.Wrap(err, "error closing gzip reader")
+			return errors.Join(errors.New("error closing gzip reader"), err)
 		}
 		decryptedContents = nil // clear decryptedContents
 
 		// 11. Write decompressed to outFile
 		n, err := outFile.Write(decompressed.Bytes())
 		if err != nil {
-			return errors.Wrap(err, "error writing to file")
+			return errors.Join(errors.New("error writing to file"), err)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
 
 		if err := outFile.Close(); err != nil {
-			return errors.Wrap(err, "error closing file")
+			return errors.Join(errors.New("error closing file"), err)
 		}
 
 		return nil
 	},
+}
+
+func newFieldNotPresentError(field string) error {
+	return fmt.Errorf("`%s` not present in header", field)
 }
 
 func init() {

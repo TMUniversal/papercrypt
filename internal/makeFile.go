@@ -25,6 +25,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"image/png"
@@ -38,7 +39,6 @@ import (
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	"github.com/makiuchi-d/gozxing/qrcode"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -53,12 +53,12 @@ const (
 	HeaderFieldPurpose              = "Purpose"
 	HeaderFieldComment              = "Comment"
 	HeaderFieldDate                 = "Date"
-	HeaderFieldLength               = "Content Length"
+	HeaderFieldContentLength        = "Content Length"
 	HeaderFieldCRC24                = "Content CRC-24"
 	HeaderFieldCRC32                = "Content CRC-32"
 	HeaderFieldSHA256               = "Content SHA-256"
 	HeaderFieldHeaderCRC32          = "Header CRC-32"
-	PDFHeaderSheetId                = "Sheet ID"
+	PDFHeaderSheetID                = "Sheet ID"
 	PDFHeading                      = "PaperCrypt Recovery Sheet"
 	PDFSectionDescriptionHeading    = "What is this?"
 	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
@@ -150,13 +150,13 @@ func (p *PaperCrypt) GetLength() int {
 func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	text, err := p.GetText(lowerCaseEncoding)
 	if err != nil {
-		return nil, errors.Errorf("error getting text content: %s", err)
+		return nil, fmt.Errorf("error getting text content: %s", err)
 	}
 
 	// split at 2 empty lines, to get the header and the data
 	parts := strings.Split(string(text), "\n\n\n")
 	if len(parts) != 2 {
-		return nil, errors.Errorf("error splitting text content into header and data")
+		return nil, fmt.Errorf("error splitting text content into header and data")
 	}
 
 	qr := new(bytes.Buffer)
@@ -164,11 +164,11 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	if !noQR {
 		// for the qr-code, encode the *p as json, then base64 encode it
-		qrDataJson, err := json.Marshal(p)
+		qrDataJSON, err := json.Marshal(p)
 		if err != nil {
-			return nil, errors.Errorf("error marshalling PaperCrypt to json: %s", err)
+			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
 		}
-		codeData := string(qrDataJson)
+		codeData := string(qrDataJSON)
 
 		enc := qrcode.NewQRCodeWriter()
 		encoderHints := make(map[gozxing.EncodeHintType]interface{})
@@ -177,12 +177,12 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		qrSize := int(math.Ceil(165 * 9)) // 165 mm
 		code, err := enc.Encode(codeData, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
 		if err != nil {
-			return nil, errors.Errorf("error generating QR code: %s", err)
+			return nil, errors.Join(errors.New("error generating QR code"), err)
 		}
 
 		err = png.Encode(qr, code)
 		if err != nil {
-			return nil, errors.Errorf("error generating QR code PNG: %s", err)
+			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
 		}
 	}
 
@@ -191,12 +191,12 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		enc := datamatrix.NewDataMatrixWriter()
 		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 256, 256, nil)
 		if err != nil {
-			return nil, errors.Errorf("error generating Data Matrix code: %s", err)
+			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
 
 		err = png.Encode(dm, code)
 		if err != nil {
-			return nil, errors.Errorf("error generating Data Matrix code PNG: %s", err)
+			return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
 		}
 	}
 
@@ -204,7 +204,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
-		headerLine := fmt.Sprintf("%s: %s - %s", PDFHeaderSheetId, p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"))
+		headerLine := fmt.Sprintf("%s: %s - %s", PDFHeaderSheetID, p.SerialNumber, p.CreatedAt.Format("2006-01-02 15:04 -0700"))
 		if p.Purpose != "" {
 			headerLine += fmt.Sprintf(" - %s", p.Purpose)
 		}
@@ -286,7 +286,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	var buf bytes.Buffer
 	err = pdf.Output(&buf)
 	if err != nil {
-		return nil, errors.Errorf("error generating pdf: %s", err)
+		return nil, errors.Join(errors.New("error generating pdf"), err)
 	}
 
 	return buf.Bytes(), nil
@@ -316,7 +316,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
-		HeaderFieldLength,
+		HeaderFieldContentLength,
 		p.GetLength(),
 		HeaderFieldCRC24,
 		p.DataCRC24,
@@ -358,7 +358,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		// create the code without dimensions to get the width and height required for the code
 		initial, err := enc.Encode(encodedSeed, gozxing.BarcodeFormat_DATA_MATRIX, 0, 0, nil)
 		if err != nil {
-			return nil, errors.Wrap(err, "error generating Data Matrix code")
+			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
 
 		dmDims[0] = initial.GetWidth()
@@ -367,12 +367,12 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		// create the code at 8x scale
 		code, err := enc.Encode(encodedSeed, gozxing.BarcodeFormat_DATA_MATRIX, 8*dmDims[0], 8*dmDims[1], nil)
 		if err != nil {
-			return nil, errors.Wrap(err, "error generating Data Matrix code")
+			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
 
 		err = png.Encode(dm, code)
 		if err != nil {
-			return nil, errors.Wrap(err, "error generating Data Matrix code PNG")
+			return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
 		}
 	}
 
@@ -475,7 +475,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 	var buf bytes.Buffer
 	err := pdf.Output(&buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "error generating PDF")
+		return nil, errors.Join(errors.New("error generating PDF"), err)
 	}
 	return buf.Bytes(), nil
 }

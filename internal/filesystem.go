@@ -21,11 +21,12 @@
 package internal
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/pkg/errors"
 )
 
 // GetFileHandleCarefully returns a file handle for the given path.
@@ -38,15 +39,15 @@ func GetFileHandleCarefully(path string, override bool) (*os.File, error) {
 
 	if _, err := os.Stat(path); err == nil {
 		if !override {
-			return nil, errors.Errorf("file %s already exists, use --force to override", path)
-		} else {
-			log.WithField("path", path).Warn("Overriding existing file!")
+			return nil, fmt.Errorf("file %s already exists, use --force to override", path)
 		}
+
+		log.WithField("path", path).Warn("Overriding existing file!")
 	}
 
-	out, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	out, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
-		return nil, errors.Errorf("error opening file '%s': %s", path, err)
+		return nil, fmt.Errorf("error opening file '%s': %s", path, err)
 	}
 
 	return out, nil
@@ -63,7 +64,7 @@ func PrintInputAndGetReader(inFileName string) (*os.File, error) {
 	} else {
 		inFile, err = os.Open(inFileName)
 		if err != nil {
-			return nil, errors.Wrap(err, "error opening file")
+			return nil, errors.Join(errors.New("error opening file"), err)
 		}
 	}
 
@@ -82,11 +83,11 @@ func PrintInputAndRead(inFileName string) ([]byte, error) {
 
 	contents, err := io.ReadAll(inFile)
 	if err != nil && err != io.EOF {
-		return nil, errors.Wrap(err, "error reading file")
+		return nil, errors.Join(errors.New("error reading file"), err)
 	}
 
 	if err := inFile.Close(); err != nil {
-		return nil, errors.Wrap(err, "error closing file")
+		return nil, errors.Join(errors.New("error closing file"), err)
 	}
 
 	return contents, nil

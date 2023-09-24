@@ -22,11 +22,11 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"image"
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )
@@ -56,22 +56,22 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 
 		img, _, err := image.Decode(inFile)
 		if err != nil {
-			return errors.Wrap(err, "error decoding image")
+			return errors.Join(errors.New("error decoding image"), err)
 		}
 
 		if err := inFile.Close(); err != nil {
-			return errors.Wrap(err, "error closing input file")
+			return errors.Join(errors.New("error closing input file"), err)
 		}
 
 		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 		if err != nil {
-			return errors.Wrap(err, "error creating binary bitmap")
+			return errors.Join(errors.New("error creating binary bitmap"), err)
 		}
 
 		qrReader := qrcode.NewQRCodeReader()
 		result, err := qrReader.Decode(bmp, nil)
 		if err != nil {
-			return errors.Wrap(err, "error decoding QR code")
+			return errors.Join(errors.New("error decoding QR code"), err)
 		}
 
 		// 2. Open output file
@@ -86,23 +86,23 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		pc := internal.PaperCrypt{}
 		err = json.Unmarshal([]byte(data), &pc)
 		if err != nil {
-			return errors.Wrap(err, "error deserializing data")
+			return errors.Join(errors.New("error deserializing data"), err)
 		}
 
 		// 6. Write to file
 		output, err := pc.GetText(false)
 		if err != nil {
-			return errors.Wrap(err, "error deserializing data")
+			return errors.Join(errors.New("error deserializing data"), err)
 		}
 		n, err := outFile.Write(output)
 		if err != nil {
-			return errors.Wrap(err, "error writing output")
+			return errors.Join(errors.New("error writing output"), err)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
 
 		if err := outFile.Close(); err != nil {
-			return errors.Wrap(err, "error closing output file")
+			return errors.Join(errors.New("error closing output file"), err)
 		}
 
 		return nil

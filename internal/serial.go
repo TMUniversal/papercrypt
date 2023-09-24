@@ -24,10 +24,9 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base32"
+	"errors"
 	"math"
 	"math/big"
-
-	"github.com/pkg/errors"
 )
 
 // GenerateSerial generates a random serial number of length `length`
@@ -41,7 +40,7 @@ func GenerateSerial(length uint8) (string, error) {
 	for i := uint8(0); i < length; i++ {
 		randInt, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 		if err != nil {
-			return "", errors.Errorf("error generating random bytes: %s", err)
+			return "", errors.Join(errors.New("error generating random bytes"), err)
 		}
 
 		numbers[i] = randInt
@@ -52,12 +51,12 @@ func GenerateSerial(length uint8) (string, error) {
 	for _, number := range numbers {
 		_, err := encoder.Write(number.Bytes())
 		if err != nil {
-			return "", errors.Errorf("error encoding bytes: %s", err)
+			return "", errors.Join(errors.New("error encoding bytes"), err)
 		}
 	}
 	err := encoder.Close()
 	if err != nil {
-		return "", errors.Errorf("error closing base64 encoder: %s", err)
+		return "", errors.Join(errors.New("error closing base64 encoder"), err)
 	}
 
 	return buf.String()[:length], nil
@@ -69,7 +68,7 @@ func DecodeSerial(serial string) ([]byte, error) {
 	var decoded []byte
 	_, err := decoder.Read(decoded)
 	if err != nil {
-		return nil, errors.Errorf("error decoding serial: %s", err)
+		return nil, errors.Join(errors.New("error decoding serial"), err)
 	}
 
 	return decoded, nil

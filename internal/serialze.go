@@ -24,11 +24,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type LineData struct {
@@ -108,7 +107,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	for _, line := range lines {
 		parts := bytes.SplitN(line, []byte(": "), 2)
 		if len(parts) != 2 {
-			return nil, errors.Errorf("invalid line format: %s", line)
+			return nil, fmt.Errorf("invalid line format: %s", line)
 		}
 
 		lineNumber := strings.ReplaceAll(string(parts[0]), " ", "")
@@ -119,7 +118,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 			var err error
 			blockCrc, err = ParseHexUint32(string(parts[1]))
 			if err != nil {
-				return nil, errors.Errorf("error parsing block CRC24: %s", parts[1])
+				return nil, fmt.Errorf("error parsing block CRC24: %s", parts[1])
 			}
 			continue
 		}
@@ -129,7 +128,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		// a line must never contain no data, this a line must contain at least two parts, one byte and the checksum
 		// (the last line, containing only the block checksum, is already handled above)
 		if len(lineParts) > BytesPerLine+1 || len(lineParts) < 2 {
-			return nil, errors.Errorf("unexpected line length: line %s: %s", lineNumber, parts[1])
+			return nil, fmt.Errorf("unexpected line length: line %s: %s", lineNumber, parts[1])
 		}
 
 		// lineParts[0] - lineParts[last-1] contain the data
@@ -144,7 +143,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 
 		checksumData, err := ParseHexUint32(string(checksumHex))
 		if err != nil {
-			return nil, errors.Errorf("error parsing line checksum: %s", checksumHex)
+			return nil, fmt.Errorf("error parsing line checksum: %s", checksumHex)
 		}
 
 		lineNum := 0
@@ -162,7 +161,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		if ValidateCRC24(lineData.Data, lineData.CRC24) {
 			result = append(result, lineData)
 		} else {
-			return nil, errors.Errorf("invalid line checksum: line %d has checksum %06X, expected %06X.", lineData.LineNumber, Crc24Checksum(lineData.Data), lineData.CRC24)
+			return nil, fmt.Errorf("invalid line checksum: line %d has checksum %06X, expected %06X", lineData.LineNumber, Crc24Checksum(lineData.Data), lineData.CRC24)
 		}
 	}
 
@@ -183,16 +182,16 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	// as we sorted the lines, we can just check the first and last line
 
 	if len(result) == 0 {
-		return nil, errors.Errorf("no lines found")
+		return nil, errors.New(("no lines found"))
 	}
 
 	if result[0].LineNumber != 1 {
-		return nil, errors.Errorf("invalid first line number: %d", result[0].LineNumber)
+		return nil, fmt.Errorf("invalid first line number: %d", result[0].LineNumber)
 	}
 
 	// this also ensures that we have all lines, as the last line number must equal the number of lines
 	if result[len(result)-1].LineNumber != uint32(len(result)) {
-		return nil, errors.Errorf("invalid last line number: %d", result[len(result)-1].LineNumber)
+		return nil, fmt.Errorf("invalid last line number: %d", result[len(result)-1].LineNumber)
 	}
 
 	var resultData []byte
@@ -202,7 +201,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 
 	// 3. Validate data checksum
 	if !ValidateCRC24(resultData, blockCrc) {
-		return nil, errors.Errorf("invalid block checksum")
+		return nil, errors.New("invalid block checksum")
 	}
 
 	return resultData, nil
@@ -216,7 +215,7 @@ func ParseHexUint32(hex string) (uint32, error) {
 	var n uint32
 	_, err := fmt.Sscanf(h, "%x", &n)
 	if err != nil {
-		return 0, errors.Errorf("error parsing hexadecimal value: %s", err)
+		return 0, errors.Join(errors.New("error parsing hexadecimal value"), err)
 	}
 	return n, nil
 }

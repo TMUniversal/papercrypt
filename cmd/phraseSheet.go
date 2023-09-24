@@ -24,12 +24,12 @@ import (
 	crand "crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"math/big"
 	"math/rand"
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )
@@ -61,42 +61,42 @@ var phraseSheetCmd = &cobra.Command{
 		if len(args) == 0 {
 			random, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
 			if err != nil {
-				return errors.Wrap(err, "error generating random seed")
+				return errors.Join(errors.New("error generating random seed"), err)
 			}
 			seed = random.Int64()
 		} else {
 			seedBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(args[0]))
 			if err != nil {
-				return errors.Wrap(err, "error decoding seed")
+				return errors.Join(errors.New("error decoding seed"), err)
 			}
 			seed = int64(binary.BigEndian.Uint64(seedBytes))
 			if err != nil {
-				return errors.Wrap(err, "error converting seed to int64")
+				return errors.Join(errors.New("error converting seed to int64"), err)
 			}
 		}
 
 		// 3. Get words
 		words, err := GenerateFromSeed(seed, passphraseSheetWordCount)
 		if err != nil {
-			return errors.Wrap(err, "error generating words")
+			return errors.Join(errors.New("error generating words"), err)
 		}
 
 		// 4. Generate PDF
 		data, err := internal.GeneratePassphraseSheetPDF(seed, words)
 		if err != nil {
-			return errors.Wrap(err, "error generating PDF")
+			return errors.Join(errors.New("error generating PDF"), err)
 		}
 
 		// 5. Write PDF
 		n, err := outFile.Write(data)
 		if err != nil {
-			return errors.Wrap(err, "error writing PDF")
+			return errors.Join(errors.New("error writing PDF"), err)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
 
 		if err := outFile.Close(); err != nil {
-			return errors.Wrap(err, "error closing output file")
+			return errors.Join(errors.New("error closing output file"), err)
 		}
 
 		return nil

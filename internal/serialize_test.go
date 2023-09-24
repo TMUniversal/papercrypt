@@ -61,7 +61,6 @@ func TestParseHexUint32(t *testing.T) {
 	t.Run("parse hex number without prefix", func(t *testing.T) {
 		hex := "FF"
 		_, err := ParseHexUint32(hex)
-
 		if err != nil {
 			t.Errorf("ParseHexUint32 should not fail with hex number without prefix")
 		}
