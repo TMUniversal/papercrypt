@@ -1,10 +1,16 @@
-report_sizes: true
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=jcroql
+
+env:
+  - GO111MODULE=on
 
 before:
   hooks:
     - go mod tidy
     - task completions
     - task manpages
+
+report_sizes: true
 
 release:
   github:
@@ -22,19 +28,32 @@ builds:
     binary: papercrypt
     env:
       - CGO_ENABLED=0
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+      - ppc64
+    goarm:
+      - "7"
     goos:
       - linux
       - windows
       - darwin
+    ignore:
+      - goos: windows
+        goarch: arm
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
     ldflags:
-      - "-s -w -X main.version={{.Version}} -X main.commit={{.FullCommit}} -X main.branch={{.Branch}} -X main.tag={{.Tag}} -X main.summary={{.Summary}} -X main.repo={{.GitURL}} -X main.dirty={{.IsGitDirty}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X main.os={{.Os}} -X main.arch={{.Arch}} -X 'main.GoVersion={{.Env.GOVERSION}}'"
+      - -s -w -X main.version={{.Version}} -X main.commit={{.FullCommit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -X main.treeState={{ .IsGitDirty }}
+
+universal_binaries:
+  - replace: false
 
 gomod:
   proxy: true
-  env:
-    - GOPROXY=https://proxy.golang.org,direct
-    - GOSUMDB=sum.golang.org
-  mod: mod
 
 upx:
   - enabled: true
@@ -78,6 +97,7 @@ changelog:
 
 signs:
   - cmd: cosign
+    output: true
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
     args:
       - "sign-blob"
@@ -85,10 +105,11 @@ signs:
       - "--output-signature=${signature}"
       - "${artifact}"
       - "--yes"
-    artifacts: all
+    artifacts: checksum
 
 docker_signs:
-  - artifacts: all
+  - artifacts: manifests
+    output: true
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
 
 brews:
@@ -208,7 +229,6 @@ docker_manifests:
     image_templates:
       - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-amd64
       - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-arm64
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+sboms:
+  - artifacts: archive
