@@ -81,7 +81,7 @@ tasks:
   reltest:
     desc: Create a test release. Will install goreleaser through go install if not present in PATH.
     cmds:
-      - goreleaser release --snapshot --clean --skip=publish
+      - goreleaser release --snapshot --clean --skip=publish,sign
 
   docs:examples:
     desc: Run the examples
