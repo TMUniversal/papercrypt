@@ -1,79 +1,89 @@
 version: "3"
 
 env:
-  GOVERSION:
-    sh: go version
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
 
 tasks:
+  dev:
+    desc: Install git hooks
+    cmds:
+      - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
   build:
     desc: Build the app
     run: when_changed
-    deps:
-      - deps:goreleaser
     sources:
-      - "*.go"
-      - "**/*.go"
+      - "./**/*.go"
       - "go.mod"
       - "go.sum"
     generates:
-      - "bin/papercrypt{{exeExt}}"
-    dotenv:
-      - .env
+      - "./papercrypt{{exeExt}}"
     cmds:
-      - bash -c "mkdir -vp bin"
-      - goreleaser build --snapshot --clean --single-target --output bin/papercrypt{{exeExt}}
+      - go build
 
   test:
-    desc: Run the tests
-    run: when_changed
-    deps:
-      - build
+    desc: Run tests
     vars:
-      WITH_COVERAGE: "0"
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
       - go vet ./...
-      - >-
-        go test -v ./... -coverprofile=coverage.out -covermode=atomic
-        && bash -c 'if [ -n "${WITH_COVERAGE}" ]; then go tool cover -html=coverage.out -o coverage.html; fi'
-        && rm coverage.out
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
       # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
       # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
       # if running on windows, install it in WSL
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | bin/papercrypt{{exeExt}} generate --purpose "Test" --comment "Test" --passphrase "test"
+        | go run . generate --purpose "Test" --comment "Test" --passphrase "test"
         | pdftoppm -png -r 300 - t
         && cat t-1.png
-        | bin/papercrypt{{exeExt}} qr
-        | bin/papercrypt{{exeExt}} decode -f -o test.json --passphrase "test"
+        | go run . qr
+        | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."
         ; rm -f test.json test-in.json t-*.png'
 
+  cover:
+    desc: Open the cover tool
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  fmt:
+    desc: gofumpt all code
+    cmds:
+      - gofumpt -w -l .
+
+  lint:
+    desc: Lint the code with golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  ci:
+    desc: Run all CI steps
+    cmds:
+      - task: setup
+      - task: build
+      - task: test
+
   release:
     desc: Create a release. Will install goreleaser through go install if not present in PATH.
-    dotenv:
-      - .env
-    env:
-      GORELEASER_TOKEN: "{{.Env.GORELEASER_TOKEN}}"
-      GITHUB_TOKEN: "{{.Env.GITHUB_TOKEN}}"
-      COSIGN_PASSWORD: "{{.Env.COSIGN_PASSWORD}}"
-    deps:
-      - deps:goreleaser
     cmds:
       - "npx -p @semantic-release/changelog -p @semantic-release/exec -p @semantic-release/git semantic-release"
 
   reltest:
     desc: Create a test release. Will install goreleaser through go install if not present in PATH.
-    dotenv:
-      - .env
-    deps:
-      - deps:goreleaser
     cmds:
       - goreleaser release --snapshot --clean --skip=publish
 
-  examples:
+  docs:examples:
     desc: Run the examples
     deps:
       - build
@@ -103,14 +113,6 @@ tasks:
       - manpages/papercrypt.1.gz
     cmds:
       - bash -c "./scripts/manpages.sh"
-
-  deps:goreleaser:
-    desc: Install goreleaser
-    internal: true
-    silent: true
-    run: once
-    cmds:
-      - "goreleaser --version || go install github.com/goreleaser/goreleaser@latest && goreleaser --version"
 
   clean:
     desc: Remove all generated files

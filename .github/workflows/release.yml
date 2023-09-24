@@ -86,8 +86,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -y poppler-utils upx
-          which pdftoppm && which upx
+          sudo apt-get install -y poppler-utils
+          which pdftoppm
+
+      - uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
 
       - name: Install Task
         uses: arduino/setup-task@v1
@@ -121,6 +125,8 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           install-only: true
+
+      - uses: anchore/sbom-action/download-syft@v0.14.3
 
       - name: Publish Release
         run: task release
