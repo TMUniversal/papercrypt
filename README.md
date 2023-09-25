@@ -43,9 +43,11 @@ while also providing a physical backup that 's not susceptible to digital threat
 
 ### Pre-built binaries
 
-Pre-built binaries for PaperCrypt are available for download from the [releases](https://github.com/TMUniversal/papercrypt/releases) page.
+Pre-built binaries for PaperCrypt are available for download from
+the [releases](https://github.com/TMUniversal/papercrypt/releases) page.
 
-> The pre-built binaries are preferred over manual installation, as they include version information. The GitHub releases also included signatures for the binaries.
+> The pre-built binaries are preferred over manual installation, as they include version information. The GitHub
+> releases also included signatures for the binaries.
 
 #### Homebrew (Linux, macOS)
 
@@ -56,7 +58,8 @@ brew install papercrypt
 
 #### Scoop (Windows)
 
-Make sure you have [scoop](https://scoop.sh/) installed, alongside `git` (`scoop install git`) to be able to add the bucket.
+Make sure you have [scoop](https://scoop.sh/) installed,
+alongside `git` (`scoop install git`) to be able to add the bucket.
 
 ```bash
 scoop bucket add tmuniversal https://github.com/tmuniversal/scoop-bucket.git
@@ -112,7 +115,8 @@ You can also run PaperCrypt using Docker, with the following command:
 docker run --rm -it -v $(pwd):/data ghcr.io/tmuniversal/papercrypt:latest
 ```
 
-With `-v $(pwd):/data` mounting the current working directory as `/data` in the container, allowing the container to read and write to host storage.
+With `-v $(pwd):/data` mounting the current working directory as `/data` in the container,
+allowing the container to read and write to host storage.
 
 On Windows, the command is slightly different:
 
@@ -124,7 +128,9 @@ Note that `-t` is required so that the program can prompt for a passphrase.
 
 ### Verifying artifacts
 
-First, you'll need to download the archive and signature file (`.sig`) for your version from the [releases page](https://github.com/TMUniversal/papercrypt/releases), pay attention to the version (`papercrypt version`), your OS and architecture. You will also need the public key ([`cosign.pub`]).
+First, you'll need to download the archive and signature file (`.sig`) for your version from
+the [releases page](https://github.com/TMUniversal/papercrypt/releases), pay attention to the
+version (`papercrypt version`), your OS and architecture. You will also need the public key ([`cosign.pub`]).
 
 The pre-built binaries are signed through [`cosign`](https://github.com/sigstore/cosign#installation).
 
@@ -151,10 +157,12 @@ cosign verify-blob \
 General notes:
 
 - `--in` and `--out` can be omitted, in which case `stdin` and `stdout` are used.
-- This means `papercrypt decode --in - --out - < qr.txt > data.json` is equivalent to `papercrypt decode < qr.txt > data.json`
+- This means `papercrypt decode --in - --out - < qr.txt > data.json` is equivalent
+  to `papercrypt decode < qr.txt > data.json`
 - Commands, as well as their flags, can be abbreviated to their shortest unique prefix:
   - `papercrypt generate` can be abbreviated to `papercrypt g`
-- that is `papercrypt generate --in data.json --out output.pdf` can be abbreviated to `papercrypt g -i data.json -o output.pdf`
+- that is `papercrypt generate --in data.json --out output.pdf` can be abbreviated
+  to `papercrypt g -i data.json -o output.pdf`
 
 ### Generating a key phrase
 
@@ -190,7 +198,8 @@ If no seed is passed to the command, one will be generated using the system's en
 papercrypt phraseSheet --out phrase-sheet.pdf ExampleAbcA=
 ```
 
-Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will is also present on the generated PDF document,
+Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list.
+The seed will is also present on the generated PDF document,
 so you can regenerate the same word list later, even if you allowed the seed to be chosen at random.
 
 Using the phrase sheet, you can select a number of words from to form your mnemonic phrase.
@@ -233,7 +242,8 @@ Please see the [examples](examples) directory for the generated PDF files.
 To restore your data from a PaperCrypt document,
 you must first re-construct the document from the printed copy.
 This can be done either by saving the QR code as an image file,
-and [passing it to the command-line](#using-the-qr-code), or by copy-pasting the text from the printed document (would have to run [OCR](https://www.adobe.com/acrobat/guides/what-is-ocr.html "optical character recognition")).
+and [passing it to the command-line](#using-the-qr-code),
+or by copy-pasting the text from the printed document (would have to run [OCR](https://www.adobe.com/acrobat/guides/what-is-ocr.html "optical character recognition")).
 
 #### Using the QR code
 
