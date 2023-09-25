@@ -122,16 +122,6 @@ docker run --rm -it -v ${PWD}:/data ghcr.io/tmuniversal/papercrypt:latest
 
 Note that `-t` is required so that the program can prompt for a passphrase.
 
-~~If you don't want to mount any volumes, you can pass data through `stdin` and `stdout`:~~
-
-```bash
-echo "{\"secret\":\"my-data\"}" \
-| docker run --rm -it ghcr.io/tmuniversal/papercrypt:latest generate --in - --out - \
-> output.pdf
-```
-
-> Warning: The preceding command doesn't currently work with Docker, as passing data through `stdin` like so prevents the container from receiving the proper `TTY`.
-
 ### Verifying artifacts
 
 First, you'll need to download the archive and signature file (`.sig`) for your version from the [releases page](https://github.com/TMUniversal/papercrypt/releases), pay attention to the version (`papercrypt version`), your OS and architecture. You will also need the public key ([`cosign.pub`]).
