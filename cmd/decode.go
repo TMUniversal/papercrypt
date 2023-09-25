@@ -278,8 +278,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		decompressed := new(bytes.Buffer)
-		_, err = decompressed.ReadFrom(gzipReader)
-		if err != nil {
+		if _, err := decompressed.ReadFrom(gzipReader); err != nil {
 			return errors.Join(errors.New("error reading from gzip reader"), err)
 		}
 		if err := gzipReader.Close(); err != nil {
