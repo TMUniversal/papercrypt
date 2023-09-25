@@ -182,7 +182,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	// as we sorted the lines, we can just check the first and last line
 
 	if len(result) == 0 {
-		return nil, errors.New(("no lines found"))
+		return nil, errors.New("no lines found")
 	}
 
 	if result[0].LineNumber != 1 {
