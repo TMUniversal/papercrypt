@@ -44,14 +44,15 @@ const wordListURL = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
 var wordListURLFormatted = internal.URL(wordListURL)
 
 var generateKeyCmd = &cobra.Command{
-	Aliases: []string{"key", "gen", "k"},
-	Args:    cobra.NoArgs,
-	Use:     "generateKey",
-	Short:   "Generates a mnemonic key phrase",
+	Aliases:      []string{"key", "gen", "k"},
+	Args:         cobra.NoArgs,
+	SilenceUsage: true,
+	Use:          "generateKey",
+	Short:        "Generates a mnemonic key phrase",
 	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
 which can be found here: %s.`, wordListURLFormatted),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		out, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
+		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err
 		}
@@ -63,18 +64,13 @@ which can be found here: %s.`, wordListURLFormatted),
 		}
 		log.Info("Key phrase generated.")
 
-		n, err := out.WriteString(strings.Join(keyPhrase, " "))
+		n, err := outFile.WriteString(strings.Join(keyPhrase, " "))
 		if err != nil {
 			return errors.Join(errors.New("error writing key phrase"), err)
 		}
 
-		internal.PrintWrittenSize(n, out)
-
-		if err := out.Close(); err != nil {
-			return errors.Join(errors.New("error closing output file"), err)
-		}
-
-		return nil
+		internal.PrintWrittenSize(n, outFile)
+		return internal.CloseFileIfNotStd(outFile)
 	},
 }
 

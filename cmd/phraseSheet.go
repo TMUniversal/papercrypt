@@ -40,11 +40,12 @@ const (
 
 // phraseSheetCmd represents the phraseSheet command
 var phraseSheetCmd = &cobra.Command{
-	Aliases: []string{"ps", "p"},
-	Args:    cobra.MaximumNArgs(1),
-	Use:     "phraseSheet [base64 seed]",
-	Short:   "Generate a passphrase sheet.",
-	Example: "papercrypt phraseSheet -o phraseSheet.pdf",
+	Aliases:      []string{"ps", "p"},
+	Args:         cobra.MaximumNArgs(1),
+	SilenceUsage: true,
+	Use:          "phraseSheet [base64 seed]",
+	Short:        "Generate a passphrase sheet.",
+	Example:      "papercrypt phraseSheet -o phraseSheet.pdf",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
@@ -94,12 +95,7 @@ var phraseSheetCmd = &cobra.Command{
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-
-		if err := outFile.Close(); err != nil {
-			return errors.Join(errors.New("error closing output file"), err)
-		}
-
-		return nil
+		return internal.CloseFileIfNotStd(outFile)
 	},
 }
 

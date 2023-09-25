@@ -33,10 +33,11 @@ import (
 
 // qrCmd represents the data command
 var qrCmd = &cobra.Command{
-	Aliases: []string{"q"},
-	Args:    cobra.MaximumNArgs(1),
-	Use:     "qr <input>",
-	Short:   "Decode a document from a QR code.",
+	Aliases:      []string{"q"},
+	Args:         cobra.MaximumNArgs(1),
+	SilenceUsage: true,
+	Use:          "qr <input>",
+	Short:        "Decode a document from a QR code.",
 	Long: `Decode a document from a QR code.
 
 This command allows you to decode data saved by PaperCrypt.
@@ -100,12 +101,7 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-
-		if err := outFile.Close(); err != nil {
-			return errors.Join(errors.New("error closing output file"), err)
-		}
-
-		return nil
+		return internal.CloseFileIfNotStd(outFile)
 	},
 }
 

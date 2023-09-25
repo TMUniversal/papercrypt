@@ -27,7 +27,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -35,7 +34,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
-	"golang.org/x/term"
 )
 
 var (
@@ -51,10 +49,11 @@ var (
 
 // decodeCmd represents the decode command
 var decodeCmd = &cobra.Command{
-	Aliases: []string{"dec", "d"},
-	Args:    cobra.NoArgs,
-	Use:     "decode",
-	Short:   "Decode a PaperCrypt document",
+	Aliases:      []string{"dec", "d"},
+	Args:         cobra.NoArgs,
+	SilenceUsage: true,
+	Use:          "decode",
+	Short:        "Decode a PaperCrypt document",
 	Long: `This command allows you to decode binary data saved by PaperCrypt. 
 The data should be read from a file or stdin, you will be required to provide a passphrase.`,
 	Example: `papercrypt decode -i <file>.txt -o <file>.txt`,
@@ -257,8 +256,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		var passphraseBytes []byte
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			cmd.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data)")
-			cmd.Printf("Passphrase: ")
-			passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
+			passphraseBytes, err = internal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
@@ -296,12 +294,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-
-		if err := outFile.Close(); err != nil {
-			return errors.Join(errors.New("error closing file"), err)
-		}
-
-		return nil
+		return internal.CloseFileIfNotStd(outFile)
 	},
 }
 

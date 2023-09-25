@@ -92,3 +92,15 @@ func PrintInputAndRead(inFileName string) ([]byte, error) {
 
 	return contents, nil
 }
+
+func CloseFileIfNotStd(file *os.File) error {
+	if file == os.Stderr || file == os.Stdout || file == os.Stdin {
+		return nil
+	}
+
+	if err := file.Close(); err != nil {
+		return errors.Join(errors.New("error closing file"), err)
+	}
+
+	return nil
+}
