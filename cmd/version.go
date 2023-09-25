@@ -28,10 +28,11 @@ import (
 )
 
 var versionCmd = &cobra.Command{
-	Aliases: []string{"v"},
-	Args:    cobra.NoArgs,
-	Use:     "version",
-	Short:   "Shows the version and build information of the application",
+	Aliases:      []string{"v"},
+	SilenceUsage: true,
+	Args:         cobra.NoArgs,
+	Use:          "version",
+	Short:        "Shows the version and build information of the application",
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 	},
 	Run: func(cmd *cobra.Command, args []string) {

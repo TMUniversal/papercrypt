@@ -24,14 +24,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
-	"os"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
-	"golang.org/x/term"
 )
 
 var (
@@ -50,10 +48,11 @@ var passphrase string
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
-	Aliases: []string{"gen", "g"},
-	Args:    cobra.NoArgs,
-	Use:     "generate",
-	Short:   "Generate a PaperCrypt document",
+	Aliases:      []string{"gen", "g"},
+	Args:         cobra.NoArgs,
+	SilenceUsage: true,
+	Use:          "generate",
+	Short:        "Generate a PaperCrypt document",
 	Long: `The 'generate' command takes a JSON file as input and encrypts the data within. It then embeds the encrypted data in a 
 newly created PDF file that you can print for physical storage.
 
@@ -106,15 +105,13 @@ encrypted data.`,
 		var passphraseBytes []byte
 		if !cmd.Flags().Lookup("passphrase").Changed {
 			log.Info("Enter your encryption passphrase")
-			cmd.Printf("Passphrase: ")
-			passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
+			passphraseBytes, err = internal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
 
 			log.Info("Enter your encryption passphrase again to confirm")
-			cmd.Printf("Passphrase (again): ")
-			passphraseAgain, err := term.ReadPassword(int(os.Stdin.Fd()))
+			passphraseAgain, err := internal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
@@ -162,12 +159,7 @@ encrypted data.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-
-		if err := outFile.Close(); err != nil {
-			return errors.Join(errors.New("error closing file"), err)
-		}
-
-		return nil
+		return internal.CloseFileIfNotStd(outFile)
 	},
 }
 

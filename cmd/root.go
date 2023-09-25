@@ -40,8 +40,9 @@ const repo = "https://github.com/TMUniversal/papercrypt"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "papercrypt",
-	Short: "PaperCrypt lets you prepare encrypted messages for printing on paper",
+	Use:          "papercrypt",
+	SilenceUsage: true,
+	Short:        "PaperCrypt lets you prepare encrypted messages for printing on paper",
 	Long: `PaperCrypt lets you prepare encrypted messages for printing on paper.
 
 It is designed to let you enter data, encrypt it with a passphrase,

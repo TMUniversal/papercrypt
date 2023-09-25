@@ -31,16 +31,18 @@ var LicenseText *string
 
 // urlCmd represents the url command
 var showCmd = &cobra.Command{
-	Aliases: []string{"s"},
-	Args:    cobra.NoArgs,
-	Use:     "show",
-	Short:   "Show commands: 'w', 'c'",
-	Long:    `Use 'show [w/c]' to view warranty or copyright info`,
+	Aliases:      []string{"s"},
+	Args:         cobra.NoArgs,
+	SilenceUsage: true,
+	Use:          "show",
+	Short:        "Show commands: 'w', 'c'",
+	Long:         `Use 'show [w/c]' to view warranty or copyright info`,
 }
 
 var showCmdWarranty = &cobra.Command{
-	Use:   "w",
-	Short: "Show warranty info",
+	Use:          "w",
+	SilenceUsage: true,
+	Short:        "Show warranty info",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
 		cmd.Println("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.")
@@ -80,8 +82,9 @@ copy of the Program in return for a fee.`)
 }
 
 var showCmdCopyright = &cobra.Command{
-	Use:   "c",
-	Short: "Show copyright info",
+	Use:          "c",
+	SilenceUsage: true,
+	Short:        "Show copyright info",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
 		fmt.Println(*LicenseText)
