@@ -17,11 +17,11 @@ permissions:
 
 jobs:
   govulncheck:
-    uses: TMUniversal/meta/.github/workflows/govulncheck.yml@main
+    uses: tmuniversal/meta/.github/workflows/govulncheck.yml@main
   semgrep:
-    uses: TMUniversal/meta/.github/workflows/semgrep.yml@main
+    uses: tmuniversal/meta/.github/workflows/semgrep.yml@main
   ruleguard:
-    uses: TMUniversal/meta/.github/workflows/ruleguard.yml@main
+    uses: tmuniversal/meta/.github/workflows/ruleguard.yml@main
     with:
       args: "-disable largeloopcopy"
   test:
