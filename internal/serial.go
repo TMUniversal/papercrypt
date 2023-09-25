@@ -61,15 +61,3 @@ func GenerateSerial(length uint8) (string, error) {
 
 	return buf.String()[:length], nil
 }
-
-// DecodeSerial decodes a serial number
-func DecodeSerial(serial string) ([]byte, error) {
-	decoder := base32.NewDecoder(base32.StdEncoding, bytes.NewBufferString(serial))
-	var decoded []byte
-	_, err := decoder.Read(decoded)
-	if err != nil {
-		return nil, errors.Join(errors.New("error decoding serial"), err)
-	}
-
-	return decoded, nil
-}
