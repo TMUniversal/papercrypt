@@ -103,7 +103,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorParsingHeader, newFieldNotPresentError(internal.HeaderFieldVersion))
 			}
 
-			log.Warn("PaperCrypt Version not present in header.")
+			log.Warn(internal.Warning("PaperCrypt Version not present in header."))
 		}
 
 		// parse git-describe version, look for major version <= 1
@@ -120,7 +120,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorParsingHeader, newFieldNotPresentError(internal.HeaderFieldHeaderCRC32))
 			}
 
-			log.Warn("Header CRC-32 not present in header")
+			log.Warn(internal.Warning("Header CRC-32 not present in header"))
 		}
 
 		headerCrc = strings.ToLower(headerCrc)
@@ -138,7 +138,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorParsingHeader, errorValidationFailure, errors.New("header CRC-32 mismatch"))
 			}
 
-			log.Warn("Header CRC-32 mismatch!")
+			log.Warn(internal.Warning("Header CRC-32 mismatch!"))
 		}
 
 		var pgpMessage *crypto.PGPMessage
@@ -181,7 +181,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldCRC32))
 			}
 
-			log.Warn("Content CRC-32 mismatch!")
+			log.Warn(internal.Warning("Content CRC-32 mismatch!"))
 		}
 
 		// 5.3 Verify CRC-24
@@ -200,7 +200,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldCRC24))
 			}
 
-			log.Warn("Content CRC-24 mismatch!")
+			log.Warn(internal.Warning("Content CRC-24 mismatch!"))
 		}
 
 		// 5.4 Verify SHA-256
@@ -220,13 +220,13 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", internal.HeaderFieldSHA256))
 			}
 
-			log.Warn("Content SHA-256 mismatch!")
+			log.Warn(internal.Warning("Content SHA-256 mismatch!"))
 		}
 
 		// 6. Construct PaperCrypt object
 		headerDate, ok := headers[internal.HeaderFieldDate]
 		if !ok {
-			log.Warn("Date not present in header!")
+			log.Warn(internal.Warning("Date not present in header!"))
 		}
 
 		timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", headerDate)

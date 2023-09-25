@@ -29,7 +29,7 @@ import (
 
 func PrintWrittenSize(size int, file *os.File) {
 	if size == 0 {
-		log.Warn("No data written.")
+		log.Warn(Warning("No data written."))
 	} else {
 		log.WithField("size", SprintBinarySize(size)).WithField("path", file.Name()).Debug("Data written.")
 	}
