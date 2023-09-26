@@ -47,6 +47,11 @@ var rootCmd = &cobra.Command{
 
 It is designed to let you enter data, encrypt it with a passphrase,
 and then prepare a printable document that is optimized for being able to restore the data.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		level := max(log.InfoLevel-log.Level(verbosity), log.DebugLevel)
+		log.SetLevel(level)
+		log.Debug("verbosity set to " + level.String())
+	},
 	PersistentPostRun: func(_ *cobra.Command, _ []string) {
 		log.Info("thank you for using papercrypt!")
 	},
