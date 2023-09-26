@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -64,9 +65,18 @@ which can be found here: %s.`, wordListURLFormatted),
 		}
 		log.Info("Key phrase generated.")
 
-		n, err := outFile.WriteString(strings.Join(keyPhrase, " "))
+		wordString := strings.Join(keyPhrase, " ")
+		if outFile == os.Stdout {
+			wordString = internal.Bold(wordString)
+		}
+
+		n, err := outFile.WriteString(wordString)
 		if err != nil {
 			return errors.Join(errors.New("error writing key phrase"), err)
+		}
+
+		if outFile == os.Stdout {
+			fmt.Fprintln(outFile)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
