@@ -41,6 +41,24 @@ var LicenseText string
 //go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
 var WordList string
 
+//go:embed "font/Noto_Sans/NotoSans-Regular.ttf"
+var pdfFontTextRegular string
+
+//go:embed "font/Noto_Sans/NotoSans-Bold.ttf"
+var pdfFontTextBold string
+
+//go:embed "font/Noto_Sans/NotoSans-Italic.ttf"
+var pdfFontTextItalic string
+
+//go:embed "font/Space_Mono/SpaceMono-Regular.ttf"
+var pdfFontMonoRegular string
+
+//go:embed "font/Space_Mono/SpaceMono-Bold.ttf"
+var pdfFontMonoBold string
+
+//go:embed "font/Space_Mono/SpaceMono-Italic.ttf"
+var pdfFontMonoItalic string
+
 var (
 	version   = ""
 	commit    = ""
@@ -60,6 +78,13 @@ func main() {
 	cmd.LicenseText = &LicenseText
 	cmd.WordListFile = &WordList
 	internal.VersionInfo = buildVersion(version, commit, date, builtBy, treeState)
+	internal.PdfTextFontRegularBytes = []byte(pdfFontTextRegular)
+	internal.PdfTextFontItalicBytes = []byte(pdfFontTextItalic)
+	internal.PdfTextFontBoldBytes = []byte(pdfFontTextBold)
+	internal.PdfMonoFontRegularBytes = []byte(pdfFontMonoRegular)
+	internal.PdfMonoFontBoldBytes = []byte(pdfFontMonoBold)
+	internal.PdfMonoFontItalicBytes = []byte(pdfFontMonoItalic)
+
 	cmd.Execute()
 }
 

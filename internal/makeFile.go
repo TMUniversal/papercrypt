@@ -43,8 +43,20 @@ import (
 
 const (
 	BytesPerLine = 22 // As is done in paperkey (https://www.jabberwocky.com/software/paperkey/)
-	PdfTextFont  = "Times"
-	PdfMonoFont  = "Courier"
+	PdfTextFont  = "Text"
+	PdfMonoFont  = "Mono"
+)
+
+var (
+	PdfTextFontRegularBytes []byte
+	PdfTextFontBoldBytes    []byte
+	PdfTextFontItalicBytes  []byte
+)
+
+var (
+	PdfMonoFontRegularBytes []byte
+	PdfMonoFontBoldBytes    []byte
+	PdfMonoFontItalicBytes  []byte
 )
 
 const (
@@ -189,7 +201,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	{
 		// generate a data matrix with the sheet id
 		enc := datamatrix.NewDataMatrixWriter()
-		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 256, 256, nil)
+		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
@@ -229,23 +241,23 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	{
 		// Info text
-		pdf.SetFont(PdfTextFont, "", 16)
+		pdf.SetFont(PdfTextFont, "B", 16)
 		pdf.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
 		pdf.Ln(10)
-		pdf.SetFont(PdfTextFont, "", 12)
+		pdf.SetFont(PdfTextFont, "B", 10)
 		// enter the markdown information
 		pdf.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
 		pdf.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
 		pdf.Ln(5)
-		pdf.SetFont(PdfTextFont, "", 12)
+		pdf.SetFont(PdfTextFont, "B", 10)
 		pdf.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
 		pdf.MultiCell(0, 5, fmt.Sprintf(PDFSectionRepresentationContent, BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
 		pdf.Ln(5)
-		pdf.SetFont(PdfTextFont, "", 12)
+		pdf.SetFont(PdfTextFont, "B", 10)
 		pdf.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
 		pdf.SetFont(PdfTextFont, "", 10)
@@ -254,7 +266,6 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 			recoverInstruction = PDFSectionRecoveryContentNoQR
 		}
 		pdf.MultiCell(0, 5, recoverInstruction, "", "", false)
-		pdf.Ln(10)
 	}
 
 	// add the qr code
@@ -265,6 +276,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.Ln(50)
 	}
 
+	pdf.AddPage()
 	// print header lines
 	pdf.SetFont(PdfMonoFont, "B", 10)
 	for _, line := range strings.Split(parts[0], "\n") {
@@ -411,7 +423,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 
 	{
 		// Info text
-		pdf.SetFont(PdfTextFont, "", 16)
+		pdf.SetFont(PdfTextFont, "B", 16)
 		pdf.CellFormat(0, 10, "PaperCrypt Passphrase Sheet", "", 0, "C", false, 0, "")
 		pdf.Ln(10)
 
@@ -483,11 +495,20 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 func getPdf() *gofpdf.Fpdf {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetCreator("PaperCrypt/"+VersionInfo.GitVersion, true)
+	pdf.SetTextRenderingMode(4)
 	pdf.SetTopMargin(20)
 	pdf.SetLeftMargin(20)
 	pdf.SetRightMargin(20)
 	pdf.SetAutoPageBreak(true, 15)
 	pdf.AliasNbPages("")
+
+	pdf.AddUTF8FontFromBytes(PdfTextFont, "", PdfTextFontRegularBytes)
+	pdf.AddUTF8FontFromBytes(PdfTextFont, "B", PdfTextFontBoldBytes)
+	pdf.AddUTF8FontFromBytes(PdfTextFont, "I", PdfTextFontItalicBytes)
+
+	pdf.AddUTF8FontFromBytes(PdfMonoFont, "", PdfMonoFontRegularBytes)
+	pdf.AddUTF8FontFromBytes(PdfMonoFont, "B", PdfMonoFontBoldBytes)
+	pdf.AddUTF8FontFromBytes(PdfMonoFont, "I", PdfMonoFontItalicBytes)
 
 	return pdf
 }
