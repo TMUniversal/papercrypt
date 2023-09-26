@@ -241,10 +241,6 @@ for which you can use your mnemonic phrase from earlier.
 
 Please see the [examples](examples) directory for the generated PDF files.
 
-Full pipeline:
-
-[![demo](examples/demo/demo.gif)](examples/output.pdf)
-
 ### Restoring a PaperCrypt document
 
 To restore your data from a PaperCrypt document,
@@ -320,6 +316,10 @@ The command prompts for the encryption key, which you could specify with `--pass
 ```bash
 papercrypt decode -i data.txt -o data.json -P "super-secret-key"
 ```
+
+### Full pipeline
+
+[![demo](examples/demo/demo.gif)](examples/output.pdf)
 
 ## Contributing
 
