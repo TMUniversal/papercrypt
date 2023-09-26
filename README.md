@@ -184,6 +184,8 @@ papercrypt generateKey --words 24 --out mnemonic.txt
 
 to generate a 24 word mnemonic phrase.
 
+[![key example](examples/demo/key.gif)](examples/)
+
 #### The passphrase sheet
 
 PaperCrypt is able to generate a printable _Phrase Sheet_,
@@ -235,7 +237,13 @@ for which you can use your mnemonic phrase from earlier.
 > The caveat is that, when on Windows, you can't be prompted for your passphrase,
 > so you would have to pass it with the `--passphrase` flag.
 
+[![generate example](examples/demo/generate.gif)](examples/output.pdf)
+
 Please see the [examples](examples) directory for the generated PDF files.
+
+Full pipeline:
+
+[![demo](examples/demo/demo.gif)](examples/output.pdf)
 
 ### Restoring a PaperCrypt document
 

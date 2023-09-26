@@ -12,7 +12,7 @@ Set FontSize 32
 Set Width 1200
 Set Height 600
 Set Margin 16
-Set MarginFill "#6B50FF"
+Set MarginFill "#5945c6"
 Set BorderRadius 12
 Set WindowBar "Colorful"
 
