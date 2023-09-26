@@ -110,7 +110,7 @@ encrypted data.`,
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
 
-			log.Info("Enter your encryption passphrase again to confirm")
+			log.Info("Enter your passphrase again to confirm")
 			passphraseAgain, err := internal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
