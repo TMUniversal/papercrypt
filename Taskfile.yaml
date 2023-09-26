@@ -85,6 +85,11 @@ tasks:
 
   docs:examples:
     desc: Run the examples
+    sources:
+      - ./**/*.go
+      - go.mod
+      - go.sum
+      - examples/input.json
     deps:
       - build
     generates:
@@ -93,10 +98,58 @@ tasks:
       - "examples/lowercase.pdf"
       - "examples/phrase.pdf"
     cmds:
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
-      - 'bin/papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
-      - "bin/papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
+      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
+      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
+      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
+      - "./papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
+
+  docs:examples:vhs:
+    sources:
+      - ./**/*.go
+      - go.mod
+      - go.sum
+      - examples/demo/*.tape
+    generates:
+      - examples/demo/demo.gif
+      - examples/demo/demo.webm
+      - examples/demo/generate.gif
+      - examples/demo/generate.webm
+      - examples/demo/generate.png
+      - examples/demo/key.gif
+      - examples/demo/key.webm
+      - examples/demo/decode.png
+    vars:
+      PWD: '{{ if eq OS "windows" }}${PWD}{{ else }}{{.Env.PWD}}{{ end }}'
+    cmds:
+      - task: docs:examples:vhs:render
+        vars:
+          FILE: examples/demo/demo.tape
+      - task: docs:examples:vhs:render
+        vars:
+          FILE: examples/demo/generate.tape
+      - task: docs:examples:vhs:render
+        vars:
+          FILE: examples/demo/key.tape
+
+  docs:examples:vhs:render:
+    desc: Render a single frame of a VHS tape
+    deps:
+      - docs:examples:vhs:image
+    vars:
+      PWD: '{{ if eq OS "windows" }}${PWD}{{ else }}{{.Env.PWD}}{{ end }}'
+      FILE: '{{default "examples/demo/demo.tape" .FILE}}'
+    cmds:
+      - docker run --rm -v {{.PWD}}:/vhs ghcr.io/tmuniversal/papercrypt/vhs {{.FILE}}
+
+  docs:examples:vhs:image:
+    run: when_changed
+    sources:
+      - vhs.Dockerfiles
+      - ./**/*.go
+      - go.mod
+      - go.sum
+    cmds:
+      - docker build -f vhs.Dockerfile -t ghcr.io/tmuniversal/papercrypt/vhs .
 
   completions:
     desc: Generate shell completions. Running on Windows requires Go installed in WSL.
