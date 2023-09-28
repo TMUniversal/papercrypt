@@ -177,7 +177,7 @@ winget:
     copyright: TMUniversal
     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
     skip_upload: auto
-    release_notes: "{{.Changelog}}"
+    release_notes: "{{.ReleaseNotes}}"
     release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
     tags:
       - golang
@@ -187,7 +187,15 @@ winget:
     repository:
       owner: tmuniversal
       name: winget-pkgs
+      branch: "papercrypt-{{.Version}}"
       token: "{{ .Env.GORELEASER_TOKEN }}"
+      pull_request:
+        enabled: true
+        draft: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
 
 blobs:
   - provider: s3
