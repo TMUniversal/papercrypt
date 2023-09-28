@@ -27,6 +27,7 @@ import (
 	"errors"
 	"math/big"
 	"math/rand"
+	"os"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -52,6 +53,12 @@ var phraseSheetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		defer func(file *os.File) {
+			err := internal.CloseFileIfNotStd(file)
+			if err != nil {
+				log.WithError(err).Error("Error closing file")
+			}
+		}(outFile)
 
 		if len(wordList) == 0 {
 			generateWordList()
@@ -95,7 +102,7 @@ var phraseSheetCmd = &cobra.Command{
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-		return internal.CloseFileIfNotStd(outFile)
+		return nil
 	},
 }
 

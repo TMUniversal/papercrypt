@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -66,6 +67,12 @@ encrypted data.`,
 		if err != nil {
 			return err
 		}
+		defer func(file *os.File) {
+			err := internal.CloseFileIfNotStd(file)
+			if err != nil {
+				log.WithError(err).Error("Error closing file")
+			}
+		}(outFile)
 
 		// 2. generate serial number if not provided
 		if serialNumber == "" {
@@ -159,7 +166,7 @@ encrypted data.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-		return internal.CloseFileIfNotStd(outFile)
+		return nil
 	},
 }
 

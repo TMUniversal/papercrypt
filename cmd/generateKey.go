@@ -57,6 +57,12 @@ which can be found here: %s.`, wordListURLFormatted),
 		if err != nil {
 			return err
 		}
+		defer func(file *os.File) {
+			err := internal.CloseFileIfNotStd(file)
+			if err != nil {
+				log.WithError(err).Error("Error closing file")
+			}
+		}(outFile)
 
 		log.Info("Generating key phrase...")
 		keyPhrase, err := generateMnemonic(words)
@@ -80,7 +86,7 @@ which can be found here: %s.`, wordListURLFormatted),
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-		return internal.CloseFileIfNotStd(outFile)
+		return nil
 	},
 }
 

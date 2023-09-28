@@ -24,7 +24,9 @@ import (
 	"encoding/json"
 	"errors"
 	"image"
+	"os"
 
+	"github.com/caarlos0/log"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
@@ -80,6 +82,12 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		if err != nil {
 			return err
 		}
+		defer func(file *os.File) {
+			err := internal.CloseFileIfNotStd(file)
+			if err != nil {
+				log.WithError(err).Error("Error closing file")
+			}
+		}(outFile)
 
 		data := result.GetText()
 
@@ -101,7 +109,7 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-		return internal.CloseFileIfNotStd(outFile)
+		return nil
 	},
 }
 

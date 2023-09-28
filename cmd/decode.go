@@ -27,6 +27,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/crc32"
+	"os"
 	"strings"
 	"time"
 
@@ -63,6 +65,12 @@ The data should be read from a file or stdin, you will be required to provide a 
 		if err != nil {
 			return err
 		}
+		defer func(file *os.File) {
+			err := internal.CloseFileIfNotStd(file)
+			if err != nil {
+				log.WithError(err).Error("Error closing file")
+			}
+		}(outFile)
 
 		// 2. Read inFile
 		paperCryptFileContents, err := internal.PrintInputAndRead(inFileName)
@@ -95,6 +103,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 				headers[key] = string(headerLineSplit[1])
 			}
 		}
+
+		// Debug: print headers
+		log.WithField("headers", headers).Debug("Read headers")
 
 		// 4. Run Header Validation
 		versionLine, ok := headers[internal.HeaderFieldVersion]
@@ -131,11 +142,12 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.Join(errorParsingHeader, errors.New("invalid CRC-32 format"), err)
 		}
 
-		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("\n"+internal.HeaderFieldHeaderCRC32+": "+headers[internal.HeaderFieldHeaderCRC32]), []byte(""))
+		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("# "), []byte{})
+		headerWithoutCrc = bytes.ReplaceAll(headerWithoutCrc, []byte("\n"+internal.HeaderFieldHeaderCRC32+": "+headers[internal.HeaderFieldHeaderCRC32]), []byte{})
 
 		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
-				return errors.Join(errorParsingHeader, errorValidationFailure, errors.New("header CRC-32 mismatch"))
+				return errors.Join(errorParsingHeader, errorValidationFailure, errors.New("header CRC-32 mismatch: expected "+headers[internal.HeaderFieldHeaderCRC32]+", got "+fmt.Sprintf("%x", crc32.ChecksumIEEE(headerWithoutCrc))))
 			}
 
 			log.Warn(internal.Warning("Header CRC-32 mismatch!"))
@@ -293,7 +305,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 
 		internal.PrintWrittenSize(n, outFile)
-		return internal.CloseFileIfNotStd(outFile)
+		return nil
 	},
 }
 
