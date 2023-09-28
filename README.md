@@ -325,6 +325,7 @@ papercrypt decode -i data.txt -o data.json -P "super-secret-key"
 
 Contributions to PaperCrypt are welcomed and encouraged! If you have suggestions for improvements, bug fixes, or new
 features, please feel free to submit a pull request.
+Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
 ## License
 
