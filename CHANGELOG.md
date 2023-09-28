@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/TMUniversal/papercrypt/compare/v1.1.0...v1.1.1) (2023-09-28)
+
+
+### Bug Fixes
+
+* close files after error ([33d87e2](https://github.com/TMUniversal/papercrypt/commit/33d87e2a334b05686667f2a1920934ecd9ced895))
+
 # [1.1.0](https://github.com/TMUniversal/papercrypt/compare/v1.0.6...v1.1.0) (2023-09-23)
 
 
