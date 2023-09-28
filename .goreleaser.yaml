@@ -101,16 +101,23 @@ signs:
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
     args:
       - "sign-blob"
-      - "--key=cosign.key"
+      - "--key=env://COSIGN_KEY"
       - "--output-signature=${signature}"
       - "${artifact}"
       - "--yes"
     artifacts: checksum
 
 docker_signs:
-  - artifacts: manifests
+  - cmd: cosign
+    artifacts: manifests
     output: true
     stdin: "{{ .Env.COSIGN_PASSWORD }}"
+    args:
+      - "sign"
+      - "--key=env://COSIGN_KEY"
+      # - "--upload=false"
+      - "${artifact}@${digest}"
+      - "--yes"
 
 brews:
   - name: papercrypt

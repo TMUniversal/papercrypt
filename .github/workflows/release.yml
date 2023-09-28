@@ -99,6 +99,13 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          install-only: true
+
+      - uses: anchore/sbom-action/download-syft@v0.14.3
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -115,23 +122,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Write signing key to disk
-        run: 'echo "$KEY" | base64 -d > cosign.key'
-        shell: bash
-        env:
-          KEY: ${{ secrets.COSIGN_KEY }}
-
-      - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          install-only: true
-
-      - uses: anchore/sbom-action/download-syft@v0.14.3
-
       - name: Publish Release
         run: task release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           GORELEASER_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
           GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
