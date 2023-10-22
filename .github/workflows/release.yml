@@ -122,11 +122,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Decode cosign key
+        run: echo "${{ secrets.COSIGN_KEY_BASE64 }}" | base64 -d > cosign.key
+
       - name: Publish Release
         run: task release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
           GORELEASER_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
           GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
