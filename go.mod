@@ -3,7 +3,7 @@ module github.com/tmuniversal/papercrypt
 go 1.21
 
 require (
-	github.com/ProtonMail/gopenpgp/v2 v2.7.3
+	github.com/ProtonMail/gopenpgp/v2 v2.7.4
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.4
 	github.com/charmbracelet/lipgloss v0.9.1
