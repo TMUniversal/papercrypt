@@ -56,7 +56,7 @@ gomod:
   proxy: true
 
 upx:
-  - enabled: true
+  - enabled: false # temporarily disabled
     compress: best
     lzma: true
     brute: false
