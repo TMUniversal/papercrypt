@@ -1,3 +1,12 @@
+## [1.1.4](https://github.com/TMUniversal/papercrypt/compare/v1.1.3...v1.1.4) (2023-11-21)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/protonmail/gopenpgp/v2 to v2.7.4 ([d8236f4](https://github.com/TMUniversal/papercrypt/commit/d8236f495105c1dff909e3fddf1b8c339d455418))
+* **deps:** update module github.com/spf13/cobra to v1.8.0 ([cef8075](https://github.com/TMUniversal/papercrypt/commit/cef8075af6383f6668b3dd8de5869f7c252c2dc5))
+* **deps:** update module golang.org/x/term to v0.14.0 ([0f10fca](https://github.com/TMUniversal/papercrypt/commit/0f10fca7546f769afbe80fab14d6146d4194ed0d))
+
 ## [1.1.3](https://github.com/TMUniversal/papercrypt/compare/v1.1.2...v1.1.3) (2023-10-22)
 
 
