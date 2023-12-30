@@ -25,7 +25,7 @@ jobs:
         with:
           go-version-file: go.mod
           check-latest: true
-          cache-dependency-path: '**/*.sum'
+          cache-dependency-path: "**/*.sum"
 
       - name: Install dependencies
         run: |
@@ -68,7 +68,7 @@ jobs:
         with:
           go-version-file: go.mod
           check-latest: true
-          cache-dependency-path: '**/*.sum'
+          cache-dependency-path: "**/*.sum"
 
       - name: Save `go version`
         id: go-version
@@ -132,3 +132,8 @@ jobs:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           GORELEASER_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
           GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
