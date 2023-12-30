@@ -170,13 +170,7 @@ A 24 word mnemonic phrase is suitable for real-world use,
 but you can use any string of words or characters.
 
 Generate one with your tool of choice,
-you can use [seedtool-cli](https://github.com/BlockchainCommons/seedtool-cli):
-
-```bash
-seedtool --out bip39 --count 32
-```
-
-or use this tool directly:
+you can run:
 
 ```bash
 papercrypt generateKey --words 24 --out mnemonic.txt
