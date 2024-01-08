@@ -45,7 +45,7 @@ jobs:
         with:
           go-version: stable
       - uses: sigstore/cosign-installer@v3.3.0
-      - uses: anchore/sbom-action/download-syft@v0.15.2
+      - uses: anchore/sbom-action/download-syft@v0.15.3
       - name: setup-tparse
         run: go install github.com/mfridman/tparse@latest
       - name: setup
