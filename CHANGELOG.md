@@ -1,3 +1,11 @@
+## [1.1.7](https://github.com/TMUniversal/papercrypt/compare/v1.1.6...v1.1.7) (2024-02-08)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/protonmail/gopenpgp/v2 to v2.7.5 ([186f158](https://github.com/TMUniversal/papercrypt/commit/186f15850b28a60ea4ffef3c988f629f4ec180a4))
+* **deps:** update module golang.org/x/term to v0.17.0 ([5e30e86](https://github.com/TMUniversal/papercrypt/commit/5e30e866fc9eb42a197ea2c7193a3ca25993e3cf))
+
 ## [1.1.6](https://github.com/TMUniversal/papercrypt/compare/v1.1.5...v1.1.6) (2024-01-04)
 
 
