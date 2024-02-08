@@ -3,43 +3,6 @@
 This file lists the third party licenses used by PaperCrypt.
 It is generated using `go-licenses` (`task docs:third_party`) and is not meant to be edited manually.
 
-Packages used:
-
-<!-- toc -->
-
-- [github.com/ProtonMail/go-crypto](#githubcomprotonmailgo-crypto)
-- [github.com/ProtonMail/go-mime](#githubcomprotonmailgo-mime)
-- [github.com/ProtonMail/gopenpgp/v2](#githubcomprotonmailgopenpgpv2)
-- [github.com/aymanbagabas/go-osc52/v2](#githubcomaymanbagabasgo-osc52v2)
-- [github.com/caarlos0/go-version](#githubcomcaarlos0go-version)
-- [github.com/caarlos0/log](#githubcomcaarlos0log)
-- [github.com/charmbracelet/lipgloss](#githubcomcharmbraceletlipgloss)
-- [github.com/chzyer/readline](#githubcomchzyerreadline)
-- [github.com/cloudflare/circl](#githubcomcloudflarecircl)
-- [github.com/elliotchance/orderedmap/v2](#githubcomelliotchanceorderedmapv2)
-- [github.com/jung-kurt/gofpdf/v2](#githubcomjung-kurtgofpdfv2)
-- [github.com/lucasb-eyer/go-colorful](#githubcomlucasb-eyergo-colorful)
-- [github.com/makiuchi-d/gozxing](#githubcommakiuchi-dgozxing)
-- [github.com/manifoldco/promptui](#githubcommanifoldcopromptui)
-- [github.com/mattn/go-isatty](#githubcommattngo-isatty)
-- [github.com/mattn/go-runewidth](#githubcommattngo-runewidth)
-- [github.com/muesli/mango](#githubcommueslimango)
-- [github.com/muesli/mango-cobra](#githubcommueslimango-cobra)
-- [github.com/muesli/mango-pflag](#githubcommueslimango-pflag)
-- [github.com/muesli/reflow](#githubcommueslireflow)
-- [github.com/muesli/roff](#githubcommuesliroff)
-- [github.com/muesli/termenv](#githubcommueslitermenv)
-- [github.com/pkg/errors](#githubcompkgerrors)
-- [github.com/rivo/uniseg](#githubcomrivouniseg)
-- [github.com/spf13/cobra](#githubcomspf13cobra)
-- [github.com/spf13/pflag](#githubcomspf13pflag)
-- [golang.org/x/crypto](#golangorgxcrypto)
-- [golang.org/x/sys](#golangorgxsys)
-- [golang.org/x/term](#golangorgxterm)
-- [golang.org/x/text](#golangorgxtext)
-- [golang.org/x/xerrors](#golangorgxxerrors)
-
-<!-- tocstop -->
 
 ## github.com/ProtonMail/go-crypto
 
@@ -78,8 +41,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## github.com/ProtonMail/go-mime
 
 * Name: github.com/ProtonMail/go-mime
@@ -110,8 +71,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 ```
-
-
 
 ## github.com/ProtonMail/gopenpgp/v2
 
@@ -144,8 +103,6 @@ IN THE SOFTWARE.
 
 ```
 
-
-
 ## github.com/aymanbagabas/go-osc52/v2
 
 * Name: github.com/aymanbagabas/go-osc52/v2
@@ -177,8 +134,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/caarlos0/go-version
 
 * Name: github.com/caarlos0/go-version
@@ -201,8 +156,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ```
-
-
 
 ## github.com/caarlos0/log
 
@@ -260,8 +213,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
@@ -292,8 +243,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/chzyer/readline
 
@@ -326,8 +275,6 @@ SOFTWARE.
 
 
 ```
-
-
 
 ## github.com/cloudflare/circl
 
@@ -396,8 +343,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## github.com/elliotchance/orderedmap/v2
 
 * Name: github.com/elliotchance/orderedmap/v2
@@ -428,8 +373,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/jung-kurt/gofpdf/v2
 
@@ -462,8 +405,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/lucasb-eyer/go-colorful
 
 * Name: github.com/lucasb-eyer/go-colorful
@@ -480,8 +421,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
-
 
 ## github.com/makiuchi-d/gozxing
 
@@ -723,8 +662,6 @@ Copyright 2007-2018 ZXing authors
 
 ```
 
-
-
 ## github.com/manifoldco/promptui
 
 * Name: github.com/manifoldco/promptui
@@ -764,8 +701,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## github.com/mattn/go-isatty
 
 * Name: github.com/mattn/go-isatty
@@ -784,8 +719,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
-
 
 ## github.com/mattn/go-runewidth
 
@@ -818,8 +751,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/muesli/mango
 
 * Name: github.com/muesli/mango
@@ -850,8 +781,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/muesli/mango-cobra
 
@@ -884,8 +813,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/muesli/mango-pflag
 
 * Name: github.com/muesli/mango-pflag
@@ -916,8 +843,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/muesli/reflow
 
@@ -950,8 +875,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/muesli/roff
 
 * Name: github.com/muesli/roff
@@ -983,8 +906,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/muesli/termenv
 
 * Name: github.com/muesli/termenv
@@ -1015,8 +936,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/pkg/errors
 
@@ -1051,8 +970,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## github.com/rivo/uniseg
 
 * Name: github.com/rivo/uniseg
@@ -1083,8 +1000,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
-
 
 ## github.com/spf13/cobra
 
@@ -1270,8 +1185,6 @@ SOFTWARE.
 
 ```
 
-
-
 ## github.com/spf13/pflag
 
 * Name: github.com/spf13/pflag
@@ -1311,9 +1224,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
 
-
-
-
 ## golang.org/x/crypto
 
 * Name: golang.org/x/crypto
@@ -1350,8 +1260,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
-
 
 ## golang.org/x/sys
 
@@ -1390,8 +1298,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## golang.org/x/term
 
 * Name: golang.org/x/term
@@ -1428,8 +1334,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
-
 
 ## golang.org/x/text
 
@@ -1468,8 +1372,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
 ## golang.org/x/xerrors
 
 * Name: golang.org/x/xerrors
@@ -1506,5 +1408,4 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 

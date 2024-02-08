@@ -160,7 +160,6 @@ tasks:
         msg: "go-licenses is not installed. Run 'go install github.com/google/go-licenses@latest' to install it."
     cmds:
       - bash -c "go-licenses report ./... --template=licenses.tpl > THIRD_PARTY.md"
-      - pnpx markdown-toc -i THIRD_PARTY.md
 
   completions:
     desc: Generate shell completions. Running on Windows requires Go installed in WSL.
