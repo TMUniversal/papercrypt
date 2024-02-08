@@ -70,6 +70,9 @@ jobs:
       - name: Run `go mod tidy` and abort if changes were made
         run: go mod tidy -v && git diff --exit-code || (echo "go mod tidy made changes" && exit 1)
 
+      - name: Install go-licenses
+        run: go install github.com/google/go-licenses@latest
+
       - name: Check for third-party updates
         run: task docs:third_party && git diff --exit-code || (echo "third-party license mismatch" && exit 1)
 
