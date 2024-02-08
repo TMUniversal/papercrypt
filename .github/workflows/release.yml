@@ -74,6 +74,9 @@ jobs:
         id: go-version
         run: echo "GOVERSION=$(go version)" >> $GITHUB_OUTPUT
 
+      - name: Run `go mod tidy` and abort if changes were made
+        run: go mod tidy -v && git diff --exit-code || (echo "go mod tidy made changes" && exit 1)
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
