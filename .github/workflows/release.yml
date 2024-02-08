@@ -5,10 +5,6 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  packages: write
-
 env:
   DEBIAN_FRONTEND: noninteractive
 
@@ -52,6 +48,10 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     env:
       DOCKER_BUILDKIT: 1
     steps:
@@ -81,12 +81,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install Task
-        uses: arduino/setup-task@v1
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: sigstore/cosign-installer@v3
       - name: Confirm cosign installation
@@ -140,8 +134,8 @@ jobs:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           GORELEASER_TOKEN: ${{ secrets.GORELEASER_TOKEN }}
           GOVERSION: ${{ steps.go-version.outputs.GOVERSION }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_REGION: ${{ secrets.S3_REGION }}
-          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
