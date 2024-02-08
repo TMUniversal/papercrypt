@@ -3,7 +3,6 @@
 This file lists the third party licenses used by PaperCrypt.
 It is generated using `go-licenses` (`task docs:third_party`) and is not meant to be edited manually.
 
-
 ## github.com/ProtonMail/go-crypto
 
 * Name: github.com/ProtonMail/go-crypto
