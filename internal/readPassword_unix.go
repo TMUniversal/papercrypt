@@ -4,7 +4,7 @@
  * This file is part of PaperCrypt.
  *
  * PaperCrypt lets you prepare encrypted messages for printing on paper.
- * Copyright (C) 2023 TMUniversal <me@tmuniversal.eu>.
+ * Copyright (C) 2023-2024 TMUniversal <me@tmuniversal.eu>.
  *
  * PaperCrypt is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
