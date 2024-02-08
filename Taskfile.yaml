@@ -151,6 +151,17 @@ tasks:
     cmds:
       - docker build -f vhs.Dockerfile -t ghcr.io/tmuniversal/papercrypt/vhs .
 
+  docs:third_party:
+    desc: Write third-party licenses to THIRD_PARTY.md
+    deps:
+      - setup # ensure go modules are downloaded
+    preconditions:
+      - sh: bash -c "go-licenses help > /dev/null"
+        msg: "go-licenses is not installed. Run 'go install github.com/google/go-licenses@latest' to install it."
+    cmds:
+      - bash -c "go-licenses report ./... --template=licenses.tpl > THIRD_PARTY.md"
+      - pnpx markdown-toc -i THIRD_PARTY.md
+
   completions:
     desc: Generate shell completions. Running on Windows requires Go installed in WSL.
     generates:

@@ -36,6 +36,11 @@ import (
 //go:embed COPYING
 var LicenseText string
 
+// ThirdPartyLicenses is THIRD_PARTY.md as a string
+//
+//go:embed THIRD_PARTY.md
+var ThirdPartyLicenses string
+
 // WordList is the eff.org large word list as a string
 //
 //go:embed "eff.org_files_2016_07_18_eff_large_wordlist.txt"
@@ -76,6 +81,7 @@ func init() {
 
 func main() {
 	cmd.LicenseText = &LicenseText
+	cmd.ThirdPartyText = &ThirdPartyLicenses
 	cmd.WordListFile = &WordList
 	internal.VersionInfo = buildVersion(version, commit, date, builtBy, treeState)
 	internal.PdfTextFontRegularBytes = []byte(pdfFontTextRegular)

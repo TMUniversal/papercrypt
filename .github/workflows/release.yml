@@ -46,8 +46,29 @@ jobs:
       - name: Test
         run: task test
 
+  no_diff:
+    name: Check for go.mod changes, third-party license mismatch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache-dependency-path: "**/*.sum"
+
+      - name: Run `go mod tidy` and abort if changes were made
+        run: go mod tidy -v && git diff --exit-code || (echo "go mod tidy made changes" && exit 1)
+        
+      - name: Check for third-party updates
+        run: task docs:third_party && git diff --exit-code || (echo "third-party license mismatch" && exit 1)
+
   release:
-    needs: build
+    needs: [build, no_diff]
     name: Release
     runs-on: ubuntu-22.04
     permissions:
@@ -75,9 +96,6 @@ jobs:
       - name: Save `go version`
         id: go-version
         run: echo "GOVERSION=$(go version)" >> $GITHUB_OUTPUT
-
-      - name: Run `go mod tidy` and abort if changes were made
-        run: go mod tidy -v && git diff --exit-code || (echo "go mod tidy made changes" && exit 1)
 
       - name: Set up Node
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2

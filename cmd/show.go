@@ -27,7 +27,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var LicenseText *string
+var (
+	LicenseText    *string
+	ThirdPartyText *string
+)
 
 // urlCmd represents the url command
 var showCmd = &cobra.Command{
@@ -35,18 +38,18 @@ var showCmd = &cobra.Command{
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
 	Use:          "show",
-	Short:        "Show commands: 'w', 'c'",
-	Long:         `Use 'show [w/c]' to view warranty or copyright info`,
+	Short:        "Show commands: 'w', 'c', 't'",
+	Long:         `Use 'show [w/c/t]' to view warranty or copyright info`,
 }
 
 var showCmdWarranty = &cobra.Command{
-	Use:          "w",
+	Use:          "warranty",
+	Aliases:      []string{"w"},
 	SilenceUsage: true,
 	Short:        "Show warranty info",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
-		cmd.Println("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.")
-		cmd.Println()
+		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
+		log.Info("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.\n")
 		fmt.Println(`  15. Disclaimer of Warranty.
 
   THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
@@ -82,7 +85,8 @@ copy of the Program in return for a fee.`)
 }
 
 var showCmdCopyright = &cobra.Command{
-	Use:          "c",
+	Use:          "copyright",
+	Aliases:      []string{"c", "license", "l"},
 	SilenceUsage: true,
 	Short:        "Show copyright info",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -91,8 +95,18 @@ var showCmdCopyright = &cobra.Command{
 	},
 }
 
+var showCmdThirdParty = &cobra.Command{
+	Use:          "third-party",
+	Aliases:      []string{"t"},
+	SilenceUsage: true,
+	Short:        "Show third party licenses",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(*ThirdPartyText)
+	},
+}
+
 func init() {
-	showCmd.AddCommand(showCmdWarranty, showCmdCopyright)
+	showCmd.AddCommand(showCmdWarranty, showCmdCopyright, showCmdThirdParty)
 
 	rootCmd.AddCommand(showCmd)
 }
