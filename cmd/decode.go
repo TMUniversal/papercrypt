@@ -59,7 +59,7 @@ var decodeCmd = &cobra.Command{
 	Long: `This command allows you to decode binary data saved by PaperCrypt. 
 The data should be read from a file or stdin, you will be required to provide a passphrase.`,
 	Example: `papercrypt decode -i <file>.txt -o <file>.txt`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {

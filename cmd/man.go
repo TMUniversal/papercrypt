@@ -37,7 +37,7 @@ var manCmd = &cobra.Command{
 	SilenceUsage:          true,
 	DisableFlagsInUseLine: true,
 	Hidden:                true,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		manPage, err := mcobra.NewManPage(1, rootCmd.Root())
 		if err != nil {
 			return err

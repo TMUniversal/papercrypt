@@ -47,7 +47,7 @@ var phraseSheetCmd = &cobra.Command{
 	Use:          "phraseSheet [base64 seed]",
 	Short:        "Generate a passphrase sheet.",
 	Example:      "papercrypt phraseSheet -o phraseSheet.pdf",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {

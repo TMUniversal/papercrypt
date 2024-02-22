@@ -52,7 +52,7 @@ var generateKeyCmd = &cobra.Command{
 	Short:        "Generates a mnemonic key phrase",
 	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
 which can be found here: %s.`, wordListURLFormatted),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err

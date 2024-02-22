@@ -46,7 +46,7 @@ This command allows you to decode data saved by PaperCrypt.
 The QR code in a PaperCrypt document contains a JSON serialized object
 that contains the encrypted data and the PaperCrypt metadata.`,
 	Example: `papercrypt qr ./qr.png | papercrypt decode -o ./out.json -P passphrase`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		// 1. get data from either argument or inFileName
 		if len(args) != 0 {
 			inFileName = args[0]

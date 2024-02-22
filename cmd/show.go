@@ -47,7 +47,7 @@ var showCmdWarranty = &cobra.Command{
 	Aliases:      []string{"w"},
 	SilenceUsage: true,
 	Short:        "Show warranty info",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
 		log.Info("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.\n")
 		fmt.Println(`  15. Disclaimer of Warranty.
@@ -89,7 +89,7 @@ var showCmdCopyright = &cobra.Command{
 	Aliases:      []string{"c", "license", "l"},
 	SilenceUsage: true,
 	Short:        "Show copyright info",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
 		fmt.Println(*LicenseText)
 	},
@@ -100,7 +100,7 @@ var showCmdThirdParty = &cobra.Command{
 	Aliases:      []string{"t"},
 	SilenceUsage: true,
 	Short:        "Show third party licenses",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println(*ThirdPartyText)
 	},
 }

@@ -61,7 +61,7 @@ Please note, to decrypt the data from the output PaperCrypt PDF, you'll need the
 encryption process. Treat this passphrase with care; loss of the passphrase could result in the permanent loss of the 
 encrypted data.`,
 	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
