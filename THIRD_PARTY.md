@@ -972,8 +972,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/rivo/uniseg
 
 * Name: github.com/rivo/uniseg
-* Version: v0.4.6
-* License: [MIT](https://github.com/rivo/uniseg/blob/v0.4.6/LICENSE.txt)
+* Version: v0.4.7
+* License: [MIT](https://github.com/rivo/uniseg/blob/v0.4.7/LICENSE.txt)
 
 ```md
 MIT License
