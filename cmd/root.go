@@ -56,7 +56,7 @@ and then prepare a printable document that is optimized for being able to restor
 		log.Info("thank you for using papercrypt!")
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		cmd.Println("PaperCrypt  Copyright (C) 2023  TMUniversal <me@tmuniversal.eu>")
+		cmd.Println("PaperCrypt  Copyright (C) 2023-2024  TMUniversal <me@tmuniversal.eu>")
 		cmd.Println("This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.")
 		cmd.Println("This is free software, and you are welcome to redistribute it")
 		cmd.Println("under certain conditions; type `papercrypt show c' for details.")

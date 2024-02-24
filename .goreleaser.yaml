@@ -173,7 +173,7 @@ winget:
       <<: *commit_author
     homepage: *homepage
     license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
-    copyright: Copyright © 2023  TMUniversal <me@tmuniversal.eu>
+    copyright: Copyright © 2023-2024  TMUniversal <me@tmuniversal.eu>
     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
     skip_upload: auto
     release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
