@@ -161,39 +161,39 @@ scoops:
     license: *license
     shortcuts: [["papercrypt.exe", "papercrypt"]]
 
-winget:
-  - name: papercrypt
-    publisher: TMUniversal
-    package_identifier: TMUniversal.PaperCrypt
-    publisher_url: https://github.com/TMUniversal
-    publisher_support_url: https://github.com/TMUniversal/papercrypt/issues
-    short_description: *description
-    license: *license
-    commit_author:
-      <<: *commit_author
-    homepage: *homepage
-    license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
-    copyright: Copyright © 2023-2024  TMUniversal <me@tmuniversal.eu>
-    copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
-    skip_upload: auto
-    release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
-    tags:
-      - golang
-      - cli
-      - encryption
-      - backup
-    repository:
-      owner: tmuniversal
-      name: winget-pkgs
-      branch: "papercrypt-{{.Version}}"
-      token: "{{ .Env.GORELEASER_TOKEN }}"
-      pull_request:
-        enabled: true
-        draft: true
-        base:
-          owner: microsoft
-          name: winget-pkgs
-          branch: master
+# winget:
+#   - name: papercrypt
+#     publisher: TMUniversal
+#     package_identifier: TMUniversal.PaperCrypt
+#     publisher_url: https://github.com/TMUniversal
+#     publisher_support_url: https://github.com/TMUniversal/papercrypt/issues
+#     short_description: *description
+#     license: *license
+#     commit_author:
+#       <<: *commit_author
+#     homepage: *homepage
+#     license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
+#     copyright: Copyright © 2023-2024  TMUniversal <me@tmuniversal.eu>
+#     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
+#     skip_upload: auto
+#     release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
+#     tags:
+#       - golang
+#       - cli
+#       - encryption
+#       - backup
+#     repository:
+#       owner: tmuniversal
+#       name: winget-pkgs
+#       branch: "papercrypt-{{.Version}}"
+#       token: "{{ .Env.GORELEASER_TOKEN }}"
+#       pull_request:
+#         enabled: true
+#         draft: true
+#         base:
+#           owner: microsoft
+#           name: winget-pkgs
+#           branch: master
 
 blobs:
   - provider: s3
