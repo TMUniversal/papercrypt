@@ -52,9 +52,6 @@ and then prepare a printable document that is optimized for being able to restor
 		log.SetLevel(level)
 		log.Debug("verbosity set to " + level.String())
 	},
-	PersistentPostRun: func(_ *cobra.Command, _ []string) {
-		log.Info("thank you for using papercrypt!")
-	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		cmd.Println("PaperCrypt  Copyright (C) 2023-2024  TMUniversal <me@tmuniversal.eu>")
 		cmd.Println("This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.")
