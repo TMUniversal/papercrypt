@@ -1,3 +1,11 @@
+## [1.1.8](https://github.com/TMUniversal/papercrypt/compare/v1.1.7...v1.1.8) (2024-03-21)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/charmbracelet/lipgloss to v0.10.0 ([c072b39](https://github.com/TMUniversal/papercrypt/commit/c072b39abe06c73726006130da37536e70673b59))
+* **deps:** update module golang.org/x/term to v0.18.0 ([19ba04a](https://github.com/TMUniversal/papercrypt/commit/19ba04a429a7f8009da385c740cda330d302d022))
+
 ## [1.1.7](https://github.com/TMUniversal/papercrypt/compare/v1.1.6...v1.1.7) (2024-02-08)
 
 
