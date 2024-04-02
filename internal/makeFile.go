@@ -287,8 +287,23 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	// print data lines
 	dataLines := strings.Split(parts[1], "\n")
-	pdf.SetFont(PdfMonoFont, "B", 10)
+
+	// cut empty lines (should be one at the end)
+	filtered := dataLines[:0]
 	for _, line := range dataLines {
+		if line != "" {
+			filtered = append(filtered, line)
+		}
+	}
+
+	pdf.SetFont(PdfMonoFont, "B", 10)
+	for n, line := range filtered {
+		// mark every second line with a grey background
+		if n%2 == 0 {
+			pdf.SetFillColor(240, 240, 240)
+			pdf.Rect(20, pdf.GetY(), 166, 5, "F")
+		}
+
 		pdf.Cell(0, 5, line)
 		pdf.Ln(5)
 	}
