@@ -102,6 +102,8 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 				headers[key] = string(headerLineSplit[1])
 			}
+		} else {
+			return errors.Join(errorParsingHeader, errors.New("header not present, header and content should be separated by two empty lines"))
 		}
 
 		// Debug: print headers
