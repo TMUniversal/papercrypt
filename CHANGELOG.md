@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/TMUniversal/papercrypt/compare/v1.1.8...v1.2.0) (2024-04-02)
+
+
+### Features
+
+* **generate:** underlay every second line in text output ([db33b4e](https://github.com/TMUniversal/papercrypt/commit/db33b4ea010cb97b9dc856ce043e4374f8a86ba4))
+
 ## [1.1.8](https://github.com/TMUniversal/papercrypt/compare/v1.1.7...v1.1.8) (2024-03-21)
 
 
