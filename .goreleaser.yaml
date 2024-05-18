@@ -200,7 +200,7 @@ blobs:
     endpoint: "{{.Env.S3_ENDPOINT}}"
     region: "{{.Env.S3_REGION}}"
     bucket: "{{.Env.S3_BUCKET}}"
-    folder: "papercrypt/{{.Version}}"
+    directory: "papercrypt/{{.Version}}"
 
 dockers:
   - image_templates:
