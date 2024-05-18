@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/TMUniversal/papercrypt/compare/v1.2.1...v1.2.2) (2024-05-18)
+
+
+### Bug Fixes
+
+* **deps:** update module golang.org/x/term to v0.20.0 ([6a206f5](https://github.com/TMUniversal/papercrypt/commit/6a206f534b9e9c68c4a7c9b3b84a4b488d8606cc))
+
 ## [1.2.1](https://github.com/TMUniversal/papercrypt/compare/v1.2.0...v1.2.1) (2024-04-19)
 
 
