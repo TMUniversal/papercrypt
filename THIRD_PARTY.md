@@ -159,8 +159,8 @@ limitations under the License.
 ## github.com/caarlos0/log
 
 * Name: github.com/caarlos0/log
-* Version: v0.4.4
-* License: [MIT](https://github.com/caarlos0/log/blob/v0.4.4/LICENSE)
+* Version: v0.4.5
+* License: [MIT](https://github.com/caarlos0/log/blob/v0.4.5/LICENSE)
 
 ```md
 MIT License
@@ -215,13 +215,44 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
-* Version: v0.10.0
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.10.0/LICENSE)
+* Version: v0.11.0
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.11.0/LICENSE)
 
 ```md
 MIT License
 
 Copyright (c) 2021-2023 Charmbracelet, Inc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
+## github.com/charmbracelet/x/ansi
+
+* Name: github.com/charmbracelet/x/ansi
+* Version: v0.1.1
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.1/ansi/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2023 Charmbracelet, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -822,37 +853,6 @@ SOFTWARE.
 MIT License
 
 Copyright (c) 2022 Christian Muehlhaeuser
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-```
-
-## github.com/muesli/reflow
-
-* Name: github.com/muesli/reflow
-* Version: v0.3.0
-* License: [MIT](https://github.com/muesli/reflow/blob/v0.3.0/LICENSE)
-
-```md
-MIT License
-
-Copyright (c) 2019 Christian Muehlhaeuser
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
