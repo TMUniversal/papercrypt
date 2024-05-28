@@ -1,3 +1,11 @@
+## [1.2.3](https://github.com/TMUniversal/papercrypt/compare/v1.2.2...v1.2.3) (2024-05-28)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/caarlos0/log to v0.4.5 ([003a2e3](https://github.com/TMUniversal/papercrypt/commit/003a2e3ea1c1e409ce68eac91a05fc1d4f178e66))
+* **deps:** update module github.com/charmbracelet/lipgloss to v0.11.0 ([7daafc9](https://github.com/TMUniversal/papercrypt/commit/7daafc9ddd3a25f51719a36e797111f2a73fb3c8))
+
 ## [1.2.2](https://github.com/TMUniversal/papercrypt/compare/v1.2.1...v1.2.2) (2024-05-18)
 
 
