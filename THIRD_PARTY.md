@@ -246,8 +246,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/ansi
 
 * Name: github.com/charmbracelet/x/ansi
-* Version: v0.1.1
-* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.1/ansi/LICENSE)
+* Version: v0.1.2
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.2/ansi/LICENSE)
 
 ```md
 MIT License
@@ -1226,8 +1226,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/crypto
 
 * Name: golang.org/x/crypto
-* Version: v0.23.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.23.0:LICENSE)
+* Version: v0.24.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.24.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1263,8 +1263,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys
 
 * Name: golang.org/x/sys
-* Version: v0.20.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.20.0:LICENSE)
+* Version: v0.21.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.21.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1300,8 +1300,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/term
 
 * Name: golang.org/x/term
-* Version: v0.20.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.20.0:LICENSE)
+* Version: v0.21.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.21.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1337,8 +1337,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/text
 
 * Name: golang.org/x/text
-* Version: v0.15.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.15.0:LICENSE)
+* Version: v0.16.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.16.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
