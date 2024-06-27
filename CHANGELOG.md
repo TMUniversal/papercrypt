@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/TMUniversal/papercrypt/compare/v1.2.4...v1.2.5) (2024-06-27)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/spf13/cobra to v1.8.1 ([baaa89e](https://github.com/TMUniversal/papercrypt/commit/baaa89ed3ede0bfe08364aa1488f44e238d11fe5))
+
 ## [1.2.4](https://github.com/TMUniversal/papercrypt/compare/v1.2.3...v1.2.4) (2024-06-07)
 
 
