@@ -309,8 +309,8 @@ SOFTWARE.
 ## github.com/cloudflare/circl
 
 * Name: github.com/cloudflare/circl
-* Version: v1.3.8
-* License: [BSD-3-Clause](https://github.com/cloudflare/circl/blob/v1.3.8/LICENSE)
+* Version: v1.3.9
+* License: [BSD-3-Clause](https://github.com/cloudflare/circl/blob/v1.3.9/LICENSE)
 
 ```md
 Copyright (c) 2019 Cloudflare. All rights reserved.
@@ -1003,8 +1003,8 @@ SOFTWARE.
 ## github.com/spf13/cobra
 
 * Name: github.com/spf13/cobra
-* Version: v1.8.0
-* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.8.0/LICENSE.txt)
+* Version: v1.8.1
+* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.8.1/LICENSE.txt)
 
 ```md
                                 Apache License
