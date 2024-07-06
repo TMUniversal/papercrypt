@@ -1226,8 +1226,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/crypto
 
 * Name: golang.org/x/crypto
-* Version: v0.24.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.24.0:LICENSE)
+* Version: v0.25.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.25.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1263,8 +1263,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys
 
 * Name: golang.org/x/sys
-* Version: v0.21.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.21.0:LICENSE)
+* Version: v0.22.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.22.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -1300,8 +1300,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/term
 
 * Name: golang.org/x/term
-* Version: v0.21.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.21.0:LICENSE)
+* Version: v0.22.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.22.0:LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
