@@ -159,8 +159,8 @@ limitations under the License.
 ## github.com/caarlos0/log
 
 * Name: github.com/caarlos0/log
-* Version: v0.4.5
-* License: [MIT](https://github.com/caarlos0/log/blob/v0.4.5/LICENSE)
+* Version: v0.4.6
+* License: [MIT](https://github.com/caarlos0/log/blob/v0.4.6/LICENSE)
 
 ```md
 MIT License
@@ -215,8 +215,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## github.com/charmbracelet/lipgloss
 
 * Name: github.com/charmbracelet/lipgloss
-* Version: v0.11.0
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.11.0/LICENSE)
+* Version: v0.12.1
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v0.12.1/LICENSE)
 
 ```md
 MIT License
@@ -246,8 +246,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/ansi
 
 * Name: github.com/charmbracelet/x/ansi
-* Version: v0.1.2
-* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.2/ansi/LICENSE)
+* Version: v0.1.4
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.1.4/ansi/LICENSE)
 
 ```md
 MIT License
@@ -753,8 +753,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## github.com/mattn/go-runewidth
 
 * Name: github.com/mattn/go-runewidth
-* Version: v0.0.15
-* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.15/LICENSE)
+* Version: v0.0.16
+* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.16/LICENSE)
 
 ```md
 The MIT License (MIT)
@@ -1374,11 +1374,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/xerrors
 
 * Name: golang.org/x/xerrors
-* Version: v0.0.0-20231012003039-104605ab7028
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/xerrors/+/104605ab:LICENSE)
+* Version: v0.0.0-20240716161551-93cc26a95ae9
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/xerrors/+/93cc26a9:LICENSE)
 
 ```md
-Copyright (c) 2019 The Go Authors. All rights reserved.
+Copyright 2019 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -1390,7 +1390,7 @@ notice, this list of conditions and the following disclaimer.
 copyright notice, this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
-   * Neither the name of Google Inc. nor the names of its
+   * Neither the name of Google LLC nor the names of its
 contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
 
