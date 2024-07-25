@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/TMUniversal/papercrypt/compare/v1.2.6...v1.2.7) (2024-07-25)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/caarlos0/log to v0.4.6 ([a97bd10](https://github.com/TMUniversal/papercrypt/commit/a97bd10b52c45f0d67030264cb1b9f22c7ab46d4))
+
 ## [1.2.6](https://github.com/TMUniversal/papercrypt/compare/v1.2.5...v1.2.6) (2024-07-06)
 
 
