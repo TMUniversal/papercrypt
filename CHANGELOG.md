@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/TMUniversal/papercrypt/compare/v1.2.7...v1.3.0) (2024-07-26)
+
+
+### Features
+
+* **cmd:** [qr] add json flags to support external qr code readers ([ec3d52f](https://github.com/TMUniversal/papercrypt/commit/ec3d52f783eaa029d06639fc0962e39f0f4380c7))
+
 ## [1.2.7](https://github.com/TMUniversal/papercrypt/compare/v1.2.6...v1.2.7) (2024-07-25)
 
 
