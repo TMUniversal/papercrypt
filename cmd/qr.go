@@ -35,7 +35,7 @@ import (
 )
 
 var (
-	qrCmdFromJson = false
+	qrCmdFromJSON = false
 	qrCmdToJSON   = false
 )
 
@@ -73,7 +73,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 		var data []byte
 
-		if qrCmdFromJson {
+		if qrCmdFromJSON {
 			data, err = io.ReadAll(inFile)
 			if err != nil && err != io.EOF {
 				return errors.Join(errors.New("error reading input file"), err)
@@ -149,6 +149,6 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 func init() {
 	rootCmd.AddCommand(qrCmd)
 
-	qrCmd.Flags().BoolVarP(&qrCmdFromJson, "from-json", "j", false, "Read input from JSON instead of an image")
+	qrCmd.Flags().BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
 	qrCmd.Flags().BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
 }
