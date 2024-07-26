@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"image"
+	"io"
 	"os"
 
 	"github.com/caarlos0/log"
@@ -31,6 +32,11 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
+)
+
+var (
+	qrCmdFromJson = false
+	qrCmdToJSON   = false
 )
 
 // qrCmd represents the data command
@@ -44,7 +50,14 @@ var qrCmd = &cobra.Command{
 
 This command allows you to decode data saved by PaperCrypt.
 The QR code in a PaperCrypt document contains a JSON serialized object
-that contains the encrypted data and the PaperCrypt metadata.`,
+that contains the encrypted data and the PaperCrypt metadata.
+
+If you have trouble scanning the QR code with this command,
+you may also try a QR code scanner app on your phone or tablet,
+such as "Scandit" (https://apps.apple.com/de/app/scandit-barcode-scanner/id453880584
+or https://play.google.com/store/apps/details?id=com.scandit.demoapp).
+The resulting JSON data can be read by this command, by supplying the --json flag.
+`,
 	Example: `papercrypt qr ./qr.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
 		// 1. get data from either argument or inFileName
@@ -56,25 +69,37 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 		if err != nil {
 			return err
 		}
+		defer inFile.Close()
 
-		img, _, err := image.Decode(inFile)
-		if err != nil {
-			return errors.Join(errors.New("error decoding image"), err)
-		}
+		var data []byte
 
-		if err := inFile.Close(); err != nil {
-			return errors.Join(errors.New("error closing input file"), err)
-		}
+		if qrCmdFromJson {
+			data, err = io.ReadAll(inFile)
+			if err != nil && err != io.EOF {
+				return errors.Join(errors.New("error reading input file"), err)
+			}
+		} else {
+			img, _, err := image.Decode(inFile)
+			if err != nil {
+				return errors.Join(errors.New("error decoding image"), err)
+			}
 
-		bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-		if err != nil {
-			return errors.Join(errors.New("error creating binary bitmap"), err)
-		}
+			if err := inFile.Close(); err != nil {
+				return errors.Join(errors.New("error closing input file"), err)
+			}
 
-		qrReader := qrcode.NewQRCodeReader()
-		result, err := qrReader.Decode(bmp, nil)
-		if err != nil {
-			return errors.Join(errors.New("error decoding QR code"), err)
+			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+			if err != nil {
+				return errors.Join(errors.New("error creating binary bitmap"), err)
+			}
+
+			qrReader := qrcode.NewQRCodeReader()
+			result, err := qrReader.Decode(bmp, nil)
+			if err != nil {
+				return errors.Join(errors.New("error decoding QR code"), err)
+			}
+
+			data = []byte(result.GetText())
 		}
 
 		// 2. Open output file
@@ -89,11 +114,19 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 			}
 		}(outFile)
 
-		data := result.GetText()
+		if qrCmdToJSON {
+			n, err := outFile.Write(data)
+			if err != nil {
+				return errors.Join(errors.New("error writing output"), err)
+			}
+
+			internal.PrintWrittenSize(n, outFile)
+			return nil
+		}
 
 		// 3. Deserialize
 		pc := internal.PaperCrypt{}
-		err = json.Unmarshal([]byte(data), &pc)
+		err = json.Unmarshal(data, &pc)
 		if err != nil {
 			return errors.Join(errors.New("error deserializing data"), err)
 		}
@@ -115,4 +148,7 @@ that contains the encrypted data and the PaperCrypt metadata.`,
 
 func init() {
 	rootCmd.AddCommand(qrCmd)
+
+	qrCmd.Flags().BoolVarP(&qrCmdFromJson, "from-json", "j", false, "Read input from JSON instead of an image")
+	qrCmd.Flags().BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
 }

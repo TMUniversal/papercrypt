@@ -42,14 +42,23 @@ tasks:
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | go run . generate --purpose "Test" --comment "Test" --passphrase "test"
-        | pdftoppm -png -r 300 - t
-        && cat t-1.png
+        | go run . generate --purpose "Test" --comment "Test" --passphrase "test" -o test.pdf
+        && pdftoppm -png -r 300 test.pdf t'
+      - >-
+        bash -c 'cat t-1.png
         | go run . qr
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
-        && echo "Successfully reconstructed input document."
-        ; rm -f test.json test-in.json t-*.png'
+        && echo "Successfully reconstructed input document."'
+      - >-
+        bash -c 'cat t-1.png
+        | go run . qr --to-json
+        | go run . qr --from-json
+        | go run . decode -f -o test.json --passphrase "test"
+        && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document."'
+      - >-
+        bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
 
   cover:
     desc: Open the cover tool
