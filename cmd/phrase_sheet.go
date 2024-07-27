@@ -26,7 +26,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"math/big"
-	"math/rand"
 	"os"
 	"strings"
 
@@ -44,9 +43,9 @@ var phraseSheetCmd = &cobra.Command{
 	Aliases:      []string{"ps", "p"},
 	Args:         cobra.MaximumNArgs(1),
 	SilenceUsage: true,
-	Use:          "phraseSheet [base64 seed]",
+	Use:          "phrase-sheet [base64 seed]",
 	Short:        "Generate a passphrase sheet.",
-	Example:      "papercrypt phraseSheet -o phraseSheet.pdf",
+	Example:      "papercrypt phraseSheet -o phrase-sheet.pdf",
 	RunE: func(_ *cobra.Command, args []string) error {
 		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
@@ -84,7 +83,7 @@ var phraseSheetCmd = &cobra.Command{
 		}
 
 		// 3. Get words
-		words, err := GenerateFromSeed(seed, passphraseSheetWordCount)
+		words, err := internal.GenerateFromSeed(seed, passphraseSheetWordCount, &wordList)
 		if err != nil {
 			return errors.Join(errors.New("error generating words"), err)
 		}
@@ -104,30 +103,6 @@ var phraseSheetCmd = &cobra.Command{
 		internal.PrintWrittenSize(n, outFile)
 		return nil
 	},
-}
-
-func GenerateFromSeed(seed int64, amount int) ([]string, error) {
-	if amount < 1 {
-		return nil, errors.New("amount must be greater than 0")
-	}
-	// 2. Generate random numbers
-	gen := rand.New(rand.NewSource(seed))
-
-	words := make([]string, amount)
-	for i := 0; i < amount; i++ {
-		random := gen.Intn(len(wordList)) // Intn returns [0, n) (excludes n)
-		w := wordList[random]
-
-		if internal.SliceHasString(words, w) {
-			// if the word is already in the slice, try again
-			log.WithField("word", w).WithField("index", i).Warn("Duplicate word appeared, trying again...")
-			i--
-			continue
-		}
-
-		words[i] = w
-	}
-	return words, nil
 }
 
 func init() {

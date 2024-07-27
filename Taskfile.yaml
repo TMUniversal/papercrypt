@@ -28,7 +28,10 @@ tasks:
       - go build
 
   test:
-    desc: Run tests
+    desc: Run end-to-end tests, including generating a PDF, extracting images, finding a QR code, reading a QR code, decoding the document, and comparing to the input
+    deps:
+      - test:backwards
+      - test:raw
     vars:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
@@ -59,6 +62,31 @@ tasks:
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
+
+  test:raw:
+    cmds:
+      - >-
+        bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
+        && cat test-in.json
+        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf
+        && pdftoppm -png -r 300 test.pdf t'
+      - >-
+        bash -c 'cat t-1.png
+        | go run . qr
+        | go run . decode -f -o test.json
+        && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document."'
+
+  test:backwards:
+    desc: Run backwards compatibility e2e tests
+    cmds:
+      - bash -c 'pdftoppm -png -r 300 examples/v1/output.pdf t'
+      - >-
+        bash -c 'cat t-1.png
+        | go run . qr
+        | go run . decode -f -o test.json --passphrase "example"
+        && diff -u test.json examples/v1/input.json
+        && echo "Successfully reconstructed input document."'
 
   cover:
     desc: Open the cover tool

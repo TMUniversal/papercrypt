@@ -48,7 +48,7 @@ var generateKeyCmd = &cobra.Command{
 	Aliases:      []string{"key", "gen", "k"},
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
-	Use:          "generateKey",
+	Use:          "generate-key",
 	Short:        "Generates a mnemonic key phrase",
 	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
 which can be found here: %s.`, wordListURLFormatted),
@@ -117,7 +117,7 @@ func generateMnemonic(amount int) ([]string, error) {
 		return nil, errors.Join(errors.New("error generating random seed"), err)
 	}
 
-	return GenerateFromSeed(randInt.Int64(), amount)
+	return internal.GenerateFromSeed(randInt.Int64(), amount, &wordList)
 }
 
 func init() {

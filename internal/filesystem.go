@@ -21,6 +21,7 @@
 package internal
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -103,4 +104,8 @@ func CloseFileIfNotStd(file *os.File) error {
 	}
 
 	return nil
+}
+
+func NormalizeLineEndings(data []byte) []byte {
+	return bytes.ReplaceAll(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")), []byte("\r"), []byte("\n"))
 }
