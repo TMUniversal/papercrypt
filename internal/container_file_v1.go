@@ -66,12 +66,52 @@ type PaperCryptV1 struct {
 	DataSHA256 [32]byte `json:"DataSHA256"`
 }
 
-func (p *PaperCryptV1) ToPaperCrypt() *PaperCrypt {
-	return NewPaperCryptFromV1(p.Version, p.Data, p.SerialNumber, p.Purpose, p.Comment, p.CreatedAt)
+// NewPaperCryptV1 creates a new paper crypt
+func NewPaperCryptV1(version string, data *crypto.PGPMessage, serialNumber string, purpose string, comment string, createdAt time.Time) *PaperCryptV1 {
+	binData := data.GetBinary()
+
+	dataCRC24 := Crc24Checksum(binData)
+	dataCRC32 := crc32.ChecksumIEEE(binData)
+	dataSHA256 := sha256.Sum256(binData)
+
+	return &PaperCryptV1{
+		Version:      version,
+		Data:         data,
+		SerialNumber: serialNumber,
+		Purpose:      purpose,
+		Comment:      comment,
+		CreatedAt:    createdAt,
+		DataCRC24:    dataCRC24,
+		DataCRC32:    dataCRC32,
+		DataSHA256:   dataSHA256,
+	}
 }
 
-func NewPaperCryptFromV1(version string, data *crypto.PGPMessage, serialNumber string, purpose string, comment string, createdAt time.Time) *PaperCrypt {
-	return NewPaperCrypt(version, data.GetBinary(), serialNumber, purpose, comment, createdAt, PaperCryptDataFormatPGP)
+// ToNextVersion converts the PaperCryptV1 to the next version,
+// PaperCrypt,
+// by encoding format information and compressing the data.
+func (p *PaperCryptV1) ToNextVersion() (*PaperCrypt, error) {
+	data := new(bytes.Buffer)
+	gzipWriter := gzip.NewWriter(data)
+	if _, err := gzipWriter.Write(p.Data.GetBinary()); err != nil {
+		return nil, errors.Join(errors.New("error compressing data"), err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		return nil, errors.Join(errors.New("error closing gzip writer"), err)
+	}
+
+	return &PaperCrypt{
+		Version:      p.Version,
+		Data:         data.Bytes(),
+		SerialNumber: p.SerialNumber,
+		Purpose:      p.Purpose,
+		Comment:      p.Comment,
+		CreatedAt:    p.CreatedAt,
+		DataCRC24:    p.DataCRC24,
+		DataCRC32:    p.DataCRC32,
+		DataSHA256:   p.DataSHA256,
+		DataFormat:   PaperCryptDataFormatPGP,
+	}, nil
 }
 
 func (p *PaperCryptV1) GetBinary() []byte {
@@ -139,34 +179,7 @@ func (p *PaperCryptV1) GetText(lowerCaseEncoding bool) ([]byte, error) {
 			serializedData)), nil
 }
 
-func (p *PaperCryptV1) Decode(passphrase []byte) ([]byte, error) {
-	// 9. Decrypt secretContents
-	decryptedContents, err := crypto.DecryptMessageWithPassword(p.Data, passphrase)
-	if err != nil {
-		return nil, errors.Join(errors.New("error decrypting secret contents"), err)
-	}
-
-	// 10. Decompress content
-	gzipReader, err := gzip.NewReader(bytes.NewReader(decryptedContents.GetBinary()))
-	if err != nil {
-		return nil, errors.Join(errors.New("error creating gzip reader"), err)
-	}
-
-	decompressed := new(bytes.Buffer)
-	if _, err := decompressed.ReadFrom(gzipReader); err != nil {
-		return nil, errors.Join(errors.New("error reading from gzip reader"), err)
-	}
-	if err := gzipReader.Close(); err != nil {
-		return nil, errors.Join(errors.New("error closing gzip reader"), err)
-	}
-	decryptedContents = nil // clear decryptedContents
-
-	// 11. Write decompressed to outFile
-
-	return decompressed.Bytes(), nil
-}
-
-func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCryptV1, error) {
+func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCrypt, error) {
 	paperCryptFileContents := NormalizeLineEndings(data)
 
 	paperCryptFileContentsSplit := bytes.SplitN(paperCryptFileContents, []byte("\n\n\n"), 2)
@@ -326,24 +339,27 @@ func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 
 	// we don't need to pass the checksums, as they are already verified
 	// and will just be recalculated
-	paperCrypt := NewPaperCrypt(
+	paperCrypt := NewPaperCryptV1(
 		versionLine,
-		pgpMessage.GetBinary(),
+		pgpMessage,
 		headers[HeaderFieldSerial],
 		headers[HeaderFieldPurpose],
 		headers[HeaderFieldComment],
 		timestamp,
-		PaperCryptDataFormatPGP,
 	)
 
-	// 7. Serialize PaperCrypt object, but I cannot recall why,
-	//    seems to have been a debugging step,
-	//    but it doesn't matter anymore, so I won't change it.
+	// 7. Serialize PaperCrypt object for debugging purposes
 	_, err = json.MarshalIndent(paperCrypt, "", "  ")
 	if err != nil {
 		return nil, errors.Join(errors.New("error encoding JSON"), err)
 	}
 	log.WithField("json", paperCrypt).Debug("Serialized PaperCrypt document")
 
-	return nil, nil
+	// upgrade to next version
+	v2, err := paperCrypt.ToNextVersion()
+	if err != nil {
+		return nil, errors.Join(errors.New("error upgrading to next version"), err)
+	}
+
+	return v2, nil
 }

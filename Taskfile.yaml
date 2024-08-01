@@ -29,9 +29,6 @@ tasks:
 
   test:
     desc: Run end-to-end tests, including generating a PDF, extracting images, finding a QR code, reading a QR code, decoding the document, and comparing to the input
-    deps:
-      - test:backwards
-      - test:raw
     vars:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
@@ -45,7 +42,7 @@ tasks:
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | go run . generate --purpose "Test" --comment "Test" --passphrase "test" -o test.pdf
+        | go run . generate --purpose "Test" --comment "Test" --passphrase "test" -o test.pdf --force
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
@@ -62,18 +59,21 @@ tasks:
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
+      - task: test:backwards
+      - task: test:raw
+      - task: clean:test
 
   test:raw:
     cmds:
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf
+        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf -f --passphrase "test"
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
         | go run . qr
-        | go run . decode -f -o test.json
+        | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
 
@@ -138,7 +138,7 @@ tasks:
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
-      - "./papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
+      - "./papercrypt{{exeExt}} phrase-sheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
 
   docs:examples:vhs:
     sources:
@@ -224,3 +224,8 @@ tasks:
     desc: Remove all generated files
     cmds:
       - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf examples/phrase.pdf"
+
+  clean:test:
+    desc: Remove all generated files
+    cmds:
+      - "rm -f test-in.json test.json t-*.png test.pdf"

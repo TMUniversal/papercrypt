@@ -53,7 +53,7 @@ type LineData struct {
 // See [example.pdf](example.pdf) for an example.
 func SerializeBinary(data *[]byte) string {
 	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
-	lineNumberDigits := int(math.Floor(math.Log10(lines)))
+	lineNumberDigits := int(math.Floor(math.Log10(lines + 1)))
 
 	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
 
@@ -81,9 +81,8 @@ func SerializeBinary(data *[]byte) string {
 	}
 
 	dataCRC24 := Crc24Checksum(*data)
-	finalLineNumber := int(math.Ceil(float64(len(*data))/BytesPerLine)) + 1
-	finalLinePadding := lineNumberDigits - int(math.Floor(math.Log10(lines+1)))
-	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%s%d: %06X\n", string(bytes.Repeat([]byte{' '}, finalLinePadding)), finalLineNumber, dataCRC24))...)
+	finalLineNumber := max(int(lines+1), min(1, int(lines)))
+	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%d: %06X\n", finalLineNumber, dataCRC24))...)
 
 	return string(dataBlock)
 }

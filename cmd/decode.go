@@ -63,11 +63,22 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return err
 		}
 
-		// TODO: check container version
+		headersSection, bodySection := internal.SplitTextHeaderAndBody(paperCryptFileContents)
 
-		pc, err := internal.DeserializeV1Text(paperCryptFileContents, ignoreVersionMismatch, ignoreChecksumMismatch)
+		// 3. Read Headers if present
+		if len(bodySection) == 0 {
+			return errors.Join(errors.New("header not discernible, header and content should be separated by two empty lines"))
+		}
+
+		headers, err := internal.TextToHeaderMap(headersSection)
 		if err != nil {
-			return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
+			return errors.Join(errors.New("error reading headers"), err)
+		}
+
+		paperCryptMajorVersion := internal.PaperCryptContainerVersionFromString(headers[internal.HeaderFieldVersion])
+
+		if paperCryptMajorVersion == internal.PaperCryptContainerVersionUnknown {
+			return errors.New("unknown version")
 		}
 
 		// 8. Read passphrase from stdin
@@ -83,10 +94,31 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 		passphrase = "" // clear passphrase
 
-		// 9. Decrypt secretContents
-		decoded, err := pc.Decode(passphraseBytes)
-		if err != nil {
-			return errors.Join(errors.New("error decrypting data"), err)
+		var decoded []byte
+		switch paperCryptMajorVersion {
+		case internal.PaperCryptContainerVersionMajor1:
+			pc, err := internal.DeserializeV1Text(paperCryptFileContents, ignoreVersionMismatch, ignoreChecksumMismatch)
+			if err != nil {
+				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
+			}
+
+			decoded, err = pc.Decode(passphraseBytes)
+			if err != nil {
+				return errors.Join(errors.New("error decrypting data"), err)
+			}
+		case internal.PaperCryptContainerVersionDevel,
+			internal.PaperCryptContainerVersionMajor2:
+			pc, err := internal.DeserializeV2Text(paperCryptFileContents, ignoreVersionMismatch, ignoreChecksumMismatch)
+			if err != nil {
+				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
+			}
+
+			decoded, err = pc.Decode(passphraseBytes)
+			if err != nil {
+				return errors.Join(errors.New("error decrypting data"), err)
+			}
+		default:
+			return errors.New("unknown version")
 		}
 
 		// 11. Write decompressed to outFile

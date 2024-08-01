@@ -26,8 +26,6 @@ import (
 	"image"
 	"io"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/makiuchi-d/gozxing"
@@ -41,20 +39,14 @@ var (
 	qrCmdToJSON   = false
 )
 
-type versionContainer struct {
+type versionContainerV1 struct {
 	// Version should contain the semver version of PaperCrypt used to generate the document
 	Version string `json:"Version"`
 }
 
-type dataContainer struct {
-	// Data should contain the document data
-	Data string `json:"Data"`
-}
-
-type dataContainerV1 struct {
-	// Data should contain the document data, nested in a Data object (from crypto.PGPMessage),
-	// this is used for backwards compatibility with PaperCrypt v1
-	Data dataContainer `json:"Data"`
+type versionContainer struct {
+	// Version should contain the semver version of PaperCrypt used to generate the document
+	Version string `json:"v"`
 }
 
 // qrCmd represents the data command
@@ -144,34 +136,29 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 		// 3. Deserialize
 		var output []byte
-		var paperCryptMajorVersion uint32
+		var paperCryptMajorVersion internal.PaperCryptContainerVersion
 
 		// decode version information or find .Data.Data (string)
-		vc := versionContainer{}
+		vc := versionContainerV1{}
 		err = json.Unmarshal(data, &vc)
 		if err != nil {
-			dc := dataContainer{}
-			err = json.Unmarshal(data, &dc)
+			return errors.Join(errors.New("error deserializing version"), err)
+		}
+
+		paperCryptMajorVersion = internal.PaperCryptContainerVersionFromString(vc.Version)
+
+		if paperCryptMajorVersion == internal.PaperCryptContainerVersionUnknown {
+			vc := versionContainer{}
+			err = json.Unmarshal(data, &vc)
 			if err != nil {
-				dcV1 := dataContainerV1{}
-				err = json.Unmarshal(data, &dcV1)
-				if err != nil {
-					return errors.Join(errors.New("error deserializing data"), err)
-				}
-				paperCryptMajorVersion = 1
-			} else {
-				paperCryptMajorVersion = 2
+				return errors.Join(errors.New("error deserializing version"), err)
 			}
-		} else {
-			parseInt, err := strconv.ParseInt(strings.TrimPrefix(strings.Split(vc.Version, ".")[0], "v"), 10, 32)
-			if err != nil {
-				return errors.Join(errors.New("error parsing version"), err)
-			}
-			paperCryptMajorVersion = uint32(parseInt)
+
+			paperCryptMajorVersion = internal.PaperCryptContainerVersionFromString(vc.Version)
 		}
 
 		switch paperCryptMajorVersion {
-		case 1:
+		case internal.PaperCryptContainerVersionMajor1:
 			pc := internal.PaperCryptV1{}
 			err = json.Unmarshal(data, &pc)
 			if err != nil {
@@ -179,7 +166,11 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			}
 
 			output, err = pc.GetText(false)
-		case 2:
+			if err != nil {
+				return errors.Join(errors.New("error deserializing data"), err)
+			}
+		case internal.PaperCryptContainerVersionDevel,
+			internal.PaperCryptContainerVersionMajor2:
 			pc := internal.PaperCrypt{}
 			err = json.Unmarshal(data, &pc)
 			if err != nil {
@@ -187,9 +178,11 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			}
 
 			output, err = pc.GetText(false)
-		}
-		if err != nil {
-			return errors.Join(errors.New("error deserializing data"), err)
+			if err != nil {
+				return errors.Join(errors.New("error deserializing data"), err)
+			}
+		default:
+			return errors.New("unknown version")
 		}
 
 		// 6. Write to file

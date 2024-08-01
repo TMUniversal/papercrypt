@@ -32,13 +32,11 @@ import (
 	"image/png"
 	"math"
 	"math/big"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
-
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
@@ -80,23 +78,17 @@ const (
 	PDFSectionDescriptionHeading    = "What is this?"
 	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
 	PDFSectionRepresentationHeading = "Binary Data Representation"
+	// The encoded data is compressed using the gzip algorithm before and after encryption.
 	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
 	PDFSectionRecoveryHeading       = "Recovering the data"
-	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
-	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type it in, or use OCR) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 )
 
 var (
 	errorParsingHeader     = errors.New("error parsing header")
 	errorParsingBody       = errors.New("error parsing body")
 	errorValidationFailure = errors.New("validation failure")
-)
-
-type PaperCryptDataFormat uint8
-
-const (
-	PaperCryptDataFormatPGP PaperCryptDataFormat = 0
-	PaperCryptDataFormatRaw PaperCryptDataFormat = 1
 )
 
 type PaperCrypt struct {
@@ -156,17 +148,20 @@ func NewPaperCrypt(version string, data []byte, serialNumber string, purpose str
 	}
 }
 
-func (p *PaperCrypt) GetBinary() []byte {
-	return p.Data
-}
+func (p *PaperCrypt) GetBinarySerialized() (string, error) {
+	if p.Data == nil {
+		return "", errors.New("no data to serialize")
+	}
 
-func (p *PaperCrypt) GetBinarySerialized() string {
-	data := p.GetBinary()
-	return SerializeBinary(&data)
+	if len(p.Data) == 0 {
+		return "", errors.New("no data to serialize")
+	}
+
+	return SerializeBinary(&p.Data), nil
 }
 
 func (p *PaperCrypt) GetDataLength() int {
-	return len(p.GetBinary())
+	return len(p.Data)
 }
 
 // GetPDF returns the binary representation of the paper crypt
@@ -207,6 +202,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 		codeData := string(qrDataJSON)
 
+		// TODO: make this an Aztec code, as it can hold more data
 		enc := qrcode.NewQRCodeWriter()
 		encoderHints := make(map[gozxing.EncodeHintType]interface{})
 		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "Q"
@@ -352,7 +348,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 %s: %s
 %s: %s
 %s: %s
-%s: %x
+%s: %s
 %s: %d
 %s: %06x
 %s: %08x
@@ -382,7 +378,10 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 
 	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
 
-	serializedData := p.GetBinarySerialized()
+	serializedData, err := p.GetBinarySerialized()
+	if err != nil {
+		return nil, errors.Join(errors.New("failed to get serialized data"), err)
+	}
 	if lowerCaseEncoding {
 		serializedData = strings.ToLower(serializedData)
 	}
@@ -624,17 +623,22 @@ func TextToHeaderMap(text []byte) (map[string]string, error) {
 	return headers, nil
 }
 
-func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCryptV1, error) {
+func SplitTextHeaderAndBody(data []byte) ([]byte, []byte) {
+	dataSplit := bytes.SplitN(data, []byte("\n\n\n"), 2)
+	return dataSplit[0], dataSplit[1]
+}
+
+func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCrypt, error) {
 	paperCryptFileContents := NormalizeLineEndings(data)
 
-	paperCryptFileContentsSplit := bytes.SplitN(paperCryptFileContents, []byte("\n\n\n"), 2)
+	headersSection, bodySection := SplitTextHeaderAndBody(paperCryptFileContents)
 
 	// 3. Read Headers if present
-	if len(paperCryptFileContentsSplit) != 2 {
+	if len(bodySection) == 0 {
 		return nil, errors.Join(errorParsingHeader, errors.New("header not discernible, header and content should be separated by two empty lines"))
 	}
 
-	headers, err := TextToHeaderMap(paperCryptFileContentsSplit[0])
+	headers, err := TextToHeaderMap(headersSection)
 	if err != nil {
 		return nil, errors.Join(errorParsingHeader, err)
 	}
@@ -652,11 +656,8 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 		log.Warn(Warning("PaperCrypt Version not present in header."))
 	}
 
-	// parse git-describe version, look for major version <= 1
-	// releases are tagged as vX.Y.Z
-	majorVersion := strings.Split(versionLine, ".")[0]
-	majorVersion = strings.TrimPrefix(majorVersion, "v")
-	if !ignoreVersionMismatch && !(majorVersion == "2" || majorVersion == "1" || majorVersion == "devel") {
+	majorVersion := PaperCryptContainerVersionFromString(versionLine)
+	if !ignoreVersionMismatch && !(majorVersion == PaperCryptContainerVersionMajor2 || majorVersion == PaperCryptContainerVersionDevel) {
 		return nil, errors.Join(errorParsingHeader, fmt.Errorf("unsupported PaperCrypt version '%s'", versionLine))
 	}
 
@@ -679,7 +680,7 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 			return nil, errors.Join(errorParsingHeader, errors.New("invalid CRC-32 format"), err)
 		}
 
-		headerWithoutCrc := bytes.ReplaceAll(paperCryptFileContentsSplit[0], []byte("# "), []byte{})
+		headerWithoutCrc := bytes.ReplaceAll(headersSection, []byte("# "), []byte{})
 		headerWithoutCrc = bytes.ReplaceAll(headerWithoutCrc, []byte("\n"+HeaderFieldHeaderCRC32+": "+headers[HeaderFieldHeaderCRC32]), []byte{})
 
 		if !ValidateCRC32(headerWithoutCrc, headerCrc32) {
@@ -698,17 +699,14 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 			return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldDataFormat))
 		}
 
-		dataFormatI, err := strconv.ParseInt(dataFormatString, 16, 32)
-		if err != nil {
-			return nil, errors.Join(errorParsingHeader, errors.New("error parsing data format"), err)
-		}
+		log.Debugf("Data Format: %s", dataFormatString)
 
-		dataFormat = PaperCryptDataFormat(dataFormatI)
+		dataFormat = PaperCryptDataFormatFromString(dataFormatString)
 	}
 
 	var pgpMessage *crypto.PGPMessage
 	var body []byte
-	body, err = DeserializeBinary(&paperCryptFileContentsSplit[1])
+	body, err = DeserializeBinary(&bodySection)
 	if err != nil {
 		return nil, errors.Join(errorParsingBody, err)
 	}
@@ -808,7 +806,7 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	// and will just be recalculated
 	paperCrypt := NewPaperCrypt(
 		versionLine,
-		pgpMessage.GetBinary(),
+		body,
 		headers[HeaderFieldSerial],
 		headers[HeaderFieldPurpose],
 		headers[HeaderFieldComment],
@@ -823,5 +821,5 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	}
 	log.WithField("json", paperCrypt).Debug("Serialized PaperCrypt document")
 
-	return nil, nil
+	return paperCrypt, nil
 }

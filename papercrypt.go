@@ -55,6 +55,8 @@ var pdfFontTextBold string
 //go:embed "font/Noto_Sans/NotoSans-Italic.ttf"
 var pdfFontTextItalic string
 
+// TODO: test "Fira Code" OCR performance, as a possible replacement for Space Mono
+
 //go:embed "font/Space_Mono/SpaceMono-Regular.ttf"
 var pdfFontMonoRegular string
 
