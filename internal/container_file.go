@@ -44,9 +44,10 @@ import (
 )
 
 const (
-	BytesPerLine = 22 // As is done in paperkey (https://www.jabberwocky.com/software/paperkey/)
-	PdfTextFont  = "Text"
-	PdfMonoFont  = "Mono"
+	BytesPerLine        = 24
+	PdfTextFont         = "Text"
+	PdfMonoFont         = "Mono"
+	PdfDataLineFontSize = 11
 )
 
 var (
@@ -157,7 +158,7 @@ func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 		return "", errors.New("no data to serialize")
 	}
 
-	return SerializeBinary(&p.Data), nil
+	return SerializeBinaryV2(&p.Data), nil
 }
 
 func (p *PaperCrypt) GetDataLength() int {
@@ -299,7 +300,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	pdf.AddPage()
 	// print header lines
-	pdf.SetFont(PdfMonoFont, "B", 10)
+	pdf.SetFont(PdfMonoFont, "B", PdfDataLineFontSize)
 	for _, line := range strings.Split(parts[0], "\n") {
 		pdf.Cell(0, 5, "# "+line)
 		pdf.Ln(5)
@@ -317,7 +318,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	pdf.SetFont(PdfMonoFont, "B", 10)
+	pdf.SetFont(PdfMonoFont, "B", PdfDataLineFontSize)
 	for n, line := range filtered {
 		// mark every second line with a grey background
 		if n%2 == 0 {

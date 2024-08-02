@@ -55,15 +55,13 @@ var pdfFontTextBold string
 //go:embed "font/Noto_Sans/NotoSans-Italic.ttf"
 var pdfFontTextItalic string
 
-// TODO: test "Fira Code" OCR performance, as a possible replacement for Space Mono
-
-//go:embed "font/Space_Mono/SpaceMono-Regular.ttf"
+//go:embed "font/Inconsolata/static/Inconsolata-Medium.ttf"
 var pdfFontMonoRegular string
 
-//go:embed "font/Space_Mono/SpaceMono-Bold.ttf"
+//go:embed "font/Inconsolata/static/Inconsolata-Bold.ttf"
 var pdfFontMonoBold string
 
-//go:embed "font/Space_Mono/SpaceMono-Italic.ttf"
+//go:embed "font/Inconsolata/Inconsolata-VariableFont_wdth,wght.ttf"
 var pdfFontMonoItalic string
 
 var (

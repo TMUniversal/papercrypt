@@ -51,21 +51,21 @@ type LineData struct {
 // n: <CRC-24 of the block>
 //
 // See [example.pdf](example.pdf) for an example.
-func SerializeBinary(data *[]byte) string {
-	lines := math.Ceil(float64(len(*data)) / BytesPerLine)
+func SerializeBinary(data *[]byte, bytesPerLine int) string {
+	lines := math.Ceil(float64(len(*data)) / float64(bytesPerLine))
 	lineNumberDigits := int(math.Floor(math.Log10(lines + 1)))
 
 	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
 
-	for i := 0; i < len(*data); i += BytesPerLine {
-		lineNumber := (i / BytesPerLine) + 1
+	for i := 0; i < len(*data); i += bytesPerLine {
+		lineNumber := (i / bytesPerLine) + 1
 		lineNumberPadding := lineNumberDigits - int(math.Floor(math.Log10(float64(lineNumber))))
 
 		line := fmt.Sprintf("%s%d: ", string(bytes.Repeat([]byte{' '}, lineNumberPadding)), lineNumber)
 
-		dataLine := make([]byte, 0, BytesPerLine)
+		dataLine := make([]byte, 0, bytesPerLine)
 
-		for j := 0; j < BytesPerLine; j++ {
+		for j := 0; j < bytesPerLine; j++ {
 			if i+j >= len(*data) {
 				break
 			}
@@ -85,6 +85,16 @@ func SerializeBinary(data *[]byte) string {
 	dataBlock = append(dataBlock, []byte(fmt.Sprintf("%d: %06X\n", finalLineNumber, dataCRC24))...)
 
 	return string(dataBlock)
+}
+
+// SerializeBinaryV1 serializes binary data using SerializeBinary
+func SerializeBinaryV1(data *[]byte) string {
+	return SerializeBinary(data, BytesPerLineV1)
+}
+
+// SerializeBinaryV2 serializes binary data using SerializeBinary
+func SerializeBinaryV2(data *[]byte) string {
+	return SerializeBinary(data, BytesPerLine)
 }
 
 func DeserializeBinary(data *[]byte) ([]byte, error) {

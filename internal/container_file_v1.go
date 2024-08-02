@@ -37,6 +37,10 @@ import (
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
 
+const (
+	BytesPerLineV1 = 22 // As is done in paperkey (https://www.jabberwocky.com/software/paperkey/)
+)
+
 type PaperCryptV1 struct {
 	// Version is the version of papercrypt used to generate the document.
 	Version string `json:"Version"`
@@ -120,7 +124,7 @@ func (p *PaperCryptV1) GetBinary() []byte {
 
 func (p *PaperCryptV1) GetBinarySerialized() string {
 	data := p.GetBinary()
-	return SerializeBinary(&data)
+	return SerializeBinaryV1(&data)
 }
 
 func (p *PaperCryptV1) GetLength() int {
