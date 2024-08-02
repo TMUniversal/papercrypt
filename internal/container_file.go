@@ -35,12 +35,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/makiuchi-d/gozxing/qrcode"
+
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
 const (
@@ -49,6 +50,8 @@ const (
 	PdfMonoFont         = "Mono"
 	PdfDataLineFontSize = 11
 )
+
+const printProductQrCode = false
 
 var (
 	PdfTextFontRegularBytes []byte
@@ -79,8 +82,7 @@ const (
 	PDFSectionDescriptionHeading    = "What is this?"
 	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
 	PDFSectionRepresentationHeading = "Binary Data Representation"
-	// The encoded data is compressed using the gzip algorithm before and after encryption.
-	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
+	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used. Data is compressed using the gzip algorithm."
 	PDFSectionRecoveryHeading       = "Recovering the data"
 	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
@@ -192,6 +194,25 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		return nil, fmt.Errorf("error splitting text content into header and data")
 	}
 
+	productLinkQr := new(bytes.Buffer)
+	if printProductQrCode {
+		enc := qrcode.NewQRCodeWriter()
+		encoderHints := make(map[gozxing.EncodeHintType]interface{})
+		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "M"
+		encoderHints[gozxing.EncodeHintType_MARGIN] = 0
+		qrSize := 709
+
+		code, err := enc.Encode(VersionInfo.URL, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
+		if err != nil {
+			return nil, errors.Join(errors.New("error generating QR code"), err)
+		}
+
+		err = png.Encode(productLinkQr, code)
+		if err != nil {
+			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
+		}
+	}
+
 	qr := new(bytes.Buffer)
 	dm := new(bytes.Buffer)
 
@@ -208,7 +229,8 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		encoderHints := make(map[gozxing.EncodeHintType]interface{})
 		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "Q"
 		encoderHints[gozxing.EncodeHintType_MARGIN] = 0
-		qrSize := int(math.Ceil(165 * 9)) // 165 mm
+		// qrSize := 1949 // 165 mm at 300 dpi
+		qrSize := 7795 // 165 mm at 1200 dpi
 		code, err := enc.Encode(codeData, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating QR code"), err)
@@ -253,6 +275,14 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 
 		pdf.Ln(10)
+
+		if printProductQrCode {
+			// add product qr code in upper left corner
+			pdf.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
+			imageSize := 15.0
+			pdf.ImageOptions("product_link_qr.png", 186, 11, imageSize, imageSize, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+
+		}
 	}, true)
 	pdf.SetFooterFunc(func() {
 		pdf.SetY(-15)
@@ -266,22 +296,27 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.SetFont(PdfTextFont, "B", 16)
 		pdf.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
 		pdf.Ln(10)
+
 		pdf.SetFont(PdfTextFont, "B", 10)
-		// enter the markdown information
 		pdf.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
+
 		pdf.SetFont(PdfTextFont, "", 10)
 		pdf.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
 		pdf.Ln(5)
+
 		pdf.SetFont(PdfTextFont, "B", 10)
 		pdf.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
+
 		pdf.SetFont(PdfTextFont, "", 10)
 		pdf.MultiCell(0, 5, fmt.Sprintf(PDFSectionRepresentationContent, BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
 		pdf.Ln(5)
+
 		pdf.SetFont(PdfTextFont, "B", 10)
 		pdf.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
 		pdf.Ln(5)
+
 		pdf.SetFont(PdfTextFont, "", 10)
 		recoverInstruction := PDFSectionRecoveryContent
 		if noQR {
