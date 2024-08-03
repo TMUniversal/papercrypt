@@ -29,13 +29,16 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
+	"image"
 	"image/png"
 	"math"
 	"math/big"
 	"strings"
 	"time"
 
-	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/aztec"
+	"github.com/boombuler/barcode/qr"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
@@ -196,24 +199,32 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	productLinkQr := new(bytes.Buffer)
 	if printProductQrCode {
-		enc := qrcode.NewQRCodeWriter()
-		encoderHints := make(map[gozxing.EncodeHintType]interface{})
-		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "M"
-		encoderHints[gozxing.EncodeHintType_MARGIN] = 0
 		qrSize := 709
 
-		code, err := enc.Encode(VersionInfo.URL, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
+		code, err := qr.Encode(VersionInfo.URL, qr.M, qr.Auto)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating QR code"), err)
 		}
 
-		err = png.Encode(productLinkQr, code)
+		code, err = barcode.Scale(code, qrSize, qrSize)
+		if err != nil {
+			return nil, errors.Join(errors.New("error scaling QR code"), err)
+		}
+
+		converted := image.NewGray(code.Bounds())
+		for y := 0; y < code.Bounds().Dy(); y++ {
+			for x := 0; x < code.Bounds().Dx(); x++ {
+				converted.Set(x, y, code.At(x, y))
+			}
+		}
+
+		err = png.Encode(productLinkQr, converted)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
 		}
 	}
 
-	qr := new(bytes.Buffer)
+	dataQR := new(bytes.Buffer)
 	dm := new(bytes.Buffer)
 
 	if !noQR {
@@ -222,21 +233,27 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		if err != nil {
 			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
 		}
-		codeData := string(qrDataJSON)
 
-		// TODO: make this an Aztec code, as it can hold more data
-		enc := qrcode.NewQRCodeWriter()
-		encoderHints := make(map[gozxing.EncodeHintType]interface{})
-		encoderHints[gozxing.EncodeHintType_ERROR_CORRECTION] = "Q"
-		encoderHints[gozxing.EncodeHintType_MARGIN] = 0
 		// qrSize := 1949 // 165 mm at 300 dpi
 		qrSize := 7795 // 165 mm at 1200 dpi
-		code, err := enc.Encode(codeData, gozxing.BarcodeFormat_QR_CODE, qrSize, qrSize, encoderHints)
+		code, err := aztec.Encode(qrDataJSON, 35, 0)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating QR code"), err)
 		}
 
-		err = png.Encode(qr, code)
+		code, err = barcode.Scale(code, qrSize, qrSize)
+		if err != nil {
+			return nil, errors.Join(errors.New("error scaling QR code"), err)
+		}
+
+		converted := image.NewGray(code.Bounds())
+		for y := 0; y < code.Bounds().Dy(); y++ {
+			for x := 0; x < code.Bounds().Dx(); x++ {
+				converted.Set(x, y, code.At(x, y))
+			}
+		}
+
+		err = png.Encode(dataQR, converted)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
 		}
@@ -245,7 +262,7 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 	{
 		// generate a data matrix with the sheet id
 		enc := datamatrix.NewDataMatrixWriter()
-		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
+		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 236, 236, nil)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
@@ -327,9 +344,9 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	// add the qr code
 	if !noQR {
-		pdf.RegisterImageReader("qr.png", "PNG", qr)
+		pdf.RegisterImageReader("dataQR.png", "PNG", dataQR)
 		imageSize := 167.0
-		pdf.ImageOptions("qr.png", 20, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.ImageOptions("dataQR.png", 20, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		pdf.Ln(50)
 	}
 

@@ -131,12 +131,12 @@ tasks:
       - build
     generates:
       - "examples/output.pdf"
-      - "examples/no_qr.pdf"
+      - "examples/no_code.pdf"
       - "examples/lowercase.pdf"
       - "examples/phrase.pdf"
     cmds:
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
-      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
+      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_code.pdf   --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_code.pdf'
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
       - "./papercrypt{{exeExt}} phrase-sheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
 
@@ -223,7 +223,7 @@ tasks:
   clean:examples:
     desc: Remove all generated files
     cmds:
-      - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf examples/phrase.pdf"
+      - "rm -f examples/output.pdf examples/no_code.pdf examples/lowercase.pdf examples/phrase.pdf"
 
   clean:test:
     desc: Remove all generated files

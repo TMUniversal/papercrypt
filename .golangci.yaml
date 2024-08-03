@@ -36,7 +36,7 @@ issues:
   exclude-files:
     - "internal/container_file_v1.go"
   exclude-rules:
-    - path: "cmd/qr.go"
+    - path: "cmd/scan_code.go"
       linters:
         - tagliatelle
     - path: "internal/phrase_sheet.go"

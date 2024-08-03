@@ -27,9 +27,11 @@ import (
 	"io"
 	"os"
 
+	"github.com/makiuchi-d/gozxing/aztec"
+	"github.com/makiuchi-d/gozxing/qrcode"
+
 	"github.com/caarlos0/log"
 	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )
@@ -49,17 +51,17 @@ type versionContainer struct {
 	Version string `json:"v"`
 }
 
-// qrCmd represents the data command
-var qrCmd = &cobra.Command{
-	Aliases:      []string{"q"},
+// scanCmd represents the data command
+var scanCmd = &cobra.Command{
+	Aliases:      []string{"q", "qr", "scan"},
 	Args:         cobra.MaximumNArgs(1),
 	SilenceUsage: true,
-	Use:          "qr <input>",
-	Short:        "Decode a document from a QR code.",
-	Long: `Decode a document from a QR code.
+	Use:          "scan <input>",
+	Short:        "Decode a document from a 2D code (aztec or qr).",
+	Long: `Decode a document from a 2D code (aztec or qr).
 
 This command allows you to decode data saved by PaperCrypt.
-The QR code in a PaperCrypt document contains a JSON serialized object
+The Aztec/QR code in a PaperCrypt document contains a JSON serialized object
 that contains the encrypted data and the PaperCrypt metadata.
 
 If you have trouble scanning the QR code with this command,
@@ -68,7 +70,7 @@ such as "Scandit" (https://apps.apple.com/de/app/scandit-barcode-scanner/id45388
 or https://play.google.com/store/apps/details?id=com.scandit.demoapp).
 The resulting JSON data can be read by this command, by supplying the --json flag.
 `,
-	Example: `papercrypt qr ./qr.png | papercrypt decode -o ./out.json -P passphrase`,
+	Example: `papercrypt scan ./code.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
 		// 1. get data from either argument or inFileName
 		if len(args) != 0 {
@@ -103,10 +105,18 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error creating binary bitmap"), err)
 			}
 
-			qrReader := qrcode.NewQRCodeReader()
-			result, err := qrReader.Decode(bmp, nil)
+			// attempt to decode as aztec first
+			aztecReader := aztec.NewAztecReader()
+			result, err := aztecReader.Decode(bmp, nil)
 			if err != nil {
-				return errors.Join(errors.New("error decoding QR code"), err)
+				log.Debugf("error decoding aztec: %s", err)
+				// if that fails, try qrcode
+				qrReader := qrcode.NewQRCodeReader()
+				result, err = qrReader.Decode(bmp, nil)
+				if err != nil {
+					return errors.Join(errors.New("error decoding QR code"), err)
+				}
+
 			}
 
 			data = []byte(result.GetText())
@@ -197,8 +207,8 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 }
 
 func init() {
-	rootCmd.AddCommand(qrCmd)
+	rootCmd.AddCommand(scanCmd)
 
-	qrCmd.Flags().BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
-	qrCmd.Flags().BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
+	scanCmd.Flags().BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
+	scanCmd.Flags().BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
 }

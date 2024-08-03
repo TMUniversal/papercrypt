@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.7.5
+	github.com/boombuler/barcode v1.0.2
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.6
 	github.com/charmbracelet/lipgloss v0.12.1
