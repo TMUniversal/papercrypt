@@ -116,7 +116,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				if err != nil {
 					return errors.Join(errors.New("error decoding QR code"), err)
 				}
-
+				log.Debug("decoded as QR code")
 			}
 
 			data = []byte(result.GetText())

@@ -90,12 +90,12 @@ encrypted data.`,
 			timestamp = time.Now()
 		} else {
 			var err error
-			timestamp, err = time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", date)
+			timestamp, err = time.Parse(internal.TimeStampFormatLong, date)
 			if err != nil {
 				// try other formats if this fails
-				timestamp, err = time.Parse("2006-01-02 15:04:05", date)
+				timestamp, err = time.Parse(internal.TimeStampFormatShort, date)
 				if err != nil {
-					timestamp, err = time.Parse("2006-01-02", date)
+					timestamp, err = time.Parse(internal.TimeStampFormatDate, date)
 					if err != nil {
 						return errors.Join(errors.New("error parsing date"), err)
 					}
@@ -210,7 +210,7 @@ func init() {
 	generateCmd.Flags().StringVarP(&purpose, "purpose", "p", "", "Purpose of the sheet (optional)")
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
-	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
+	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate 2D code (optional)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
 	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")
 
