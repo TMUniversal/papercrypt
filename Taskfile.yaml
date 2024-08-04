@@ -36,9 +36,9 @@ tasks:
     cmds:
       - go vet ./...
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
-      # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
+      # full pipeline test: generate pdf > extract images > scan 2d code > decode document > compare to input
       # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
-      # if running on windows, install it in WSL
+      # if running on windows, installing it in WSL will allow the `bash -c` commands to work.
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
@@ -46,14 +46,14 @@ tasks:
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
-        | go run . qr
+        | go run . scan
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'cat t-1.png
-        | go run . qr --to-json
-        | go run . qr --from-json
+        | go run . scan --to-json
+        | go run . scan --from-json
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
@@ -72,7 +72,7 @@ tasks:
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
-        | go run . qr
+        | go run . scan
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
