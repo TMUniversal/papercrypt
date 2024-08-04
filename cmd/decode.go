@@ -62,12 +62,15 @@ The data should be read from a file or stdin, you will be required to provide a 
 		if err != nil {
 			return err
 		}
+		paperCryptFileContents = internal.NormalizeLineEndings(paperCryptFileContents)
 
-		headersSection, bodySection := internal.SplitTextHeaderAndBody(paperCryptFileContents)
+		headersSection, bodySection, err := internal.SplitTextHeaderAndBody(paperCryptFileContents)
+		if err != nil {
+			return errors.Join(errors.New("header not found"), err)
+		}
 
-		// 3. Read Headers if present
 		if len(bodySection) == 0 {
-			return errors.Join(errors.New("header not discernible, header and content should be separated by two empty lines"))
+			return errors.New("no content found")
 		}
 
 		headers, err := internal.TextToHeaderMap(headersSection)
