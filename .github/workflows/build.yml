@@ -50,6 +50,11 @@ jobs:
       - uses: anchore/sbom-action/download-syft@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
       - name: setup-tparse
         run: go install github.com/mfridman/tparse@latest
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          which pdftoppm
       - name: setup
         run: |
           task setup
