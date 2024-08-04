@@ -87,8 +87,8 @@ const (
 	PDFSectionRepresentationHeading = "Binary Data Representation"
 	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used. Data is compressed using the gzip algorithm."
 	PDFSectionRecoveryHeading       = "Recovering the data"
-	PDFSectionRecoveryContent       = "Firstly, scan the QR code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
-	PDFSectionRecoveryContentNoQR   = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContent       = "Firstly, scan the 2D code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContentNo2D   = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 )
 
 var (
@@ -172,7 +172,7 @@ func (p *PaperCrypt) GetDataLength() int {
 
 // GetPDF returns the binary representation of the paper crypt
 // The PDF will be generated to include some basic information about papercrypt,
-// some metadata, optionally a QR-Code, and the encrypted data.
+// some metadata, optionally a 2D-Code, and the encrypted data.
 //
 // The data will be formatted as
 //
@@ -184,8 +184,8 @@ func (p *PaperCrypt) GetDataLength() int {
 //   - Creation Date
 //   - Purpose
 //
-// and, next to the markdown information, a QR code containing the encrypted data.
-func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
+// and, next to the markdown information, a 2D code containing the encrypted data.
+func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	text, err := p.GetText(lowerCaseEncoding)
 	if err != nil {
 		return nil, fmt.Errorf("error getting text content: %s", err)
@@ -203,12 +203,12 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 		code, err := qr.Encode(VersionInfo.URL, qr.M, qr.Auto)
 		if err != nil {
-			return nil, errors.Join(errors.New("error generating QR code"), err)
+			return nil, errors.Join(errors.New("error generating 2D code"), err)
 		}
 
 		code, err = barcode.Scale(code, qrSize, qrSize)
 		if err != nil {
-			return nil, errors.Join(errors.New("error scaling QR code"), err)
+			return nil, errors.Join(errors.New("error scaling 2D code"), err)
 		}
 
 		converted := image.NewGray(code.Bounds())
@@ -220,14 +220,14 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 		err = png.Encode(productLinkQr, converted)
 		if err != nil {
-			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
+			return nil, errors.Join(errors.New("error generating 2D code PNG"), err)
 		}
 	}
 
-	dataQR := new(bytes.Buffer)
+	data2D := new(bytes.Buffer)
 	dm := new(bytes.Buffer)
 
-	if !noQR {
+	if !no2D {
 		// for the qr-code, encode the *p as json, then base64 encode it
 		qrDataJSON, err := json.Marshal(p)
 		if err != nil {
@@ -238,12 +238,12 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 		qrSize := 7795 // 165 mm at 1200 dpi
 		code, err := aztec.Encode(qrDataJSON, 35, 0)
 		if err != nil {
-			return nil, errors.Join(errors.New("error generating QR code"), err)
+			return nil, errors.Join(errors.New("error generating 2D code"), err)
 		}
 
 		code, err = barcode.Scale(code, qrSize, qrSize)
 		if err != nil {
-			return nil, errors.Join(errors.New("error scaling QR code"), err)
+			return nil, errors.Join(errors.New("error scaling 2D code"), err)
 		}
 
 		converted := image.NewGray(code.Bounds())
@@ -253,16 +253,16 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 			}
 		}
 
-		err = png.Encode(dataQR, converted)
+		err = png.Encode(data2D, converted)
 		if err != nil {
-			return nil, errors.Join(errors.New("error generating QR code PNG"), err)
+			return nil, errors.Join(errors.New("error generating 2D code PNG"), err)
 		}
 	}
 
 	{
 		// generate a data matrix with the sheet id
 		enc := datamatrix.NewDataMatrixWriter()
-		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 236, 236, nil)
+		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
@@ -336,17 +336,17 @@ func (p *PaperCrypt) GetPDF(noQR bool, lowerCaseEncoding bool) ([]byte, error) {
 
 		pdf.SetFont(PdfTextFont, "", 10)
 		recoverInstruction := PDFSectionRecoveryContent
-		if noQR {
-			recoverInstruction = PDFSectionRecoveryContentNoQR
+		if no2D {
+			recoverInstruction = PDFSectionRecoveryContentNo2D
 		}
 		pdf.MultiCell(0, 5, recoverInstruction, "", "", false)
 	}
 
 	// add the qr code
-	if !noQR {
-		pdf.RegisterImageReader("dataQR.png", "PNG", dataQR)
+	if !no2D {
+		pdf.RegisterImageReader("data2D.png", "PNG", data2D)
 		imageSize := 167.0
-		pdf.ImageOptions("dataQR.png", 20, 0, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.ImageOptions("data2D.png", 21, 5, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 		pdf.Ln(50)
 	}
 

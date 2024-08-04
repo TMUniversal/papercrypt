@@ -58,7 +58,7 @@ var pdfFontTextItalic string
 //go:embed "font/Inconsolata/static/Inconsolata-Medium.ttf"
 var pdfFontMonoRegular string
 
-//go:embed "font/Inconsolata/static/Inconsolata-Bold.ttf"
+//go:embed "font/Inconsolata/static/Inconsolata-ExtraBold.ttf"
 var pdfFontMonoBold string
 
 //go:embed "font/Inconsolata/Inconsolata-VariableFont_wdth,wght.ttf"
