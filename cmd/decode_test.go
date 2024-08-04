@@ -75,7 +75,7 @@ const docV1 = `# PaperCrypt Version: 1.3.0
 17: AA 15 9D 51 85 87 A1 AC B9 EA 8DAE77
 18: B19F5F`
 
-const doc = `# PaperCrypt Version: devel
+const doc = `# PaperCrypt Version: 2.0.0
 # Content Serial: EIPESR
 # Purpose: Example Sheet
 # Comment: Regular PDF Example
@@ -85,7 +85,7 @@ const doc = `# PaperCrypt Version: devel
 # Content CRC-24: d6f1c0
 # Content CRC-32: bc4b3672
 # Content SHA-256: NT7wwW5Tq5fk1J82M1tzE82VGxIlad5vpF5cDMzg+yg=
-# Header CRC-32: c037bb00
+# Header CRC-32: c2eee21
 
 
  1: 1F 8B 08 00 00 00 00 00 02 FF 00 6A 01 95 FE C3 2E 04 09 03 08 7A D49E51
@@ -107,6 +107,32 @@ const doc = `# PaperCrypt Version: devel
 17: 1D 67 D8 71 AD 2D D3 89 43 54 8A F5 33 CD 0E AF B0 80 08 29 68 59 E37012
 18: 53 15 99 01 00 00 FF FF CC 08 E8 C8 6A 01 00 00 2436D9
 19: D6F1C0`
+
+const docRaw = `# PaperCrypt Version: 2.0.0
+# Content Serial: BVC36O
+# Purpose: Example Sheet
+# Comment: Regular PDF Example
+# Date: Sun, 04 Aug 2024 12:36:20.800974400 CEST
+# Data Format: Raw
+# Content Length: 261
+# Content CRC-24: ce50b7
+# Content CRC-32: 5f6b9b4b
+# Content SHA-256: w8b3gibx3gdQsGXmlWVtET631gMT0TDLbe94IC5hXuw=
+# Header CRC-32: 225bb1ed
+
+
+ 1: 1F 8B 08 00 00 00 00 00 02 FF 8C 90 3F 6B F3 30 10 C6 77 7F 0A A1 39 B6 C7FEC2
+ 2: 79 5F 6F DE 8A EB A1 74 28 C4 ED 10 4A 39 4E EA D1 A4 FE 23 73 92 5A 9C D4CD76
+ 3: 92 EF 5E CE C6 4E C6 0E 12 E8 B9 9F 1E 7E DC 4F A2 94 9E 5C 64 30 68 DB ADA862
+ 4: 38 EA 52 49 A4 94 5E DE D0 39 8B E1 E4 06 5D 2A 7D 0C 61 F4 65 9E 0B 9F 175C0A
+ 5: 9A 68 5B 0A 99 2F 32 EC F1 EC 06 FC F6 99 75 7D 7E 53 96 05 E4 EC E3 AC 260CAD
+ 6: 77 4B 23 5A 4B DE 43 4B 13 9C DE A5 EF F0 F4 B2 87 A6 80 BB AA AA 9B 06 F96B7B
+ 7: 1E EB 03 3C DC AF B4 27 CB 14 84 BE 45 9B BA DA D7 CF 82 AE 1C 0D 96 A7 4BBC58
+ 8: 51 14 57 76 D1 9B 0D D2 EB 34 95 E9 6A 32 B8 70 24 86 91 DD 48 1C E6 5F F4B766
+ 9: 6B F6 85 5D A4 0D 84 21 F6 86 58 97 EA DF FF 62 0B 8D 73 1D A1 EC 24 70 C33342
+10: A4 AD 14 90 19 A5 EC 55 A3 DE 29 6D E4 B2 FA ED 0A 38 F3 49 36 6C 4B FE 285F92
+11: 93 CA 4C 5E 12 39 97 E4 37 00 00 FF FF BD EA 20 F9 B0 01 00 00 BA6594
+12: CE50B7`
 
 func TestDecodeV1(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
@@ -147,6 +173,34 @@ func TestDecodeV2(t *testing.T) {
 	cmd.SetArgs([]string{"decode", "-v", "-i", inPath, "-o", outPath, "-P", "example"})
 
 	if err := os.WriteFile(inPath, []byte(doc), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	out, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(out) != input {
+		t.Fatalf("Expected %s, got %s", input, string(out))
+	}
+}
+
+func TestDecodeV2Raw(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+
+	tempDir := t.TempDir()
+	inPath := tempDir + "/input.txt"
+	outPath := tempDir + "/output.json"
+
+	cmd := rootCmd
+	cmd.SetArgs([]string{"decode", "-v", "-i", inPath, "-o", outPath, "-P", "example"})
+
+	if err := os.WriteFile(inPath, []byte(docRaw), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
