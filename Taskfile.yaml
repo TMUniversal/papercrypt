@@ -28,14 +28,27 @@ tasks:
       - go build
 
   test:
-    desc: Run end-to-end tests, including generating a PDF, extracting images, finding a QR code, reading a QR code, decoding the document, and comparing to the input
+    desc: Run all tests, including unit, end-to-end, and backwards compatibility
+    cmds:
+      - go vet ./...
+      - task: test:unit
+      - task: test:e2e
+      - task: test:backwards
+      - task: test:raw
+      - task: clean:test
+
+  test:unit:
+    desc: Run unit tests
     vars:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go vet ./...
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+
+  test:e2e:
+    desc: Run end-to-end tests, including generating a PDF, extracting images, finding a QR code, reading a QR code, decoding the document, and comparing to the input
+    cmds:
       # full pipeline test: generate pdf > extract images > scan 2d code > decode document > compare to input
       # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
       # if running on windows, installing it in WSL will allow the `bash -c` commands to work.
@@ -59,9 +72,6 @@ tasks:
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
-      - task: test:backwards
-      - task: test:raw
-      - task: clean:test
 
   test:raw:
     cmds:

@@ -59,7 +59,9 @@ jobs:
         run: |
           task setup
           task build
-      - name: test
+      - name: Run all tests
+        run: task test
+      - name: Run go tests with coverage for github actions
         run: ./scripts/test.sh
       - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
         with:
