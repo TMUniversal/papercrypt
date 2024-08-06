@@ -132,6 +132,48 @@ type PaperCrypt struct {
 	Data []byte `json:"d"`
 }
 
+func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
+	type Alias PaperCrypt
+	return json.Marshal(&struct {
+		CreatedAt  string `json:"ct"`
+		DataSHA256 string `json:"d_s256"`
+		*Alias
+	}{
+		CreatedAt:  p.CreatedAt.Format(TimeStampFormatLong),
+		DataSHA256: base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
+		Alias:      (*Alias)(p),
+	})
+}
+
+func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
+	type Alias PaperCrypt
+	aux := &struct {
+		CreatedAt  string `json:"ct"`
+		DataSHA256 string `json:"d_s256"`
+		*Alias
+	}{
+		Alias: (*Alias)(p),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	createdAt, err := time.Parse(TimeStampFormatLong, aux.CreatedAt)
+	if err != nil {
+		return err
+	}
+	p.CreatedAt = createdAt
+
+	dataSHA256, err := BytesFromBase64(aux.DataSHA256)
+	if err != nil {
+		return err
+	}
+	copy(p.DataSHA256[:], dataSHA256)
+
+	return nil
+}
+
 // NewPaperCrypt creates a new paper crypt
 func NewPaperCrypt(version string, data []byte, serialNumber string, purpose string, comment string, createdAt time.Time, format PaperCryptDataFormat) *PaperCrypt {
 	dataCRC24 := Crc24Checksum(data)
