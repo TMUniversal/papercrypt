@@ -32,9 +32,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caarlos0/log"
-
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/caarlos0/log"
 )
 
 const (

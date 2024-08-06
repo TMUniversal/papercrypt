@@ -27,9 +27,8 @@ import (
 	"os"
 	"syscall"
 
-	"golang.org/x/term"
-
 	"github.com/manifoldco/promptui"
+	"golang.org/x/term"
 )
 
 func readTtyLine() ([]byte, error) {

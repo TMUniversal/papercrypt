@@ -27,11 +27,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/makiuchi-d/gozxing/aztec"
-	"github.com/makiuchi-d/gozxing/qrcode"
-
 	"github.com/caarlos0/log"
 	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/aztec"
+	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/internal"
 )

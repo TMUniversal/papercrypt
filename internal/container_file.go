@@ -34,11 +34,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/aztec"
 	"github.com/boombuler/barcode/qr"
-
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/caarlos0/log"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
