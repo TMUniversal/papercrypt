@@ -151,9 +151,7 @@ func (p *PaperCryptV1) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		HeaderFieldComment,
 		p.Comment,
 		HeaderFieldDate,
-		// format time with nanosecond precision
-		// Sat, 12 Aug 2023 17:33:20.123456789
-		p.CreatedAt.Format("Mon, 02 Jan 2006 15:04:05.000000000 MST"),
+		p.CreatedAt.Format(TimeStampFormatLongTZ),
 		HeaderFieldContentLength,
 		p.GetLength(),
 		HeaderFieldCRC24,
@@ -336,9 +334,13 @@ func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 		log.Warn(Warning("Date not present in header!"))
 	}
 
-	timestamp, err := time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", headerDate)
+	timestamp, err := time.Parse(TimeStampFormatLongTZ, headerDate)
 	if err != nil {
-		return nil, errors.Join(errors.New("invalid date format"), err)
+		// try parsing with -0700 over MST
+		timestamp, err = time.Parse(TimeStampFormatLong, headerDate)
+		if err != nil {
+			return nil, errors.Join(errors.New("invalid date format"), err)
+		}
 	}
 
 	// we don't need to pass the checksums, as they are already verified

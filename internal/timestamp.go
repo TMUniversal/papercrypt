@@ -21,7 +21,8 @@
 package internal
 
 const (
-	TimeStampFormatLong      = "Mon, 02 Jan 2006 15:04:05.000000000 MST"
+	TimeStampFormatLong      = "Mon, 02 Jan 2006 15:04:05.000000000 -0700"
+	TimeStampFormatLongTZ    = "Mon, 02 Jan 2006 15:04:05.000000000 MST"
 	TimeStampFormatShort     = "2006-01-02 15:04:05"
 	TimeStampFormatDate      = "2006-01-02"
 	TimeStampFormatPDFHeader = "2006-01-02 15:04 -0700"

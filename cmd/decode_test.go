@@ -79,13 +79,13 @@ const doc = `# PaperCrypt Version: 2.0.0
 # Content Serial: EIPESR
 # Purpose: Example Sheet
 # Comment: Regular PDF Example
-# Date: Thu, 01 Aug 2024 20:38:10.306596100 CEST
+# Date: Thu, 01 Aug 2024 20:38:10.306596100 +0200
 # Data Format: PGP
 # Content Length: 390
 # Content CRC-24: d6f1c0
 # Content CRC-32: bc4b3672
 # Content SHA-256: NT7wwW5Tq5fk1J82M1tzE82VGxIlad5vpF5cDMzg+yg=
-# Header CRC-32: c2eee21
+# Header CRC-32: ecded03b
 
 
  1: 1F 8B 08 00 00 00 00 00 02 FF 00 6A 01 95 FE C3 2E 04 09 03 08 7A D49E51
@@ -112,13 +112,13 @@ const docRaw = `# PaperCrypt Version: 2.0.0
 # Content Serial: BVC36O
 # Purpose: Example Sheet
 # Comment: Regular PDF Example
-# Date: Sun, 04 Aug 2024 12:36:20.800974400 CEST
+# Date: Sun, 04 Aug 2024 12:36:20.800974400 +0200
 # Data Format: Raw
 # Content Length: 261
 # Content CRC-24: ce50b7
 # Content CRC-32: 5f6b9b4b
 # Content SHA-256: w8b3gibx3gdQsGXmlWVtET631gMT0TDLbe94IC5hXuw=
-# Header CRC-32: 225bb1ed
+# Header CRC-32: 3967f39
 
 
  1: 1F 8B 08 00 00 00 00 00 02 FF 8C 90 3F 6B F3 30 10 C6 77 7F 0A A1 39 B6 C7FEC2
