@@ -38,7 +38,7 @@ const (
 	passphraseSheetWordCount = 135
 )
 
-// phraseSheetCmd represents the phraseSheet command
+// phraseSheetCmd represents the phraseSheet command.
 var phraseSheetCmd = &cobra.Command{
 	Aliases:      []string{"ps", "p"},
 	Args:         cobra.MaximumNArgs(1),

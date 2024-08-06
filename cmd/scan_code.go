@@ -50,7 +50,7 @@ type versionContainer struct {
 	Version string `json:"v"`
 }
 
-// scanCmd represents the data command
+// scanCmd represents the data command.
 var scanCmd = &cobra.Command{
 	Aliases:      []string{"q", "qr", "scan"},
 	Args:         cobra.MaximumNArgs(1),

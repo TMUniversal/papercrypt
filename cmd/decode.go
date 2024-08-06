@@ -34,7 +34,7 @@ var (
 	ignoreChecksumMismatch bool
 )
 
-// decodeCmd represents the decode command
+// decodeCmd represents the decode command.
 var decodeCmd = &cobra.Command{
 	Aliases:      []string{"dec", "d"},
 	Args:         cobra.NoArgs,

@@ -173,7 +173,7 @@ func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// NewPaperCrypt creates a new paper crypt
+// NewPaperCrypt creates a new paper crypt.
 func NewPaperCrypt(version string, data []byte, serialNumber string, purpose string, comment string, createdAt time.Time, format PaperCryptDataFormat) *PaperCrypt {
 	dataCRC24 := Crc24Checksum(data)
 	dataCRC32 := crc32.ChecksumIEEE(data)
@@ -337,7 +337,6 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			pdf.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
 			imageSize := 15.0
 			pdf.ImageOptions("product_link_qr.png", 186, 11, imageSize, imageSize, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
-
 		}
 	}, true)
 	pdf.SetFooterFunc(func() {
@@ -432,7 +431,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// GetText returns the text representation of the paper crypt
+// GetText returns the text representation of the paper crypt.
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 	header := fmt.Sprintf(
 		`%s: %s

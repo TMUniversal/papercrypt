@@ -32,7 +32,7 @@ var (
 	ThirdPartyText *string
 )
 
-// urlCmd represents the url command
+// urlCmd represents the url command.
 var showCmd = &cobra.Command{
 	Aliases:      []string{"s"},
 	Args:         cobra.NoArgs,

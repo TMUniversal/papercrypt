@@ -48,7 +48,7 @@ var (
 
 var passphrase string
 
-// generateCmd represents the generate command
+// generateCmd represents the generate command.
 var generateCmd = &cobra.Command{
 	Aliases:      []string{"gen", "g"},
 	Args:         cobra.NoArgs,
