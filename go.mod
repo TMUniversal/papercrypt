@@ -15,7 +15,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.15.2
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/term v0.22.0
+	golang.org/x/term v0.23.0
 )
 
 require (
