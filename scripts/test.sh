@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -o pipefail && TEST_OPTIONS="-json" task test | tee output.json | tparse -follow
+set -o pipefail && TEST_OPTIONS="-json" task test:unit | tee output.json | tparse -follow
 success=$?
 
 set -e

@@ -43,11 +43,12 @@ var (
 var (
 	noQR             bool
 	lowerCasedBase16 bool
+	rawData          bool
 )
 
 var passphrase string
 
-// generateCmd represents the generate command
+// generateCmd represents the generate command.
 var generateCmd = &cobra.Command{
 	Aliases:      []string{"gen", "g"},
 	Args:         cobra.NoArgs,
@@ -89,12 +90,12 @@ encrypted data.`,
 			timestamp = time.Now()
 		} else {
 			var err error
-			timestamp, err = time.Parse("Mon, 02 Jan 2006 15:04:05.000000000 MST", date)
+			timestamp, err = time.Parse(internal.TimeStampFormatLong, date)
 			if err != nil {
 				// try other formats if this fails
-				timestamp, err = time.Parse("2006-01-02 15:04:05", date)
+				timestamp, err = time.Parse(internal.TimeStampFormatShort, date)
 				if err != nil {
-					timestamp, err = time.Parse("2006-01-02", date)
+					timestamp, err = time.Parse(internal.TimeStampFormatDate, date)
 					if err != nil {
 						return errors.Join(errors.New("error parsing date"), err)
 					}
@@ -144,14 +145,35 @@ encrypted data.`,
 			return errors.Join(errors.New("error closing gzip writer"), err)
 		}
 
-		// 7. Encrypt secretContentsMinimal with passphrase
-		encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
-		if err != nil {
-			return errors.Join(errors.New("error encrypting secret contents"), err)
+		var data []byte
+
+		// 7. Encrypt with passphrase
+		if !rawData {
+			encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
+			if err != nil {
+				return errors.Join(errors.New("error encrypting secret contents"), err)
+			}
+
+			compressedData.Reset()
+			gzipWriter.Reset(compressedData)
+			_, err = gzipWriter.Write(encryptedSecretContents.GetBinary())
+			if err != nil {
+				return errors.Join(errors.New("error writing to gzip writer"), err)
+			}
+			if err := gzipWriter.Close(); err != nil {
+				return errors.Join(errors.New("error closing gzip writer"), err)
+			}
 		}
 
+		// Take the unencrypted, compressed data (if rawData is true) or the encrypted, re-compressed data
+		data = compressedData.Bytes()
+
 		// 8. Write encryptedSecretContents to outFile
-		crypt := internal.NewPaperCrypt(internal.VersionInfo.GitVersion, encryptedSecretContents, serialNumber, purpose, comment, timestamp)
+		format := internal.PaperCryptDataFormatPGP
+		if rawData {
+			format = internal.PaperCryptDataFormatRaw
+		}
+		crypt := internal.NewPaperCrypt(internal.VersionInfo.GitVersion, data, serialNumber, purpose, comment, timestamp, format)
 
 		var text []byte
 
@@ -188,8 +210,9 @@ func init() {
 	generateCmd.Flags().StringVarP(&purpose, "purpose", "p", "", "Purpose of the sheet (optional)")
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
-	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate QR code (optional)")
+	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate 2D code (optional)")
 	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
+	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")
 
 	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")
 }

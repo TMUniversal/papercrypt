@@ -32,14 +32,14 @@ var (
 	ThirdPartyText *string
 )
 
-// urlCmd represents the url command
+// urlCmd represents the url command.
 var showCmd = &cobra.Command{
 	Aliases:      []string{"s"},
 	Args:         cobra.NoArgs,
 	SilenceUsage: true,
 	Use:          "show",
-	Short:        "Show commands: 'w', 'c', 't'",
-	Long:         `Use 'show [w/c/t]' to view warranty or copyright info`,
+	Short:        "Show licenses. Subcommands: 'w', 'c', 't'",
+	Long:         `Use 'show {w|c|t}' to view warranty or copyright info, or third party licenses.`,
 }
 
 var showCmdWarranty = &cobra.Command{

@@ -29,7 +29,7 @@ import (
 	"math/big"
 )
 
-// GenerateSerial generates a random serial number of length `length`
+// GenerateSerial generates a random serial number of length `length`.
 func GenerateSerial(length uint8) (string, error) {
 	// generate `length` random bytes,
 	// encode them as base64,

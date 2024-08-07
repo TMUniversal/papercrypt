@@ -28,37 +28,75 @@ tasks:
       - go build
 
   test:
-    desc: Run tests
+    desc: Run all tests, including unit, end-to-end, and backwards compatibility
+    cmds:
+      - go vet ./...
+      - task: test:unit
+      - task: test:e2e
+      - task: test:backwards
+      - task: test:raw
+      - task: clean:test
+
+  test:unit:
+    desc: Run unit tests
     vars:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go vet ./...
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
-      # full pipeline test: generate pdf > extract images > find qr code > read qr code > decode document > compare to input
+
+  test:e2e:
+    desc: Run end-to-end tests, including generating a PDF, extracting images, finding a QR code, reading a QR code, decoding the document, and comparing to the input
+    cmds:
+      # full pipeline test: generate pdf > extract images > scan 2d code > decode document > compare to input
       # requires pdftoppm, which can be installed with `sudo apt-get install -y poppler-utils`
-      # if running on windows, install it in WSL
+      # if running on windows, installing it in WSL will allow the `bash -c` commands to work.
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | go run . generate --purpose "Test" --comment "Test" --passphrase "test" -o test.pdf
+        | go run . generate --purpose "Test" --comment "Test" --passphrase "test" -o test.pdf --force
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
-        | go run . qr
+        | go run . scan
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'cat t-1.png
-        | go run . qr --to-json
-        | go run . qr --from-json
+        | go run . scan --to-json
+        | go run . scan --from-json
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
       - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
+
+  test:raw:
+    cmds:
+      - >-
+        bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
+        && cat test-in.json
+        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf -f --passphrase "test"
+        && pdftoppm -png -r 300 test.pdf t'
+      - >-
+        bash -c 'cat t-1.png
+        | go run . scan
+        | go run . decode -f -o test.json --passphrase "test"
+        && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document."'
+
+  test:backwards:
+    desc: Run backwards compatibility e2e tests
+    cmds:
+      - bash -c 'pdftoppm -png -r 300 examples/v1/output.pdf t'
+      - >-
+        bash -c 'cat t-1.png
+        | go run . qr
+        | go run . decode -f -o test.json --passphrase "example"
+        && diff -u test.json examples/v1/input.json
+        && echo "Successfully reconstructed input document."'
 
   cover:
     desc: Open the cover tool
@@ -103,14 +141,14 @@ tasks:
       - build
     generates:
       - "examples/output.pdf"
-      - "examples/no_qr.pdf"
+      - "examples/no_code.pdf"
       - "examples/lowercase.pdf"
       - "examples/phrase.pdf"
     cmds:
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/output.pdf    --force --passphrase "example" --purpose "Example Sheet" --comment "Regular PDF Example"                 && pdfcpu validate -m strict examples/output.pdf'
-      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_qr.pdf     --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_qr.pdf'
+      - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/no_code.pdf   --force --passphrase "example" --purpose "Example Sheet" --comment "PDF without QR Code Example" --no-qr && pdfcpu validate -m strict examples/no_code.pdf'
       - './papercrypt{{exeExt}} generate -i examples/input.json -o examples/lowercase.pdf --force --passphrase "example" --purpose "Example Sheet" --comment "Lowercase PDF Example" --lowercase   && pdfcpu validate -m strict examples/lowercase.pdf'
-      - "./papercrypt{{exeExt}} phraseSheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
+      - "./papercrypt{{exeExt}} phrase-sheet -fo examples/phrase.pdf ExampleAbcA= && pdfcpu validate -m strict examples/phrase.pdf"
 
   docs:examples:vhs:
     sources:
@@ -195,4 +233,9 @@ tasks:
   clean:examples:
     desc: Remove all generated files
     cmds:
-      - "rm -f examples/output.pdf examples/no_qr.pdf examples/lowercase.pdf examples/phrase.pdf"
+      - "rm -f examples/output.pdf examples/no_code.pdf examples/lowercase.pdf examples/phrase.pdf"
+
+  clean:test:
+    desc: Remove all generated files
+    cmds:
+      - "rm -f test-in.json test.json t-*.png test.pdf"
