@@ -2,7 +2,7 @@
   <h3 align="center">PaperCrypt</h3>
     <p align="center">Printable Backup Documents</p>
     <p align="center">
-      <a href="https://goreportcard.com/report/github.com/TMUniversal/papercrypt"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/TMUniversal/papercrypt" /></a>
+      <a href="https://goreportcard.com/report/github.com/TMUniversal/papercrypt/v2"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/TMUniversal/papercrypt/v2" /></a>
       <a href="https://pkg.go.dev/github.com/TMUniversal/papercrypt"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/TMUniversal/papercrypt.svg" /></a>
       <a href="https://github.com/TMUniversal/papercrypt/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/TMUniversal/papercrypt?sort=semver" /></a>
       <a href="https://github.com/TMUniversal/papercrypt"><img alt="GitHub" src="https://img.shields.io/github/license/TMUniversal/papercrypt" /></a>
@@ -104,7 +104,7 @@ goreleaser build --snapshot --clean --single-target
 2. **Install PaperCrypt**: Run the following command to install PaperCrypt:
 
 ```bash
-go install github.com/TMUniversal/papercrypt@latest
+go install github.com/tmuniversal/papercrypt/v2@latest
 ```
 
 ### Running with Docker
@@ -173,7 +173,7 @@ Generate one with your tool of choice,
 you can run:
 
 ```bash
-papercrypt generateKey --words 24 --out mnemonic.txt
+papercrypt generate-key --words 24 --out mnemonic.txt
 ```
 
 to generate a 24 word mnemonic phrase.
@@ -191,7 +191,7 @@ If no seed is passed to the command, one will be generated using the system's en
 [Example](examples/phrase.pdf):
 
 ```bash
-papercrypt phraseSheet --out phrase-sheet.pdf ExampleAbcA=
+papercrypt phrase-sheet --out phrase-sheet.pdf ExampleAbcA=
 ```
 
 Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list.
@@ -206,12 +206,13 @@ Save your data as a file, `data.json`, for example:
 
 ```json
 {
-  "bitwarden": {
-    "backup_location": "https://your-bucket.s3.amazonaws.com/bitwarden-backup.tar.gz",
-    "access_key_id": "YOUR_S3_ACCESS_KEY_ID",
-    "secret_key": "YOUR_S3_SECRET_KEY",
-    "encryption_key": "your-backup-encryption-key",
-    "admin_token": "your-bitwarden-admin-token"
+  "prop": "value",
+  "another_property": "another_value",
+  "a_number": 123,
+  "a_boolean": true,
+  "an_array": ["a", "b", "c"],
+  "an_object": {
+    "another_property": "another_value"
   }
 }
 ```
@@ -245,12 +246,12 @@ or by copy-pasting the text from the printed document (would have to run [OCR](h
 
 #### Using the QR code
 
-Save the QR code as an image file (a screenshot should do), for example `qr.png`.
+Save the 2D code as an image file (a screenshot should do), for example `2d.png`.
 
 Then, run
 
 ```bash
-papercrypt qr --in qr.png --out data.txt
+papercrypt scan --in 2d.png --out data.txt
 ```
 
 #### Decoding from text
@@ -263,36 +264,38 @@ Once you have the text from the printed document,
 which should look something like this:
 
 ```
-# PaperCrypt Version: 1.0.7-next
-# Content Serial: FVCUW7
+# PaperCrypt Version: 2.0.0
+# Content Serial: EIPESR
 # Purpose: Example Sheet
 # Comment: Regular PDF Example
-# Date: Sat, 23 Sep 2023 14:07:34.051057700 CEST
-# Content Length: 362
-# Content CRC-24: f6fd74
-# Content CRC-32: 13938adb
-# Content SHA-256: Z8h1aiYWzS6OCGzArbLBxex2ROQ9Do2/wga55qmlt4I=
-# Header CRC-32: b19162f6
+# Date: Thu, 01 Aug 2024 20:38:10.306596100 +0200
+# Data Format: PGP
+# Content Length: 390
+# Content CRC-24: d6f1c0
+# Content CRC-32: bc4b3672
+# Content SHA-256: NT7wwW5Tq5fk1J82M1tzE82VGxIlad5vpF5cDMzg+yg=
+# Header CRC-32: ecded03b
 
 
- 1: C3 2E 04 09 03 08 16 C6 62 5A D9 78 6F 63 E0 D0 B8 8F 47 BE F5 1B 365028
- 2: B2 BE C1 DC 71 FC 1C C5 D4 0A 0D 32 FC D1 32 E1 52 A5 5A 0C 62 84 E4B7A0
- 3: 6E F7 87 20 D2 C0 77 01 EB 82 C2 E5 B3 B6 28 5F 97 D8 35 48 42 1B B6B934
- 4: C6 9B B9 F0 18 B9 DC 19 F9 89 E5 14 F6 EC 9E 7D 39 7E E5 48 E4 27 1F43CC
- 5: 4A 81 7A 1D 6B 24 89 AE B1 91 80 C9 C6 60 49 F4 29 A7 3B 89 42 3C CA8180
- 6: BE 89 6A 43 B3 E5 89 8F 94 21 1F 07 65 BA 19 75 92 21 B7 8D 27 DE 433210
- 7: 76 CF F1 A4 52 9B B2 81 64 DC FB 15 5B C4 2B EB B6 CD 3F 0C 0A 93 4B4CE1
- 8: 14 3D 47 0D 91 06 90 60 9B D4 B6 14 88 E9 24 3A D7 97 53 02 49 F0 5BB0D9
- 9: AE A5 B2 D3 15 7E 61 5D 67 15 AD 01 05 5F EE 4C 7B B1 B4 98 19 91 F11A64
-10: 37 91 0B A0 06 8C 0C 2D 34 7B A4 21 BD 45 F3 5D 2D DD F6 DD 22 B9 DDC18B
-11: 4B 18 38 B0 93 38 19 92 E3 F1 37 7A 97 E8 AE 8D 1A 7B A4 3A 9D F4 BDDBDF
-12: C0 6C 3A 27 05 AB AF C4 E9 DD 33 6A 74 6B F2 09 14 06 2D 21 60 A2 ADC47E
-13: D5 79 96 69 5D DE BB AC E2 F8 B5 3F DD E6 72 CB D8 7C C2 8A B9 69 F0281A
-14: 4F 48 BA 54 10 94 36 02 3F 3F D8 67 8D E1 89 C7 A3 C3 D3 F0 97 6B 5649F8
-15: E7 F9 47 67 60 8B 7D 83 7E D1 71 56 E0 62 2B 8F 3B 38 62 86 01 1C FCB09F
-16: 85 7B 2D A1 42 5C 2B 8E AA 48 39 30 E5 73 F3 EE 8E E0 F3 E2 9A F5 4B29AF
-17: 07 92 46 67 23 BB B6 A6 A4 68 256181
-18: F6FD74
+ 1: 1F 8B 08 00 00 00 00 00 02 FF 00 6A 01 95 FE C3 2E 04 09 03 08 7A D49E51
+ 2: 7D 43 1C 18 E4 C9 19 E0 23 B0 2A D5 58 E1 72 93 E0 06 BB F2 7E C8 D183B9
+ 3: 2F C9 00 C8 90 6D 83 04 E9 22 FB 07 98 BB 4D 68 CE 04 96 D2 C0 77 730736
+ 4: 01 01 8D 41 D1 46 E3 82 11 09 E7 15 77 1C EB 92 26 FE 5A B2 84 C3 462812
+ 5: B4 98 DC D2 27 C1 B1 AF 22 B6 3B CB 95 DC D8 4D 0A 4E FF ED 8E A2 0B74A2
+ 6: DF C1 72 41 7F 08 AF 9C 43 EA 50 9C 43 30 84 4F F8 82 BC 62 4A 0E DFCF21
+ 7: 27 91 DF 15 9E 1C 3F 37 77 FB D2 E0 4A F1 73 3E 2D 7B 73 47 96 35 E94DF5
+ 8: 55 F9 A4 D2 7F 4C 24 4A 0B A1 04 1B 49 95 91 5C D0 6B E2 AF 2D AC 361154
+ 9: 98 E4 22 BB 62 61 BB 93 97 9A 04 4B 7B AC BF 86 7E 7B DE AB B3 83 9DD5D4
+10: A9 66 F3 99 D7 94 2E 4E 72 E6 6D 09 35 11 68 A9 B7 6C EE 5E BC 3F E27CAE
+11: E6 1B C7 5A 76 B0 B1 E5 DB 7A 56 13 23 DB 9C 23 8F 85 FF 72 60 56 252FD9
+12: F4 26 17 EA 2E AE 05 D7 0F 02 78 A5 BE 3A 61 F0 39 EE 31 4F D6 E3 2ECC66
+13: 7E 84 E6 99 D1 E7 71 CE 5D 34 6F A2 1D 66 74 1A 09 FC E2 81 91 AB 444B35
+14: AC 88 A5 93 14 38 37 FD BA 49 5E B7 3F 33 55 D0 83 D8 2C 48 35 FF AE678F
+15: 54 F5 38 85 EC C8 4E 37 03 B9 22 C7 50 58 7F BD 04 0C 8E EE 8B B9 B26C81
+16: E4 6B C0 67 C6 18 54 0D F1 20 73 D8 FC 40 D3 D2 90 00 0F 84 7E BD C47477
+17: 1D 67 D8 71 AD 2D D3 89 43 54 8A F5 33 CD 0E AF B0 80 08 29 68 59 E37012
+18: 53 15 99 01 00 00 FF FF CC 08 E8 C8 6A 01 00 00 2436D9
+19: D6F1C0
 ```
 
 Note the two empty lines between the header and the data.
