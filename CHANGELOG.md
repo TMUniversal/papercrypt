@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/TMUniversal/papercrypt/compare/v2.0.0...v2.0.1) (2024-08-07)
+
+
+### Bug Fixes
+
+* **go:** update go mod to reflect version update ([45cee4f](https://github.com/TMUniversal/papercrypt/commit/45cee4f6bd378b7173f8c6a868c901f8f206f308))
+
 # [2.0.0](https://github.com/TMUniversal/papercrypt/compare/v1.3.0...v2.0.0) (2024-08-07)
 
 ### Bug Fixes
