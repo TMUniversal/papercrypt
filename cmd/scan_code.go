@@ -32,7 +32,7 @@ import (
 	"github.com/makiuchi-d/gozxing/aztec"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/internal"
+	"github.com/tmuniversal/papercrypt/v2/internal"
 )
 
 var (

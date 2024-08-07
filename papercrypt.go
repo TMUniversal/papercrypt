@@ -27,8 +27,8 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"github.com/tmuniversal/papercrypt/cmd"
-	"github.com/tmuniversal/papercrypt/internal"
+	"github.com/tmuniversal/papercrypt/v2/cmd"
+	"github.com/tmuniversal/papercrypt/v2/internal"
 )
 
 // LicenseText is the license of the application as a string
