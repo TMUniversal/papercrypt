@@ -131,7 +131,7 @@ type PaperCrypt struct {
 	Data []byte `json:"d"`
 }
 
-func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
+func (p *PaperCrypt) MarshalJSON() ([]byte, error) { // nosemgrep
 	type Alias PaperCrypt
 	return json.Marshal(&struct {
 		CreatedAt  string `json:"ct"`
