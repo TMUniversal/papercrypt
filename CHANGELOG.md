@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/TMUniversal/papercrypt/compare/v1.3.0...v1.4.0) (2024-08-07)
+
+
+### Bug Fixes
+
+* **compat:** update v1 date parser ([a66c115](https://github.com/TMUniversal/papercrypt/commit/a66c115c20dc2a47cd078b47bcd49a4b4876878d))
+* **decode:** normalize line endings before version detection ([722e047](https://github.com/TMUniversal/papercrypt/commit/722e047a35992c678efb8130788593d0c22a8272))
+
+
+### Features
+
+* replace qr code with aztec to hold more data ([8f6ef58](https://github.com/TMUniversal/papercrypt/commit/8f6ef58be5403f52c2b18516922de8ce237551d4))
+* update file format to support raw data ([d970476](https://github.com/TMUniversal/papercrypt/commit/d9704768510c8ca6b83fe8508abf5bc2f1a94bc5))
+
 # [1.3.0](https://github.com/TMUniversal/papercrypt/compare/v1.2.7...v1.3.0) (2024-07-26)
 
 
