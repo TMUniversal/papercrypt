@@ -1,17 +1,4 @@
-# [2.0.0](https://github.com/TMUniversal/papercrypt/compare/v1.4.0...v2.0.0) (2024-08-07)
-
-
-### Bug Fixes
-
-* bump major to reflect breaking changes ([65e3941](https://github.com/TMUniversal/papercrypt/commit/65e394109df231eed8a2770d3d14cea6aa905c93))
-
-
-### BREAKING CHANGES
-
-* update file format
-
-# [1.4.0](https://github.com/TMUniversal/papercrypt/compare/v1.3.0...v1.4.0) (2024-08-07)
-
+# [2.0.0](https://github.com/TMUniversal/papercrypt/compare/v1.3.0...v2.0.0) (2024-08-07)
 
 ### Bug Fixes
 
@@ -23,6 +10,10 @@
 
 * replace qr code with aztec to hold more data ([8f6ef58](https://github.com/TMUniversal/papercrypt/commit/8f6ef58be5403f52c2b18516922de8ce237551d4))
 * update file format to support raw data ([d970476](https://github.com/TMUniversal/papercrypt/commit/d9704768510c8ca6b83fe8508abf5bc2f1a94bc5))
+
+### BREAKING CHANGES
+
+* update file format
 
 # [1.3.0](https://github.com/TMUniversal/papercrypt/compare/v1.2.7...v1.3.0) (2024-07-26)
 
