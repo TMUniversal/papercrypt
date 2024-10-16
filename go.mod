@@ -7,7 +7,7 @@ require (
 	github.com/boombuler/barcode v1.0.2
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.6
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/manifoldco/promptui v0.9.0
