@@ -7,7 +7,7 @@ require (
 	github.com/boombuler/barcode v1.0.2
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.6
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.13.1
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/manifoldco/promptui v0.9.0
@@ -22,7 +22,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/x/ansi v0.1.4 // indirect
+	github.com/charmbracelet/x/ansi v0.3.2 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/cloudflare/circl v1.3.9 // indirect
 	github.com/elliotchance/orderedmap/v2 v2.2.0 // indirect
