@@ -139,7 +139,7 @@ jobs:
           sudo apt-get install -y poppler-utils
           which pdftoppm
 
-      - uses: crazy-max/ghaction-upx@0fc45e912669ba9e8fa2b430e97c8da2a632e29b # v3.0.0
+      - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
         with:
           install-only: true
 
