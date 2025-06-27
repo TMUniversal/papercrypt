@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.8.3
 	github.com/boombuler/barcode v1.0.2
-	github.com/caarlos0/go-version v0.2.0
+	github.com/caarlos0/go-version v0.2.1
 	github.com/caarlos0/log v0.4.8
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
