@@ -53,7 +53,6 @@ func readTtyLinePlatform() ([]byte, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("could not open /dev/tty"), err)
 	}
-	defer tty.Close()
 
 	password, err := term.ReadPassword(int(tty.Fd()))
 	if err != nil {
