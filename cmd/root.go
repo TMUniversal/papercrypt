@@ -54,7 +54,9 @@ and then prepare a printable document that is optimized for being able to restor
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		cmd.Println("PaperCrypt  Copyright (C) 2023-2024  TMUniversal <me@tmuniversal.eu>")
-		cmd.Println("This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.")
+		cmd.Println(
+			"This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.",
+		)
 		cmd.Println("This is free software, and you are welcome to redistribute it")
 		cmd.Println("under certain conditions; type `papercrypt show c' for details.")
 		cmd.Print("PaperCrypt's source code can be found at ")
@@ -75,8 +77,11 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&inFileName, "in", "i", "", "Input file to read from, or stdin if not provided")
-	rootCmd.PersistentFlags().StringVarP(&outFileName, "out", "o", "", "Output file to write to, or stdout if not provided")
-	rootCmd.PersistentFlags().BoolVarP(&overrideOutFile, "force", "f", false, "Force override of existing file")
+	rootCmd.PersistentFlags().
+		StringVarP(&inFileName, "in", "i", "", "Input file to read from, or stdin if not provided")
+	rootCmd.PersistentFlags().
+		StringVarP(&outFileName, "out", "o", "", "Output file to write to, or stdout if not provided")
+	rootCmd.PersistentFlags().
+		BoolVarP(&overrideOutFile, "force", "f", false, "Force override of existing file")
 	rootCmd.PersistentFlags().CountVarP(&verbosity, "verbose", "v", "Increase verbosity level")
 }
