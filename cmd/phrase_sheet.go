@@ -99,8 +99,10 @@ var phraseSheetCmd = &cobra.Command{
 		if err != nil {
 			return errors.Join(errors.New("error writing PDF"), err)
 		}
+		internal.PrintWrittenSizeToDebug(n, outFile)
 
-		internal.PrintWrittenSize(n, outFile)
+		log.WithField("size", n).Infof("Wrote %s PDF file to %s.", internal.SprintBinarySize(n), outFile.Name())
+
 		return nil
 	},
 }
