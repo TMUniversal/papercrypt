@@ -80,7 +80,12 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 		if err != nil {
 			return err
 		}
-		defer inFile.Close()
+		defer func(inFile *os.File) {
+			err := inFile.Close()
+			if err != nil {
+				log.WithError(err).Warn("error closing input file")
+			}
+		}(inFile)
 
 		var data []byte
 
@@ -208,6 +213,8 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
-	scanCmd.Flags().BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
-	scanCmd.Flags().BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
+	scanCmd.Flags().
+		BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
+	scanCmd.Flags().
+		BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext, this cannot be used in the decode command (yet).")
 }
