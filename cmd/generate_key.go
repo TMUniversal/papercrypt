@@ -89,7 +89,7 @@ which can be found here: %s.`,
 			_, _ = fmt.Fprintln(outFile)
 		}
 
-		internal.PrintWrittenSize(n, outFile)
+		internal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

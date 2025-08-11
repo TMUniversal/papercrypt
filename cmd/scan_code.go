@@ -144,7 +144,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error writing output"), err)
 			}
 
-			internal.PrintWrittenSize(n, outFile)
+			internal.PrintWrittenSizeToDebug(n, outFile)
 			return nil
 		}
 
@@ -205,7 +205,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			return errors.Join(errors.New("error writing output"), err)
 		}
 
-		internal.PrintWrittenSize(n, outFile)
+		internal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

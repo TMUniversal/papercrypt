@@ -143,7 +143,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		internal.PrintWrittenSize(n, outFile)
+		internal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

@@ -195,7 +195,7 @@ encrypted data.`,
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		internal.PrintWrittenSize(n, outFile)
+		internal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }
