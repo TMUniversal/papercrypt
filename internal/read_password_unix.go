@@ -35,7 +35,7 @@ func readTtyLinePlatform() ([]byte, error) {
 	// if stdin is a terminal, use it with promptui
 	if term.IsTerminal(syscall.Stdin) {
 		prompt := promptui.Prompt{
-			Label:  "Passphrase",
+			Label:  "Passphrase (hidden)",
 			Mask:   '*',
 			Stdout: os.Stderr,
 		}
@@ -55,5 +55,18 @@ func readTtyLinePlatform() ([]byte, error) {
 	}
 	defer tty.Close()
 
-	return term.ReadPassword(int(tty.Fd()))
+	password, err := term.ReadPassword(int(tty.Fd()))
+	if err != nil {
+		return nil, errors.Join(errors.New("could not read password from /dev/tty"),
+			err)
+	}
+	if password == nil {
+		return nil, errors.New("could not read password from /dev/tty")
+	}
+
+	if err = tty.Close(); err != nil {
+		return nil, errors.Join(errors.New("could not close /dev/tty"), err)
+	}
+
+	return password, nil
 }
