@@ -34,7 +34,7 @@ import (
 
 // LicenseText is the license of the application as a string
 //
-//go:embed COPYING
+//go:embed LICENSE
 var LicenseText string
 
 // ThirdPartyLicenses is THIRD_PARTY.md as a string

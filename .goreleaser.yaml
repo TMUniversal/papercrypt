@@ -78,7 +78,7 @@ archives:
       - goos: windows
         format: zip
     files:
-      - COPYING
+      - LICENSE
       - README.md
       - CHANGELOG.md
       - completions/*
@@ -174,9 +174,9 @@ scoops:
 #     commit_author:
 #       <<: *commit_author
 #     homepage: *homepage
-#     license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
+#     license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/LICENSE
 #     copyright: Copyright © 2023-2024  TMUniversal <me@tmuniversal.eu>
-#     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/COPYING
+#     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/LICENSE
 #     skip_upload: auto
 #     release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
 #     tags:

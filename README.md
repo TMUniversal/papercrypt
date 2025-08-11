@@ -327,7 +327,7 @@ Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 ## License
 
 PaperCrypt is licensed under the terms of the GNU Affero General Public License, version 3.0 or
-later ([GNU AGPL-3.0-or-later](COPYING)).
+later ([GNU AGPL-3.0-or-later](LICENSE)).
 
 [![License Logo](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
