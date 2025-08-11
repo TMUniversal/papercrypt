@@ -64,7 +64,7 @@ upx:
     brute: false
 
 archives:
-  - format: tar.gz
+  - formats: [ "tar.gz" ]
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
       {{ .ProjectName }}_
@@ -76,7 +76,7 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ "zip" ]
     files:
       - LICENSE
       - README.md
@@ -88,7 +88,7 @@ checksum:
   name_template: "checksums.txt"
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
@@ -120,8 +120,10 @@ docker_signs:
       - "${artifact}@${digest}"
       - "--yes"
 
-brews:
+homebrew_casks:
   - name: papercrypt
+    conflicts:
+      - formula: papercrypt
     # alternative_names:
     #   - papercrypt@{{ .Version }}
     #   - papercrypt@{{ .Major }}.{{ .Minor }}
@@ -140,14 +142,20 @@ brews:
     caveats: |
       To get started, run:
         papercrypt help
-    test: |
-      system "#{bin}/papercrypt version"
-    # we want to install the shell completions and man pages
-    extra_install: |
-      bash_completion.install "completions/papercrypt.bash" => "papercrypt"
-      fish_completion.install "completions/papercrypt.fish"
-      zsh_completion.install "completions/papercrypt.zsh" => "_papercrypt"
-      man1.install "manpages/papercrypt.1.gz"
+    manpages:
+      - manpages/papercrypt.1.gz
+    completions:
+      bash: "completions/papercrypt.bash"
+      fish: "completions/papercrypt.fish"
+      zsh: "completions/papercrypt.zsh"
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/papercrypt"]
+          end
+          
+          system_command "#{staged_path}/papercrypt", args: ["version"]
 
 scoops:
   - name: papercrypt
@@ -161,7 +169,7 @@ scoops:
     homepage: *homepage
     description: *description
     license: *license
-    shortcuts: [["papercrypt.exe", "papercrypt"]]
+    shortcuts: [ [ "papercrypt.exe", "papercrypt" ] ]
 
 # winget:
 #   - name: papercrypt
