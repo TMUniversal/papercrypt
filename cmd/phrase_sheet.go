@@ -101,7 +101,8 @@ var phraseSheetCmd = &cobra.Command{
 		}
 		internal.PrintWrittenSizeToDebug(n, outFile)
 
-		log.WithField("size", n).Infof("Wrote %s PDF file to %s.", internal.SprintBinarySize(n), outFile.Name())
+		log.WithField("size", n).
+			Infof("Wrote %s PDF file to %s.", internal.SprintBinarySize(n), outFile.Name())
 
 		return nil
 	},
