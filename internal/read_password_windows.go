@@ -31,7 +31,7 @@ import (
 	"golang.org/x/term"
 )
 
-func readTtyLine() ([]byte, error) {
+func readTtyLinePlatform() ([]byte, error) {
 	// if stdin is a terminal, use it with promptui
 	if term.IsTerminal(int(syscall.Stdin)) {
 		prompt := promptui.Prompt{
@@ -48,5 +48,7 @@ func readTtyLine() ([]byte, error) {
 		return []byte(result), nil
 	}
 
-	return nil, errors.New("cannot access terminal outside stdin on Windows, if you must pass data through stdin, you can use the --passphrase flag")
+	return nil, errors.New(
+		"cannot access terminal outside stdin on Windows, if you must pass data through stdin, you can use the --passphrase flag",
+	)
 }

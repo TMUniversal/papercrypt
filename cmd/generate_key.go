@@ -36,6 +36,7 @@ import (
 var words int
 
 var (
+	// WordListFile pointer to word list as a file, compile-time included property
 	WordListFile *string
 	wordList     = make([]string, 0)
 )
@@ -50,8 +51,11 @@ var generateKeyCmd = &cobra.Command{
 	SilenceUsage: true,
 	Use:          "generate-key",
 	Short:        "Generates a mnemonic key phrase",
-	Long: fmt.Sprintf(`This command generates a mnemonic key phrase base on the eff.org large word list,
-which can be found here: %s.`, wordListURLFormatted),
+	Long: fmt.Sprintf(
+		`This command generates a mnemonic key phrase base on the eff.org large word list,
+which can be found here: %s.`,
+		wordListURLFormatted,
+	),
 	RunE: func(_ *cobra.Command, _ []string) error {
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
@@ -82,7 +86,7 @@ which can be found here: %s.`, wordListURLFormatted),
 		}
 
 		if outFile == os.Stdout {
-			fmt.Fprintln(outFile)
+			_, _ = fmt.Fprintln(outFile)
 		}
 
 		internal.PrintWrittenSize(n, outFile)
@@ -123,5 +127,6 @@ func generateMnemonic(amount int) ([]string, error) {
 func init() {
 	rootCmd.AddCommand(generateKeyCmd)
 
-	generateKeyCmd.Flags().IntVarP(&words, "words", "w", 24, "Number of words to include in the key phrase")
+	generateKeyCmd.Flags().
+		IntVarP(&words, "words", "w", 24, "Number of words to include in the key phrase")
 }

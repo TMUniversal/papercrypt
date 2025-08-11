@@ -27,15 +27,17 @@ import (
 	"github.com/caarlos0/log"
 )
 
+// PrintWrittenSize logs the amount of data written in human-readable notation.
+// A warning is issues when the size is 0.
 func PrintWrittenSize(size int, file *os.File) {
 	if size == 0 {
-		log.Warn(Warning("No data written."))
+		log.Warn(Warning(fmt.Sprintf("No data written to %s", file.Name())))
 	} else {
-		log.WithField("size", SprintBinarySize(size)).WithField("path", file.Name()).Debug("Data written.")
+		log.WithField("size", size).WithField("path", file.Name()).Debug(fmt.Sprintf("%s written to %s.", sprintBinarySize(size), file.Name()))
 	}
 }
 
-func SprintBinarySize64(size int64) string {
+func sprintBinarySize64(size int64) string {
 	if size < 1024 {
 		return fmt.Sprintf("%d B", size)
 	}
@@ -51,6 +53,6 @@ func SprintBinarySize64(size int64) string {
 	return fmt.Sprintf("%.2f TiB", float64(size)/(1024*1024*1024*1024))
 }
 
-func SprintBinarySize(size int) string {
-	return SprintBinarySize64(int64(size))
+func sprintBinarySize(size int) string {
+	return sprintBinarySize64(int64(size))
 }

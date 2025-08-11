@@ -20,6 +20,7 @@
 
 package internal
 
+// SliceHasString determines whether a string slice contains a given string
 func SliceHasString(slice []string, str string) bool {
 	for _, s := range slice {
 		if s == str {

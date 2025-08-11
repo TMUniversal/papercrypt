@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package main holds the entrypoint for the software, as well as go:embedded files.
 package main
 
 import (

@@ -28,9 +28,11 @@ import (
 	"fmt"
 	"math"
 	"strings"
+
+	"github.com/ccoveille/go-safecast"
 )
 
-type LineData struct {
+type lineData struct {
 	LineNumber uint32
 	Data       []byte
 	CRC24      uint32
@@ -61,7 +63,11 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 		lineNumber := (i / bytesPerLine) + 1
 		lineNumberPadding := lineNumberDigits - int(math.Floor(math.Log10(float64(lineNumber))))
 
-		line := fmt.Sprintf("%s%d: ", string(bytes.Repeat([]byte{' '}, lineNumberPadding)), lineNumber)
+		line := fmt.Sprintf(
+			"%s%d: ",
+			string(bytes.Repeat([]byte{' '}, lineNumberPadding)),
+			lineNumber,
+		)
 
 		dataLine := make([]byte, 0, bytesPerLine)
 
@@ -87,7 +93,7 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	return string(dataBlock)
 }
 
-// SerializeBinaryV1 serializes binary data using SerializeBinary.
+// SerializeBinaryV1 serializes binary data using SerializeBinary. Used for backwards compatibility.
 func SerializeBinaryV1(data *[]byte) string {
 	return SerializeBinary(data, BytesPerLineV1)
 }
@@ -97,6 +103,7 @@ func SerializeBinaryV2(data *[]byte) string {
 	return SerializeBinary(data, BytesPerLine)
 }
 
+// DeserializeBinary deserializes bytes from human-readable archive format encoded by SerializeBinary
 func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})
 	lines := make([][]byte, 0)
@@ -108,7 +115,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		}
 	}
 
-	result := make([]LineData, 0)
+	result := make([]lineData, 0)
 
 	blockCrc := uint32(0)
 
@@ -155,14 +162,14 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 			return nil, fmt.Errorf("error parsing line checksum: %s", checksumHex)
 		}
 
-		lineNum := 0
+		var lineNum uint32
 		_, err = fmt.Sscanf(lineNumber, "%d", &lineNum)
 		if err != nil {
 			return nil, err
 		}
 
-		lineData := LineData{
-			LineNumber: uint32(lineNum),
+		lineData := lineData{
+			LineNumber: lineNum,
 			Data:       bytesData,
 			CRC24:      checksumData,
 		}
@@ -199,7 +206,14 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	}
 
 	// this also ensures that we have all lines, as the last line number must equal the number of lines
-	if result[len(result)-1].LineNumber != uint32(len(result)) {
+	var resultLength uint32
+	var err error
+	resultLength, err = safecast.ToUint32(len(result))
+	if err != nil {
+		return nil, err
+	}
+
+	if result[len(result)-1].LineNumber != resultLength {
 		return nil, fmt.Errorf("invalid last line number: %d", result[len(result)-1].LineNumber)
 	}
 
@@ -216,6 +230,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	return resultData, nil
 }
 
+// ParseHexUint32 parses a uint32 number from a string of hexadecimal characters
 func ParseHexUint32(hex string) (uint32, error) {
 	h := strings.ToLower(hex)
 	h = strings.ReplaceAll(h, "0x", "")
@@ -226,9 +241,21 @@ func ParseHexUint32(hex string) (uint32, error) {
 	if err != nil {
 		return 0, errors.Join(errors.New("error parsing hexadecimal value"), err)
 	}
+
+	// check input against output serialization, taking care to avoid leading zeros
+	nStr := fmt.Sprintf("%x", n)
+	hNoLeadingZeros := strings.TrimLeft(h, "0")
+	if hNoLeadingZeros == "" {
+		hNoLeadingZeros = "0"
+	}
+	if nStr != hNoLeadingZeros {
+		return n, fmt.Errorf("invalid hexadecimal value: %s", hex)
+	}
+
 	return n, nil
 }
 
+// BytesFromBase64 decodes a base64 string using base64.StdEncoding to a byte slice
 func BytesFromBase64(data string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(data)
 }

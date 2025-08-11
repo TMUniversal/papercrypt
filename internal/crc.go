@@ -25,9 +25,12 @@ import (
 )
 
 const (
+	// CRC24Polynomial defines the polynomial used by the CRC-24 algorithm. See https://en.wikipedia.org/wiki/Cyclic_redundancy_check#:~:text=OpenPGP%2C%20RTCM104v3-,0x864cfb,-0xDF3261. This is the polynomial used in OpenPGP and RTCM104v3, represented as a uint32.
 	CRC24Polynomial = uint32(0x864CFB) // CRC-24 polynomial
-	CRC24Initial    = uint32(0xB704CE) // Initial value
-	CRC24TableSize  = uint32(256)      // Table size for faster computation
+	// CRC24Initial is the initial value used for CRC-24 calculations. This is the initial value used in OpenPGP and RTCM104v3, represented as a uint32.
+	CRC24Initial = uint32(0xB704CE) // Initial value
+	// CRC24TableSize is the size of the CRC-24 table used for faster computation.
+	CRC24TableSize = uint32(256) // Table size for faster computation
 )
 
 var crc24Table [CRC24TableSize]uint32
@@ -46,6 +49,7 @@ func generateCRCTable() {
 	}
 }
 
+// Crc24Checksum generates a CRC-24 checksum for the given data.
 func Crc24Checksum(data []byte) uint32 {
 	if crc24Table[0] == 0 {
 		generateCRCTable()
@@ -61,10 +65,14 @@ func Crc24Checksum(data []byte) uint32 {
 	return crc & 0xFFFFFF
 }
 
+// ValidateCRC24 validates the CRC-24 checksum of the given data against the provided checksum.
+// It returns true if the checksum matches, false otherwise.
 func ValidateCRC24(data []byte, checksum uint32) bool {
 	return Crc24Checksum(data) == checksum
 }
 
+// ValidateCRC32 validates the CRC-32 checksum of the given data against the provided checksum.
+// It returns true if the checksum matches, false otherwise.
 func ValidateCRC32(data []byte, checksum uint32) bool {
 	return crc32.ChecksumIEEE(data) == checksum
 }

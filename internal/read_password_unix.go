@@ -31,7 +31,7 @@ import (
 	"golang.org/x/term"
 )
 
-func readTtyLine() ([]byte, error) {
+func readTtyLinePlatform() ([]byte, error) {
 	// if stdin is a terminal, use it with promptui
 	if term.IsTerminal(syscall.Stdin) {
 		prompt := promptui.Prompt{

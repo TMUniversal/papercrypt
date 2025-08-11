@@ -29,13 +29,13 @@ import (
 func SensitivePrompt() ([]byte, error) {
 	_, _ = fmt.Fprint(os.Stderr, "Passphrase: ")
 
-	p, e := ReadTtyLine()
+	p, e := readTtyLine()
 
 	_, _ = fmt.Fprint(os.Stderr, "\n")
 
 	return p, e
 }
 
-func ReadTtyLine() ([]byte, error) {
-	return readTtyLine()
+func readTtyLine() ([]byte, error) {
+	return readTtyLinePlatform()
 }

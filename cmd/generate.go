@@ -173,7 +173,15 @@ encrypted data.`,
 		if rawData {
 			format = internal.PaperCryptDataFormatRaw
 		}
-		crypt := internal.NewPaperCrypt(internal.VersionInfo.GitVersion, data, serialNumber, purpose, comment, timestamp, format)
+		crypt := internal.NewPaperCrypt(
+			internal.VersionInfo.GitVersion,
+			data,
+			serialNumber,
+			purpose,
+			comment,
+			timestamp,
+			format,
+		)
 
 		var text []byte
 
@@ -206,13 +214,17 @@ func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVarP(&serialNumber, "serial-number", "s", "", "Serial number of the sheet (optional, default: 6 random characters)")
+	generateCmd.Flags().
+		StringVarP(&serialNumber, "serial-number", "s", "", "Serial number of the sheet (optional, default: 6 random characters)")
 	generateCmd.Flags().StringVarP(&purpose, "purpose", "p", "", "Purpose of the sheet (optional)")
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
-	generateCmd.Flags().StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
+	generateCmd.Flags().
+		StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate 2D code (optional)")
-	generateCmd.Flags().BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
+	generateCmd.Flags().
+		BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
 	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")
 
-	generateCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")
+	generateCmd.Flags().
+		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")
 }

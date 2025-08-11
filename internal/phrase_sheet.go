@@ -37,6 +37,8 @@ import (
 	"github.com/makiuchi-d/gozxing/datamatrix"
 )
 
+// GenerateFromSeed selects a number of words from the given list
+// using a seeded, non-cryptographic pseudo-random generator.
 func GenerateFromSeed(seed int64, amount int, wordList *[]string) ([]string, error) {
 	if amount < 1 {
 		return nil, errors.New("amount must be greater than 0")
@@ -51,7 +53,9 @@ func GenerateFromSeed(seed int64, amount int, wordList *[]string) ([]string, err
 
 		if SliceHasString(words, w) {
 			// if the word is already in the slice, try again
-			log.WithField("word", w).WithField("index", i).Warn("Duplicate word appeared, trying again...")
+			log.WithField("word", w).
+				WithField("index", i).
+				Warn("Duplicate word appeared, trying again...")
 			i--
 			continue
 		}
@@ -61,6 +65,7 @@ func GenerateFromSeed(seed int64, amount int, wordList *[]string) ([]string, err
 	return words, nil
 }
 
+// GeneratePassphraseSheetPDF creates a PDF file displaying the given words in three columns, the seed in the header.
 func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 	pdf := getPdf()
 
@@ -81,7 +86,13 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		dmDims[1] = initial.GetHeight()
 
 		// create the code at 8x scale
-		code, err := enc.Encode(encodedSeed, gozxing.BarcodeFormat_DATA_MATRIX, 8*dmDims[0], 8*dmDims[1], nil)
+		code, err := enc.Encode(
+			encodedSeed,
+			gozxing.BarcodeFormat_DATA_MATRIX,
+			8*dmDims[0],
+			8*dmDims[1],
+			nil,
+		)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
@@ -113,7 +124,17 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			imageWidth := width * scale
 			imageHeight := height * scale
 
-			pdf.ImageOptions("dm.png", 170, 7, imageWidth, imageHeight, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+			pdf.ImageOptions(
+				"dm.png",
+				170,
+				7,
+				imageWidth,
+				imageHeight,
+				false,
+				gofpdf.ImageOptions{ImageType: "PNG"},
+				0,
+				"",
+			)
 		}
 
 		pdf.Ln(10)
@@ -132,11 +153,25 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		pdf.Ln(10)
 
 		pdf.SetFont(PdfTextFont, "", 10)
-		pdf.MultiCell(0, 5, `To create a passphrase or password with this sheet, start by choosing words on this sheet, preferably following these guidelines:
+		pdf.MultiCell(
+			0,
+			5,
+			`To create a passphrase or password with this sheet, start by choosing words on this sheet, preferably following these guidelines:
     1. Choose between 6 and 24 words,
-    2. Do not choose words in order.`, "", "L", false)
+    2. Do not choose words in order.`,
+			"",
+			"L",
+			false,
+		)
 		pdf.Ln(2)
-		pdf.MultiCell(0, 5, `You can regenerate this sheet using the seed printed at the top of each page, which is also encoded in the Data Matrix at the top.`, "", "L", false)
+		pdf.MultiCell(
+			0,
+			5,
+			`You can regenerate this sheet using the seed printed at the top of each page, which is also encoded in the Data Matrix at the top.`,
+			"",
+			"L",
+			false,
+		)
 
 		pdf.Ln(3)
 	}
@@ -176,15 +211,23 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 
 		pdf.SetFont(PdfTextFont, "", 10)
 
-		pdf.MultiCell(0, 5, fmt.Sprintf("This sheet contains %d words, giving %d (~2^%d) possible combinations of 6 distinct words, %d (~2^%d) of 12 words, and %d (~2^%d) of 24 words.",
-			len(words),
-			sixOf135,
-			int(math.Round(sixOf135Power)),
-			twelveOf135,
-			int(math.Round(twelveOf135Power)),
-			twentyFourOf135,
-			int(math.Round(twentyFourOf135Power)),
-		), "", "L", false)
+		pdf.MultiCell(
+			0,
+			5,
+			fmt.Sprintf(
+				"This sheet contains %d words, giving %d (~2^%d) possible combinations of 6 distinct words, %d (~2^%d) of 12 words, and %d (~2^%d) of 24 words.",
+				len(words),
+				sixOf135,
+				int(math.Round(sixOf135Power)),
+				twelveOf135,
+				int(math.Round(twelveOf135Power)),
+				twentyFourOf135,
+				int(math.Round(twentyFourOf135Power)),
+			),
+			"",
+			"L",
+			false,
+		)
 	}
 
 	pdf.Close()

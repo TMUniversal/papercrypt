@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package cmd implements CLI commands and basic functionality around executing them
 package cmd
 
 import (
@@ -78,7 +79,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.Join(errors.New("error reading headers"), err)
 		}
 
-		paperCryptMajorVersion := internal.PaperCryptContainerVersionFromString(headers[internal.HeaderFieldVersion])
+		paperCryptMajorVersion := internal.PaperCryptContainerVersionFromString(
+			headers[internal.HeaderFieldVersion],
+		)
 
 		if paperCryptMajorVersion == internal.PaperCryptContainerVersionUnknown {
 			return errors.New("unknown version")
@@ -87,7 +90,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 		// 8. Read passphrase from stdin
 		var passphraseBytes []byte
 		if !cmd.Flags().Lookup("passphrase").Changed {
-			cmd.Println("Enter your decryption passphrase (the passphrase you used to encrypt the data)")
+			cmd.Println(
+				"Enter your decryption passphrase (the passphrase you used to encrypt the data)",
+			)
 			passphraseBytes, err = internal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
@@ -100,7 +105,11 @@ The data should be read from a file or stdin, you will be required to provide a 
 		var decoded []byte
 		switch paperCryptMajorVersion {
 		case internal.PaperCryptContainerVersionMajor1:
-			pc, err := internal.DeserializeV1Text(paperCryptFileContents, ignoreVersionMismatch, ignoreChecksumMismatch)
+			pc, err := internal.DeserializeV1Text(
+				paperCryptFileContents,
+				ignoreVersionMismatch,
+				ignoreChecksumMismatch,
+			)
 			if err != nil {
 				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
 			}
@@ -111,7 +120,11 @@ The data should be read from a file or stdin, you will be required to provide a 
 			}
 		case internal.PaperCryptContainerVersionDevel,
 			internal.PaperCryptContainerVersionMajor2:
-			pc, err := internal.DeserializeV2Text(paperCryptFileContents, ignoreVersionMismatch, ignoreChecksumMismatch)
+			pc, err := internal.DeserializeV2Text(
+				paperCryptFileContents,
+				ignoreVersionMismatch,
+				ignoreChecksumMismatch,
+			)
 			if err != nil {
 				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
 			}
@@ -138,8 +151,11 @@ The data should be read from a file or stdin, you will be required to provide a 
 func init() {
 	rootCmd.AddCommand(decodeCmd)
 
-	decodeCmd.Flags().BoolVar(&ignoreVersionMismatch, "ignore-version-mismatch", false, "Ignore version mismatch and continue anyway")
-	decodeCmd.Flags().BoolVar(&ignoreChecksumMismatch, "ignore-header-checksum-mismatch", false, "Ignore header checksum mismatches and continue anyway")
+	decodeCmd.Flags().
+		BoolVar(&ignoreVersionMismatch, "ignore-version-mismatch", false, "Ignore version mismatch and continue anyway")
+	decodeCmd.Flags().
+		BoolVar(&ignoreChecksumMismatch, "ignore-header-checksum-mismatch", false, "Ignore header checksum mismatches and continue anyway")
 
-	decodeCmd.Flags().StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")
+	decodeCmd.Flags().
+		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")
 }

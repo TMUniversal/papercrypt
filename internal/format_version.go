@@ -26,13 +26,17 @@ import (
 	"github.com/caarlos0/log"
 )
 
+// PaperCryptDataFormat is an enum (uint8) of supported container formats
 type PaperCryptDataFormat uint8
 
 const (
+	// PaperCryptDataFormatPGP marks that a container holds data enclosed in a PGP container
 	PaperCryptDataFormatPGP PaperCryptDataFormat = 0
+	// PaperCryptDataFormatRaw represents that the data encoded in the container is raw, i.e. has not been encrypted by papercrypt
 	PaperCryptDataFormatRaw PaperCryptDataFormat = 1
 )
 
+// String serializes the enum value to a string deserializable by PaperCryptDataFormatFromString
 func (f PaperCryptDataFormat) String() string {
 	switch f {
 	case PaperCryptDataFormatPGP:
@@ -44,6 +48,7 @@ func (f PaperCryptDataFormat) String() string {
 	}
 }
 
+// PaperCryptDataFormatFromString parses a container data format as a string, returning the corresponding enum value
 func PaperCryptDataFormatFromString(s string) PaperCryptDataFormat {
 	switch s {
 	case "PGP":
@@ -55,15 +60,23 @@ func PaperCryptDataFormatFromString(s string) PaperCryptDataFormat {
 	}
 }
 
+// PaperCryptContainerVersion is an enum (uint32) of versions of the container format
 type PaperCryptContainerVersion uint32
 
 const (
+	// PaperCryptContainerVersionUnknown represents any unknown version, which may be newer, or come from parsing invalid input
 	PaperCryptContainerVersionUnknown PaperCryptContainerVersion = 0
-	PaperCryptContainerVersionMajor1  PaperCryptContainerVersion = 1
-	PaperCryptContainerVersionMajor2  PaperCryptContainerVersion = 2
-	PaperCryptContainerVersionDevel   PaperCryptContainerVersion = PaperCryptContainerVersion(0xFFFFFFFF)
+	// PaperCryptContainerVersionMajor1 container format from PaperCryptV1, used for backwards compatibility
+	PaperCryptContainerVersionMajor1 PaperCryptContainerVersion = 1
+	// PaperCryptContainerVersionMajor2 container format for PaperCrypt
+	PaperCryptContainerVersionMajor2 PaperCryptContainerVersion = 2
+	// PaperCryptContainerVersionDevel is used instead of a set version number for development builds
+	PaperCryptContainerVersionDevel PaperCryptContainerVersion = PaperCryptContainerVersion(
+		0xFFFFFFFF,
+	)
 )
 
+// String serializes the PaperCryptContainerVersion to a string of either a number corresponding to the major version, "devel" for a development build, or "unknown"
 func (v PaperCryptContainerVersion) String() string {
 	switch v {
 	case PaperCryptContainerVersionMajor1:
@@ -77,6 +90,7 @@ func (v PaperCryptContainerVersion) String() string {
 	}
 }
 
+// PaperCryptContainerVersionFromString parses a version string to discover the major version of this software
 func PaperCryptContainerVersionFromString(s string) PaperCryptContainerVersion {
 	major := strings.Split(s, ".")[0]
 	log.Debugf("PaperCrypt Version: %s", major)

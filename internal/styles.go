@@ -29,5 +29,6 @@ var (
 	// Warning is used to style warnings for the user.
 	Warning = lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true).Render
 
+	// Bold is used to display the words from key generation more bold than other output
 	Bold = lipgloss.NewStyle().Bold(true).Render
 )

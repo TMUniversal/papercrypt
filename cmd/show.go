@@ -28,7 +28,9 @@ import (
 )
 
 var (
-	LicenseText    *string
+	// LicenseText pointer to compile-time included text
+	LicenseText *string
+	// ThirdPartyText pointer to third party license information, included at compile time
 	ThirdPartyText *string
 )
 
@@ -49,7 +51,9 @@ var showCmdWarranty = &cobra.Command{
 	Short:        "Show warranty info",
 	Run: func(_ *cobra.Command, _ []string) {
 		log.Info("This program is licensed under the terms of the GNU AGPL-3.0-or-later license.")
-		log.Info("An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.\n")
+		log.Info(
+			"An excerpt from the license will be printed below, to view the full license, please run `papercrypt show c'.\n",
+		)
 		fmt.Println(`  15. Disclaimer of Warranty.
 
   THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY

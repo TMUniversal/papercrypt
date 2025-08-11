@@ -94,6 +94,8 @@ func PrintInputAndRead(inFileName string) ([]byte, error) {
 	return contents, nil
 }
 
+// CloseFileIfNotStd closes a file handle, if it is not an os Std file descriptor.
+// This is done to properly close only those files this program opened.
 func CloseFileIfNotStd(file *os.File) error {
 	if file == os.Stderr || file == os.Stdout || file == os.Stdin {
 		return nil
@@ -106,6 +108,12 @@ func CloseFileIfNotStd(file *os.File) error {
 	return nil
 }
 
+// NormalizeLineEndings cuts all "\r" from given input, normalizing to unix standard.
+// This is used when reading papercrypt files.
 func NormalizeLineEndings(data []byte) []byte {
-	return bytes.ReplaceAll(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")), []byte("\r"), []byte("\n"))
+	return bytes.ReplaceAll(
+		bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")),
+		[]byte("\r"),
+		[]byte("\n"),
+	)
 }

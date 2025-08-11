@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package internal implements file reading and processing, as well as generation.
 package internal
 
 import (
@@ -45,47 +46,77 @@ import (
 )
 
 const (
-	BytesPerLine        = 24
-	PdfTextFont         = "Text"
-	PdfMonoFont         = "Mono"
+	// BytesPerLine denominates the amount of bytes to be encoded per line of the serialized output
+	BytesPerLine = 24
+	// PdfTextFont gives the typeface as it is named in the PDF
+	PdfTextFont = "Text"
+	// PdfMonoFont gives the typeface for monospace passages as it is named in the PDF
+	PdfMonoFont = "Mono"
+	// PdfDataLineFontSize sets the font size of data lines in the PDF [pt]
 	PdfDataLineFontSize = 11
 )
 
 const printProductQrCode = false
 
 var (
+	// PdfTextFontRegularBytes holds the font data for the text typeface, as embedded at compile time. For regular text.
 	PdfTextFontRegularBytes []byte
-	PdfTextFontBoldBytes    []byte
-	PdfTextFontItalicBytes  []byte
+	// PdfTextFontBoldBytes holds the font data for the text typeface, as embedded at compile time. For bold text.
+	PdfTextFontBoldBytes []byte
+	// PdfTextFontItalicBytes holds the font data for the text typeface, as embedded at compile time. For italic text.
+	PdfTextFontItalicBytes []byte
 )
 
 var (
+	// PdfMonoFontRegularBytes holds the font data for the monospace typeface, as embedded at compile time. For regular text.
 	PdfMonoFontRegularBytes []byte
-	PdfMonoFontBoldBytes    []byte
-	PdfMonoFontItalicBytes  []byte
+	// PdfMonoFontBoldBytes holds the font data for the monospace typeface, as embedded at compile time. For bold text.
+	PdfMonoFontBoldBytes []byte
+	// PdfMonoFontItalicBytes holds the font data for the monospace typeface, as embedded at compile time. For italic text.
+	PdfMonoFontItalicBytes []byte
 )
 
 const (
-	HeaderFieldVersion              = "PaperCrypt Version"
-	HeaderFieldSerial               = "Content Serial"
-	HeaderFieldPurpose              = "Purpose"
-	HeaderFieldComment              = "Comment"
-	HeaderFieldDate                 = "Date"
-	HeaderFieldDataFormat           = "Data Format"
-	HeaderFieldContentLength        = "Content Length"
-	HeaderFieldCRC24                = "Content CRC-24"
-	HeaderFieldCRC32                = "Content CRC-32"
-	HeaderFieldSHA256               = "Content SHA-256"
-	HeaderFieldHeaderCRC32          = "Header CRC-32"
-	PDFHeaderSheetID                = "Sheet ID"
-	PDFHeading                      = "PaperCrypt Recovery Sheet"
-	PDFSectionDescriptionHeading    = "What is this?"
-	PDFSectionDescriptionContent    = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
+	// HeaderFieldVersion holds the name of the header field Version. Constant to avoid parsing issues.
+	HeaderFieldVersion = "PaperCrypt Version"
+	// HeaderFieldSerial holds the name of the header field for the serial number. Constant to avoid parsing issues.
+	HeaderFieldSerial = "Content Serial"
+	// HeaderFieldPurpose holds the name of the header field Purpose. Constant to avoid parsing issues.
+	HeaderFieldPurpose = "Purpose"
+	// HeaderFieldComment holds the name of the header field Comment. Constant to avoid parsing issues.
+	HeaderFieldComment = "Comment"
+	// HeaderFieldDate holds the name of the header field Date. Constant to avoid parsing issues.
+	HeaderFieldDate = "Date"
+	// HeaderFieldDataFormat holds the name of the header field Data Format. Constant to avoid parsing issues.
+	HeaderFieldDataFormat = "Data Format"
+	// HeaderFieldContentLength holds the name of the header field Content Length. Constant to avoid parsing issues.
+	HeaderFieldContentLength = "Content Length"
+	// HeaderFieldCRC24 holds the name of the header field for the CRC-24 checksum. Constant to avoid parsing issues.
+	HeaderFieldCRC24 = "Content CRC-24"
+	// HeaderFieldCRC32 holds the name of the header field for the CRC-32 checksum. Constant to avoid parsing issues.
+	HeaderFieldCRC32 = "Content CRC-32"
+	// HeaderFieldSHA256 holds the name of the header field for the SHA-256 checksum. Constant to avoid parsing issues.
+	HeaderFieldSHA256 = "Content SHA-256"
+	// HeaderFieldHeaderCRC32 holds the name of the header field for the CRC-32 checksum of the header. Constant to avoid parsing issues.
+	HeaderFieldHeaderCRC32 = "Header CRC-32"
+	// PDFHeaderSheetID holds the text label displayed in the PDF header for the sheet ID.
+	PDFHeaderSheetID = "Sheet ID"
+	// PDFHeading holds the title of the PDF document, as shown on the first page.
+	PDFHeading = "PaperCrypt Recovery Sheet"
+	// PDFSectionDescriptionHeading holds the title of the section describing the document.
+	PDFSectionDescriptionHeading = "What is this?"
+	// PDFSectionDescriptionContent holds the content of the section describing the document.
+	PDFSectionDescriptionContent = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
+	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
 	PDFSectionRepresentationHeading = "Binary Data Representation"
+	// PDFSectionRepresentationContent holds the content of the section describing the data representation.
 	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used. Data is compressed using the gzip algorithm."
-	PDFSectionRecoveryHeading       = "Recovering the data"
-	PDFSectionRecoveryContent       = "Firstly, scan the 2D code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
-	PDFSectionRecoveryContentNo2D   = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	// PDFSectionRecoveryHeading holds the title of the section describing how to recover the data.
+	PDFSectionRecoveryHeading = "Recovering the data"
+	// PDFSectionRecoveryContent holds the content of the section describing how to recover the data.
+	PDFSectionRecoveryContent = "Firstly, scan the 2D code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	// PDFSectionRecoveryContentNo2D holds the content of the section describing how to recover the data, if no 2D code is present.
+	PDFSectionRecoveryContentNo2D = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 )
 
 var (
@@ -94,6 +125,8 @@ var (
 	errorValidationFailure = errors.New("validation failure")
 )
 
+// PaperCrypt represents a PaperCrypt document.
+// It contains metadata about the document, such as its version, serial number, purpose, comment, creation date, and the data itself.
 type PaperCrypt struct {
 	// Version is the version of papercrypt used to generate the document.
 	Version string `json:"v"`
@@ -131,6 +164,7 @@ type PaperCrypt struct {
 	Data []byte `json:"d"`
 }
 
+// MarshalJSON implements the json.Marshaler interface for PaperCrypt.
 func (p *PaperCrypt) MarshalJSON() ([]byte, error) { // nosemgrep
 	type Alias PaperCrypt
 	return json.Marshal(&struct {
@@ -144,6 +178,7 @@ func (p *PaperCrypt) MarshalJSON() ([]byte, error) { // nosemgrep
 	})
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface for PaperCrypt.
 func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 	type Alias PaperCrypt
 	aux := &struct {
@@ -174,7 +209,15 @@ func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 }
 
 // NewPaperCrypt creates a new paper crypt.
-func NewPaperCrypt(version string, data []byte, serialNumber string, purpose string, comment string, createdAt time.Time, format PaperCryptDataFormat) *PaperCrypt {
+func NewPaperCrypt(
+	version string,
+	data []byte,
+	serialNumber string,
+	purpose string,
+	comment string,
+	createdAt time.Time,
+	format PaperCryptDataFormat,
+) *PaperCrypt {
 	dataCRC24 := Crc24Checksum(data)
 	dataCRC32 := crc32.ChecksumIEEE(data)
 	dataSHA256 := sha256.Sum256(data)
@@ -193,6 +236,7 @@ func NewPaperCrypt(version string, data []byte, serialNumber string, purpose str
 	}
 }
 
+// GetBinarySerialized returns the binary serialized representation of the PaperCrypt document as a string.
 func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 	if p.Data == nil {
 		return "", errors.New("no data to serialize")
@@ -205,6 +249,7 @@ func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 	return SerializeBinaryV2(&p.Data), nil
 }
 
+// GetDataLength returns the length of the data in bytes as an integer.
 func (p *PaperCrypt) GetDataLength() int {
 	return len(p.Data)
 }
@@ -316,7 +361,12 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
-		headerLine := fmt.Sprintf("%s: %s - %s", PDFHeaderSheetID, p.SerialNumber, p.CreatedAt.Format(TimeStampFormatPDFHeader))
+		headerLine := fmt.Sprintf(
+			"%s: %s - %s",
+			PDFHeaderSheetID,
+			p.SerialNumber,
+			p.CreatedAt.Format(TimeStampFormatPDFHeader),
+		)
 		if p.Purpose != "" {
 			headerLine += fmt.Sprintf(" - %s", p.Purpose)
 		}
@@ -327,7 +377,17 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			// add the data matrix code
 			pdf.RegisterImageReader("dm.png", "PNG", dm)
 			imageSize := 5.0
-			pdf.ImageOptions("dm.png", 195, 50, imageSize, imageSize, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+			pdf.ImageOptions(
+				"dm.png",
+				195,
+				50,
+				imageSize,
+				imageSize,
+				false,
+				gofpdf.ImageOptions{ImageType: "PNG"},
+				0,
+				"",
+			)
 		}
 
 		pdf.Ln(10)
@@ -336,7 +396,17 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			// add product qr code in upper left corner
 			pdf.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
 			imageSize := 15.0
-			pdf.ImageOptions("product_link_qr.png", 186, 11, imageSize, imageSize, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+			pdf.ImageOptions(
+				"product_link_qr.png",
+				186,
+				11,
+				imageSize,
+				imageSize,
+				false,
+				gofpdf.ImageOptions{ImageType: "PNG"},
+				0,
+				"",
+			)
 		}
 	}, true)
 	pdf.SetFooterFunc(func() {
@@ -365,7 +435,19 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.Ln(5)
 
 		pdf.SetFont(PdfTextFont, "", 10)
-		pdf.MultiCell(0, 5, fmt.Sprintf(PDFSectionRepresentationContent, BytesPerLine, CRC24Polynomial, CRC24Initial), "", "", false)
+		pdf.MultiCell(
+			0,
+			5,
+			fmt.Sprintf(
+				PDFSectionRepresentationContent,
+				BytesPerLine,
+				CRC24Polynomial,
+				CRC24Initial,
+			),
+			"",
+			"",
+			false,
+		)
 		pdf.Ln(5)
 
 		pdf.SetFont(PdfTextFont, "B", 10)
@@ -384,7 +466,17 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	if !no2D {
 		pdf.RegisterImageReader("data2D.png", "PNG", data2D)
 		imageSize := 167.0
-		pdf.ImageOptions("data2D.png", 21, 5, imageSize, imageSize, true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+		pdf.ImageOptions(
+			"data2D.png",
+			21,
+			5,
+			imageSize,
+			imageSize,
+			true,
+			gofpdf.ImageOptions{ImageType: "PNG"},
+			0,
+			"",
+		)
 		pdf.Ln(50)
 	}
 
@@ -515,6 +607,8 @@ func newFieldNotPresentError(field string) error {
 	return fmt.Errorf("`%s` not present in header", field)
 }
 
+// Decode decodes and, if the data was encrypted with PaperCrypt (data format is PaperCryptDataFormatPGP),
+// decrypts the data, returning the original binary data.
 func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 	data := p.Data
 	if p.DataFormat == PaperCryptDataFormatPGP {
@@ -560,6 +654,10 @@ func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 	return decompressed.Bytes(), nil
 }
 
+// TextToHeaderMap converts a byte slice containing text headers into a map of header fields.
+// Each header line should be in the format "Key: Value", with the key being the header field name
+// and the value being the header field value.
+// The function trims the "# " prefix from header lines, which is present in the serialized text format.
 func TextToHeaderMap(text []byte) (map[string]string, error) {
 	headers := make(map[string]string)
 
@@ -567,7 +665,10 @@ func TextToHeaderMap(text []byte) (map[string]string, error) {
 	for _, headerLine := range headerLines {
 		headerLineSplit := bytes.SplitN(headerLine, []byte(": "), 2)
 		if len(headerLineSplit) != 2 {
-			return nil, errors.Join(errorParsingHeader, fmt.Errorf("error parsing header line: %s", headerLine))
+			return nil, errors.Join(
+				errorParsingHeader,
+				fmt.Errorf("error parsing header line: %s", headerLine),
+			)
 		}
 
 		key := string(headerLineSplit[0])
@@ -579,15 +680,24 @@ func TextToHeaderMap(text []byte) (map[string]string, error) {
 	return headers, nil
 }
 
+// SplitTextHeaderAndBody splits the given byte slice, which should be a PaperCrypt document, into a header and body section.
 func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	dataSplit := bytes.SplitN(data, []byte("\n\n\n"), 2)
 	if len(dataSplit) != 2 {
-		return nil, nil, errors.New("header not discernible, header and content should be separated by two empty lines")
+		return nil, nil, errors.New(
+			"header not discernible, header and content should be separated by two empty lines",
+		)
 	}
 	return dataSplit[0], dataSplit[1], nil
 }
 
-func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCrypt, error) {
+// DeserializeV2Text deserializes a PaperCrypt document from a byte slice containing text.
+// It expects the text to be in the format defined by PaperCrypt version 2. (PaperCryptContainerVersionMajor2).
+func DeserializeV2Text(
+	data []byte,
+	ignoreVersionMismatch bool,
+	ignoreChecksumMismatch bool,
+) (*PaperCrypt, error) {
 	paperCryptFileContents := NormalizeLineEndings(data)
 
 	headersSection, bodySection, err := SplitTextHeaderAndBody(paperCryptFileContents)
@@ -614,8 +724,12 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	}
 
 	majorVersion := PaperCryptContainerVersionFromString(versionLine)
-	if !ignoreVersionMismatch && !(majorVersion == PaperCryptContainerVersionMajor2 || majorVersion == PaperCryptContainerVersionDevel) {
-		return nil, errors.Join(errorParsingHeader, fmt.Errorf("unsupported PaperCrypt version '%s'", versionLine))
+	if !ignoreVersionMismatch &&
+		(majorVersion != PaperCryptContainerVersionMajor2 && majorVersion != PaperCryptContainerVersionDevel) {
+		return nil, errors.Join(
+			errorParsingHeader,
+			fmt.Errorf("unsupported PaperCrypt version '%s'", versionLine),
+		)
 	}
 
 	// Validate Header checksum
@@ -623,7 +737,10 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 		headerCrc, ok := headers[HeaderFieldHeaderCRC32]
 		if !ok {
 			if !ignoreChecksumMismatch {
-				return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldHeaderCRC32))
+				return nil, errors.Join(
+					errorParsingHeader,
+					newFieldNotPresentError(HeaderFieldHeaderCRC32),
+				)
 			}
 
 			log.Warn(Warning("Header CRC-32 not present in header"))
@@ -638,11 +755,24 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 		}
 
 		headerWithoutCrc := bytes.ReplaceAll(headersSection, []byte("# "), []byte{})
-		headerWithoutCrc = bytes.ReplaceAll(headerWithoutCrc, []byte("\n"+HeaderFieldHeaderCRC32+": "+headers[HeaderFieldHeaderCRC32]), []byte{})
+		headerWithoutCrc = bytes.ReplaceAll(
+			headerWithoutCrc,
+			[]byte("\n"+HeaderFieldHeaderCRC32+": "+headers[HeaderFieldHeaderCRC32]),
+			[]byte{},
+		)
 
 		if !ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
-				return nil, errors.Join(errorParsingHeader, errorValidationFailure, errors.New("header CRC-32 mismatch: expected "+headers[HeaderFieldHeaderCRC32]+", got "+fmt.Sprintf("%x", crc32.ChecksumIEEE(headerWithoutCrc))))
+				return nil, errors.Join(
+					errorParsingHeader,
+					errorValidationFailure,
+					errors.New(
+						"header CRC-32 mismatch: expected "+headers[HeaderFieldHeaderCRC32]+", got "+fmt.Sprintf(
+							"%x",
+							crc32.ChecksumIEEE(headerWithoutCrc),
+						),
+					),
+				)
 			}
 
 			log.Warn(Warning("Header CRC-32 mismatch!"))
@@ -653,7 +783,10 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	{
 		dataFormatString, ok := headers[HeaderFieldDataFormat]
 		if !ok {
-			return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldDataFormat))
+			return nil, errors.Join(
+				errorParsingHeader,
+				newFieldNotPresentError(HeaderFieldDataFormat),
+			)
 		}
 
 		log.Debugf("Data Format: %s", dataFormatString)
@@ -687,7 +820,15 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	}
 
 	if fmt.Sprint(len(body)) != bodyLength {
-		return nil, errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch: expected %s, got %d", HeaderFieldContentLength, bodyLength, len(body)))
+		return nil, errors.Join(
+			errorValidationFailure,
+			fmt.Errorf(
+				"`%s` mismatch: expected %s, got %d",
+				HeaderFieldContentLength,
+				bodyLength,
+				len(body),
+			),
+		)
 	}
 
 	// 5.2 Verify CRC-32
@@ -703,7 +844,10 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 
 	if !ValidateCRC32(body, bodyCrc32Uint32) {
 		if !ignoreChecksumMismatch {
-			return nil, errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", HeaderFieldCRC32))
+			return nil, errors.Join(
+				errorValidationFailure,
+				fmt.Errorf("`%s` mismatch", HeaderFieldCRC32),
+			)
 		}
 
 		log.Warn(Warning("Content CRC-32 mismatch!"))
@@ -722,7 +866,10 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 
 	if !ValidateCRC24(body, bodyCrc24Uint32) {
 		if !ignoreChecksumMismatch {
-			return nil, errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", HeaderFieldCRC24))
+			return nil, errors.Join(
+				errorValidationFailure,
+				fmt.Errorf("`%s` mismatch", HeaderFieldCRC24),
+			)
 		}
 
 		log.Warn(Warning("Content CRC-24 mismatch!"))
@@ -742,7 +889,10 @@ func DeserializeV2Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	actualSha256 := sha256.Sum256(body)
 	if !bytes.Equal(actualSha256[:], bodySha256Bytes) {
 		if !ignoreChecksumMismatch {
-			return nil, errors.Join(errorValidationFailure, fmt.Errorf("`%s` mismatch", HeaderFieldSHA256))
+			return nil, errors.Join(
+				errorValidationFailure,
+				fmt.Errorf("`%s` mismatch", HeaderFieldSHA256),
+			)
 		}
 
 		log.Warn(Warning("Content SHA-256 mismatch!"))

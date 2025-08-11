@@ -21,9 +21,14 @@
 package internal
 
 const (
-	TimeStampFormatLong      = "Mon, 02 Jan 2006 15:04:05.000000000 -0700"
-	TimeStampFormatLongTZ    = "Mon, 02 Jan 2006 15:04:05.000000000 MST"
-	TimeStampFormatShort     = "2006-01-02 15:04:05"
-	TimeStampFormatDate      = "2006-01-02"
+	// TimeStampFormatLong shows the full date and time precisely for humans. It is used for the container file, as well as the timestamp command-line parameter.
+	TimeStampFormatLong = "Mon, 02 Jan 2006 15:04:05.000000000 -0700"
+	// TimeStampFormatLongTZ is used for v1 backwards compatibility.
+	TimeStampFormatLongTZ = "Mon, 02 Jan 2006 15:04:05.000000000 MST"
+	// TimeStampFormatShort is used in parsing the timestamp command-line parameter [cmd/generateCmd].
+	TimeStampFormatShort = "2006-01-02 15:04:05"
+	// TimeStampFormatDate is used as an alternative format for the command-line parameter.
+	TimeStampFormatDate = "2006-01-02"
+	// TimeStampFormatPDFHeader is used exclusively for the timestamps in displayed PDF headers. Both for the normal papercrypt sheet and the phrase sheet.
 	TimeStampFormatPDFHeader = "2006-01-02 15:04 -0700"
 )
