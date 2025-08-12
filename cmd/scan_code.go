@@ -81,7 +81,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			return err
 		}
 		defer func(inFile *os.File) {
-			err := inFile.Close()
+			err := internal.CloseFileIfNotStd(inFile)
 			if err != nil {
 				log.WithError(err).Warn("error closing input file")
 			}
