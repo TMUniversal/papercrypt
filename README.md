@@ -53,7 +53,7 @@ the [releases](https://github.com/TMUniversal/papercrypt/releases) page.
 
 ```bash
 brew tap TMUniversal/homebrew-tap
-brew install papercrypt
+brew install --cask papercrypt
 ```
 
 #### Scoop (Windows)
