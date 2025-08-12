@@ -1,3 +1,13 @@
+## [2.0.2](https://github.com/TMUniversal/papercrypt/compare/v2.0.1...v2.0.2) (2025-08-12)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/caarlos0/log to v0.4.8 ([f30215e](https://github.com/TMUniversal/papercrypt/commit/f30215e477ef7c10dec4a85be4a35fd63351cf47))
+* **deps:** update module golang.org/x/term to v0.30.0 ([dd5822b](https://github.com/TMUniversal/papercrypt/commit/dd5822b3d44f6eccf862cf3baf5564f3acfab9af))
+* **scan:** close input file only if it is not stdin ([1c0af37](https://github.com/TMUniversal/papercrypt/commit/1c0af37f602bd8b81a468399439aebde4b02173f))
+* **tty:** do not close twice ([ec4c908](https://github.com/TMUniversal/papercrypt/commit/ec4c90839ca1dec2d1768659bc1709cc052b03dc))
+
 ## [2.0.1](https://github.com/TMUniversal/papercrypt/compare/v2.0.0...v2.0.1) (2024-08-07)
 
 
