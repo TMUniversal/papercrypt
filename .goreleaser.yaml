@@ -122,8 +122,6 @@ docker_signs:
 
 homebrew_casks:
   - name: papercrypt
-    conflicts:
-      - formula: papercrypt
     # alternative_names:
     #   - papercrypt@{{ .Version }}
     #   - papercrypt@{{ .Major }}.{{ .Minor }}
