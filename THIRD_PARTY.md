@@ -74,8 +74,8 @@ IN THE SOFTWARE.
 ## github.com/ProtonMail/gopenpgp/v2
 
 * Name: github.com/ProtonMail/gopenpgp/v2
-* Version: v2.7.5
-* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v2.7.5/LICENSE)
+* Version: v2.9.0
+* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v2.9.0/LICENSE)
 
 ```md
 (The MIT License)
@@ -316,8 +316,8 @@ SOFTWARE.
 ## github.com/charmbracelet/colorprofile
 
 * Name: github.com/charmbracelet/colorprofile
-* Version: v0.3.1
-* License: [MIT](https://github.com/charmbracelet/colorprofile/blob/v0.3.1/LICENSE)
+* Version: v0.3.2
+* License: [MIT](https://github.com/charmbracelet/colorprofile/blob/v0.3.2/LICENSE)
 
 ```md
 MIT License
@@ -632,8 +632,8 @@ SOFTWARE.
 ## github.com/lucasb-eyer/go-colorful
 
 * Name: github.com/lucasb-eyer/go-colorful
-* Version: v1.2.0
-* License: [MIT](https://github.com/lucasb-eyer/go-colorful/blob/v1.2.0/LICENSE)
+* Version: v1.3.0
+* License: [MIT](https://github.com/lucasb-eyer/go-colorful/blob/v1.3.0/LICENSE)
 
 ```md
 Copyright (c) 2013 Lucas Beyer
@@ -947,8 +947,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## github.com/mattn/go-runewidth
 
 * Name: github.com/mattn/go-runewidth
-* Version: v0.0.16
-* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.16/LICENSE)
+* Version: v0.0.17
+* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.17/LICENSE)
 
 ```md
 The MIT License (MIT)
@@ -1071,8 +1071,8 @@ SOFTWARE.
 ## github.com/muesli/mango-pflag
 
 * Name: github.com/muesli/mango-pflag
-* Version: v0.1.0
-* License: [MIT](https://github.com/muesli/mango-pflag/blob/v0.1.0/LICENSE)
+* Version: v0.2.0
+* License: [MIT](https://github.com/muesli/mango-pflag/blob/v0.2.0/LICENSE)
 
 ```md
 MIT License
@@ -1412,8 +1412,8 @@ SOFTWARE.
 ## github.com/spf13/pflag
 
 * Name: github.com/spf13/pflag
-* Version: v1.0.9
-* License: [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.9/LICENSE)
+* Version: v1.0.10
+* License: [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.10/LICENSE)
 
 ```md
 Copyright (c) 2012 Alex Ogier. All rights reserved.
@@ -1481,8 +1481,8 @@ SOFTWARE.
 ## golang.org/x/crypto
 
 * Name: golang.org/x/crypto
-* Version: v0.41.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.41.0:LICENSE)
+* Version: v0.42.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.42.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
@@ -1592,8 +1592,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/text
 
 * Name: golang.org/x/text
-* Version: v0.28.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.28.0:LICENSE)
+* Version: v0.29.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.29.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
