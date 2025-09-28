@@ -198,23 +198,31 @@ SOFTWARE.
 ## github.com/caarlos0/go-version
 
 * Name: github.com/caarlos0/go-version
-* Version: v0.2.1
-* License: [Apache-2.0](https://github.com/caarlos0/go-version/blob/v0.2.1/LICENSE.md)
+* Version: v0.2.2
+* License: [MIT](https://github.com/caarlos0/go-version/blob/v0.2.2/LICENSE.md)
 
 ```md
-Copyright 2022 The Kubernetes Authors.
+The MIT License (MIT)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Copyright (c) 2025 Carlos Alexandro Becker
 
-    http://www.apache.org/licenses/LICENSE-2.0
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ```
 
@@ -1032,8 +1040,8 @@ SOFTWARE.
 ## github.com/muesli/mango-cobra
 
 * Name: github.com/muesli/mango-cobra
-* Version: v1.2.0
-* License: [MIT](https://github.com/muesli/mango-cobra/blob/v1.2.0/LICENSE)
+* Version: v1.3.0
+* License: [MIT](https://github.com/muesli/mango-cobra/blob/v1.3.0/LICENSE)
 
 ```md
 MIT License
@@ -1220,8 +1228,8 @@ SOFTWARE.
 ## github.com/spf13/cobra
 
 * Name: github.com/spf13/cobra
-* Version: v1.9.1
-* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.9.1/LICENSE.txt)
+* Version: v1.10.1
+* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.10.1/LICENSE.txt)
 
 ```md
                                 Apache License
@@ -1404,8 +1412,8 @@ SOFTWARE.
 ## github.com/spf13/pflag
 
 * Name: github.com/spf13/pflag
-* Version: v1.0.7
-* License: [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.7/LICENSE)
+* Version: v1.0.9
+* License: [BSD-3-Clause](https://github.com/spf13/pflag/blob/v1.0.9/LICENSE)
 
 ```md
 Copyright (c) 2012 Alex Ogier. All rights reserved.
@@ -1510,8 +1518,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys
 
 * Name: golang.org/x/sys
-* Version: v0.35.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.35.0:LICENSE)
+* Version: v0.36.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.36.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
@@ -1547,8 +1555,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/term
 
 * Name: golang.org/x/term
-* Version: v0.34.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.34.0:LICENSE)
+* Version: v0.35.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.35.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
