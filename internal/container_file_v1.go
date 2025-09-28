@@ -24,7 +24,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 )
 
@@ -71,7 +70,7 @@ type PaperCryptV1 struct {
 
 // NewPaperCryptV1 creates a new paper crypt
 func NewPaperCryptV1(version string, data *crypto.PGPMessage, serialNumber string, purpose string, comment string, createdAt time.Time) *PaperCryptV1 {
-	binData := data.GetBinary()
+	binData := data.Bytes()
 
 	dataCRC24 := Crc24Checksum(binData)
 	dataCRC32 := crc32.ChecksumIEEE(binData)
@@ -96,7 +95,7 @@ func NewPaperCryptV1(version string, data *crypto.PGPMessage, serialNumber strin
 func (p *PaperCryptV1) ToNextVersion() (*PaperCrypt, error) {
 	data := new(bytes.Buffer)
 	gzipWriter := gzip.NewWriter(data)
-	if _, err := gzipWriter.Write(p.Data.GetBinary()); err != nil {
+	if _, err := gzipWriter.Write(p.Data.Bytes()); err != nil {
 		return nil, errors.Join(errors.New("error compressing data"), err)
 	}
 	if err := gzipWriter.Close(); err != nil {
@@ -115,69 +114,6 @@ func (p *PaperCryptV1) ToNextVersion() (*PaperCrypt, error) {
 		DataSHA256:   p.DataSHA256,
 		DataFormat:   PaperCryptDataFormatPGP,
 	}, nil
-}
-
-func (p *PaperCryptV1) GetBinary() []byte {
-	return p.Data.GetBinary()
-}
-
-func (p *PaperCryptV1) GetBinarySerialized() string {
-	data := p.GetBinary()
-	return SerializeBinaryV1(&data)
-}
-
-func (p *PaperCryptV1) GetLength() int {
-	return len(p.GetBinary())
-}
-
-func (p *PaperCryptV1) GetText(lowerCaseEncoding bool) ([]byte, error) {
-	header := fmt.Sprintf(
-		`%s: %s
-%s: %s
-%s: %s
-%s: %s
-%s: %s
-%s: %d
-%s: %06x
-%s: %08x
-%s: %s`,
-		HeaderFieldVersion,
-		p.Version,
-		HeaderFieldSerial,
-		p.SerialNumber,
-		HeaderFieldPurpose,
-		p.Purpose,
-		HeaderFieldComment,
-		p.Comment,
-		HeaderFieldDate,
-		p.CreatedAt.Format(TimeStampFormatLongTZ),
-		HeaderFieldContentLength,
-		p.GetLength(),
-		HeaderFieldCRC24,
-		p.DataCRC24,
-		HeaderFieldCRC32,
-		p.DataCRC32,
-		HeaderFieldSHA256,
-		base64.StdEncoding.EncodeToString(p.DataSHA256[:]))
-
-	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
-
-	serializedData := p.GetBinarySerialized()
-	if lowerCaseEncoding {
-		serializedData = strings.ToLower(serializedData)
-	}
-
-	return []byte(
-		fmt.Sprintf(`%s
-%s: %08x
-
-
-%s
-`,
-			header,
-			HeaderFieldHeaderCRC32,
-			headerCRC32,
-			serializedData)), nil
 }
 
 func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMismatch bool) (*PaperCrypt, error) {
@@ -257,7 +193,7 @@ func DeserializeV1Text(data []byte, ignoreVersionMismatch bool, ignoreChecksumMi
 	pgpMessage = crypto.NewPGPMessage(body)
 
 	// 5. Verify Body Hashes
-	body = pgpMessage.GetBinary()
+	body = pgpMessage.Bytes()
 
 	// 5.1 Verify Content Length
 	bodyLength, ok := headers[HeaderFieldContentLength]

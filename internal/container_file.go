@@ -35,7 +35,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/aztec"
 	"github.com/boombuler/barcode/qr"
@@ -629,12 +629,18 @@ func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 		pgpMessage := crypto.NewPGPMessage(decompressed.Bytes())
 
 		// 9. Decrypt secretContents
-		decryptedMessage, err := crypto.DecryptMessageWithPassword(pgpMessage, passphrase)
+		pgp := crypto.PGP()
+		decHandle, err := pgp.Decryption().Password(passphrase).New()
 		if err != nil {
-			return nil, errors.Join(errors.New("error decrypting secret contents"), err)
+			return nil, errors.Join(errors.New("error creating decryption handle"), err)
 		}
 
-		data = decryptedMessage.GetBinary()
+		decrypted, err := decHandle.Decrypt(pgpMessage.Bytes(), crypto.Bytes)
+		if err != nil {
+			return nil, errors.Join(errors.New("error decrypting data"), err)
+		}
+
+		data = decrypted.Bytes()
 	}
 
 	// 10. Decompress content
@@ -804,7 +810,7 @@ func DeserializeV2Text(
 	switch dataFormat {
 	case PaperCryptDataFormatPGP:
 		pgpMessage = crypto.NewPGPMessage(body)
-		body = pgpMessage.GetBinary()
+		body = pgpMessage.Bytes()
 	case PaperCryptDataFormatRaw:
 		// do nothing
 	default:

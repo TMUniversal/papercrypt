@@ -22,6 +22,8 @@ package internal
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestChecksumValidation(t *testing.T) {
@@ -29,10 +31,11 @@ func TestChecksumValidation(t *testing.T) {
 	generateCRCTable()
 	checksum := Crc24Checksum(data)
 
-	valid := ValidateCRC24(data, checksum)
-	if !valid {
-		t.Errorf("Expected checksum validation to be true, but got false.")
-	}
+	assert.True(
+		t,
+		ValidateCRC24(data, checksum),
+		"Expected determined checksum to be valid, but was not.",
+	)
 }
 
 func TestChecksumInvalidation(t *testing.T) {
@@ -43,10 +46,11 @@ func TestChecksumInvalidation(t *testing.T) {
 	// Modify the data to invalidate the checksum
 	data[0] = 0xAB
 
-	valid := ValidateCRC24(data, checksum)
-	if valid {
-		t.Errorf("Expected checksum validation to be false, but got true.")
-	}
+	assert.False(
+		t,
+		ValidateCRC24(data, checksum),
+		"Expected checksum validation to fail for changed data, but got true.",
+	)
 }
 
 func TestBoth(t *testing.T) {
@@ -77,6 +81,11 @@ func TestBoth(t *testing.T) {
 	generateCRCTable()
 	checksum := uint32(0xc55238)
 
+	assert.True(
+		t,
+		ValidateCRC24(data, checksum),
+		"Expected checksum validation to be true for pre-determined valid checksum, but got false.",
+	)
 	valid := ValidateCRC24(data, checksum)
 	if !valid {
 		t.Errorf("Expected checksum validation to be true, but got false.")
@@ -110,8 +119,9 @@ func TestValidateCRC32(t *testing.T) {
 	}
 	checksum := uint32(0x59f08912)
 
-	valid := ValidateCRC32(data, checksum)
-	if !valid {
-		t.Errorf("Expected checksum validation to be true, but got false.")
-	}
+	assert.True(
+		t,
+		ValidateCRC32(data, checksum),
+		"Expected checksum validation to pass for pre-determined valid checksum, but got false.",
+	)
 }

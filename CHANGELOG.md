@@ -1,3 +1,14 @@
+## [2.0.3](https://github.com/TMUniversal/papercrypt/compare/v2.0.2...v2.0.3) (2025-09-28)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/caarlos0/go-version to v0.2.2 ([7ae85c4](https://github.com/TMUniversal/papercrypt/commit/7ae85c4e170a83b9bbcb140218637d257e13b0ef))
+* **deps:** update module github.com/muesli/mango-cobra to v1.3.0 ([6ed0cdf](https://github.com/TMUniversal/papercrypt/commit/6ed0cdfe3bc25e22be9e92a6d56e9b9c4f77b643))
+* **deps:** update module github.com/spf13/cobra to v1.10.1 ([48d0a3f](https://github.com/TMUniversal/papercrypt/commit/48d0a3f772c384cab8689782605e1bc59467503a))
+* **deps:** update module github.com/stretchr/testify to v1.11.1 ([f9361d9](https://github.com/TMUniversal/papercrypt/commit/f9361d941dbd9ea205246fec2b1589d30dfa2f9c))
+* **deps:** update module golang.org/x/term to v0.35.0 ([00a4339](https://github.com/TMUniversal/papercrypt/commit/00a4339d3d3c23d4d7ad81748cc7e95c773991c4))
+
 ## [2.0.2](https://github.com/TMUniversal/papercrypt/compare/v2.0.1...v2.0.2) (2025-08-12)
 
 

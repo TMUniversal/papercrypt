@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/stretchr/testify/assert"
 )
 
 const input = `{
@@ -148,18 +149,21 @@ func TestDecodeV1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, cmd.Execute(), "command execution failed")
 
 	out, err := os.ReadFile(outPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(out) != input {
-		t.Fatalf("Expected %s, got %s", input, string(out))
-	}
+	assert.Equal(
+		t,
+		input,
+		string(out),
+		"expected output to match input. Expected: %s, got: %s",
+		input,
+		string(out),
+	)
 }
 
 func TestDecodeV2(t *testing.T) {
@@ -176,18 +180,21 @@ func TestDecodeV2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, cmd.Execute(), "command execution failed")
 
 	out, err := os.ReadFile(outPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(out) != input {
-		t.Fatalf("Expected %s, got %s", input, string(out))
-	}
+	assert.Equal(
+		t,
+		input,
+		string(out),
+		"expected output to match input. Expected: %s, got: %s",
+		input,
+		string(out),
+	)
 }
 
 func TestDecodeV2Raw(t *testing.T) {
@@ -204,16 +211,19 @@ func TestDecodeV2Raw(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, cmd.Execute(), "command execution failed")
 
 	out, err := os.ReadFile(outPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if string(out) != input {
-		t.Fatalf("Expected %s, got %s", input, string(out))
-	}
+	assert.Equal(
+		t,
+		input,
+		string(out),
+		"expected output to match input. Expected: %s, got: %s",
+		input,
+		string(out),
+	)
 }

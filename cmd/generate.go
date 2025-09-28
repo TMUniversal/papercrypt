@@ -27,7 +27,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v2/internal"
@@ -156,7 +156,7 @@ encrypted data.`,
 
 			compressedData.Reset()
 			gzipWriter.Reset(compressedData)
-			_, err = gzipWriter.Write(encryptedSecretContents.GetBinary())
+			_, err = gzipWriter.Write(encryptedSecretContents.Bytes())
 			if err != nil {
 				return errors.Join(errors.New("error writing to gzip writer"), err)
 			}
@@ -201,14 +201,19 @@ encrypted data.`,
 }
 
 func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
-	message := crypto.NewPlainMessage(data)
+	pgp := crypto.PGP()
 
-	encrypted, err := crypto.EncryptMessageWithPassword(message, passphrase)
+	encHandle, err := pgp.Encryption().Password(passphrase).New()
 	if err != nil {
-		return nil, errors.Join(errors.New("error encrypting message"), err)
+		return nil, errors.Join(errors.New("error creating encryption handle"), err)
 	}
 
-	return encrypted, nil
+	pgpMessage, err := encHandle.Encrypt(data)
+	if err != nil {
+		return nil, errors.Join(errors.New("error encrypting data"), err)
+	}
+
+	return pgpMessage, nil
 }
 
 func init() {
