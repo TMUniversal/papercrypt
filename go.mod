@@ -6,7 +6,7 @@ require (
 	github.com/ProtonMail/gopenpgp/v3 v3.3.0
 	github.com/boombuler/barcode v1.1.0
 	github.com/caarlos0/go-version v0.2.2
-	github.com/caarlos0/log v0.5.1
+	github.com/caarlos0/log v0.5.2
 	github.com/ccoveille/go-safecast v1.6.1
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
