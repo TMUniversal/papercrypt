@@ -7,7 +7,7 @@ require (
 	github.com/boombuler/barcode v1.1.0
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.5.1
-	github.com/ccoveille/go-safecast v1.6.1
+	github.com/ccoveille/go-safecast v1.7.0
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
 	github.com/makiuchi-d/gozxing v0.1.1
