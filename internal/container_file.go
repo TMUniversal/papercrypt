@@ -600,6 +600,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		serializedData), nil
 }
 
+// getPdf creates and configures a PDF document with PaperCrypt metadata, page settings, and embedded fonts.
 func getPdf() *gofpdf.Fpdf {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetCreator("PaperCrypt/"+VersionInfo.GitVersion, true)
@@ -691,7 +692,8 @@ func TextToHeaderMap(text []byte) (map[string]string, error) {
 	return headers, nil
 }
 
-// SplitTextHeaderAndBody splits the given byte slice, which should be a PaperCrypt document, into a header and body section.
+// SplitTextHeaderAndBody separates a PaperCrypt document into its header and body at the first triple-newline separator.
+// It returns an error when the separator is absent.
 func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	dataSplit := bytes.SplitN(data, []byte("\n\n\n"), 2)
 	if len(dataSplit) != 2 {
@@ -703,7 +705,7 @@ func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 }
 
 // DeserializeText deserializes a PaperCrypt document from a byte slice containing text.
-// It expects the text to be in the format defined by PaperCrypt version 2. (PaperCryptContainerVersionMajor2).
+// It returns the reconstructed PaperCrypt document.
 func DeserializeText(
 	data []byte,
 	ignoreVersionMismatch bool,
