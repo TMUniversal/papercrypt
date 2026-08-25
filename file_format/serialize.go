@@ -23,7 +23,6 @@ package file_format
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -255,11 +254,4 @@ func ParseHexUint32(hex string) (uint32, error) {
 // BytesFromBase64 decodes a base64 string using base64.StdEncoding to a byte slice
 func BytesFromBase64(data string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(data)
-}
-
-// uint32ToBytes converts a uint32 to a 4-byte slice (big endian)
-func uint32ToBytes(n uint32) []byte {
-	var b [4]byte
-	binary.BigEndian.PutUint32(b[:], n)
-	return b[:]
 }
