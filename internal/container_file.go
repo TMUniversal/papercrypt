@@ -540,7 +540,6 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 %s: %s
 %s: %s
 %s: %d
-%s: %06x
 %s: %08x
 %s: %s`,
 		HeaderFieldVersion,
