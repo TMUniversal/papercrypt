@@ -23,6 +23,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"os"
@@ -32,7 +33,6 @@ import (
 	"github.com/makiuchi-d/gozxing/aztec"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
-	pcv1 "github.com/tmuniversal/papercrypt/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
@@ -40,11 +40,6 @@ var (
 	qrCmdFromJSON = false
 	qrCmdToJSON   = false
 )
-
-type versionContainerV1 struct {
-	// Version should contain the semver version of PaperCrypt used to generate the document
-	Version string `json:"Version"`
-}
 
 type versionContainer struct {
 	// Version should contain the semver version of PaperCrypt used to generate the document
@@ -147,8 +142,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 		var output []byte
 		var paperCryptMajorVersion internal.PaperCryptContainerVersion
 
-		// decode version information or find .Data.Data (string)
-		vc := versionContainerV1{}
+		vc := versionContainer{}
 		err = json.Unmarshal(data, &vc)
 		if err != nil {
 			return errors.Join(errors.New("error deserializing version"), err)
@@ -156,33 +150,9 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 		paperCryptMajorVersion = internal.PaperCryptContainerVersionFromString(vc.Version)
 
-		if paperCryptMajorVersion == internal.PaperCryptContainerVersionUnknown {
-			vc := versionContainer{}
-			err = json.Unmarshal(data, &vc)
-			if err != nil {
-				return errors.Join(errors.New("error deserializing version"), err)
-			}
-
-			paperCryptMajorVersion = internal.PaperCryptContainerVersionFromString(vc.Version)
-		}
-
 		switch paperCryptMajorVersion {
-		case internal.PaperCryptContainerVersionMajor1:
-			pc := pcv1.PaperCrypt{} // Use the v1 package for PaperCrypt v1, as we do not need to have the serialization code here
-			err = json.Unmarshal(data, &pc)
-			if err != nil {
-				return errors.Join(
-					errors.New("error deserializing json data as PaperCrypt v1"),
-					err,
-				)
-			}
-
-			output, err = pc.GetText(false)
-			if err != nil {
-				return errors.Join(errors.New("error reserializing data as PaperCrypt text"), err)
-			}
 		case internal.PaperCryptContainerVersionDevel,
-			internal.PaperCryptContainerVersionMajor2:
+			internal.PaperCryptContainerVersionMajor3:
 			pc := internal.PaperCrypt{}
 			err = json.Unmarshal(data, &pc)
 			if err != nil {
@@ -197,7 +167,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error reserializing data as PaperCrypt text"), err)
 			}
 		default:
-			return errors.New("unknown version")
+			return fmt.Errorf("unknown version: %s", vc.Version)
 		}
 
 		// 6. Write to file

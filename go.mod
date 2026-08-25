@@ -17,7 +17,6 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
-	github.com/tmuniversal/papercrypt v1.3.0
 	golang.org/x/term v0.45.0
 )
 

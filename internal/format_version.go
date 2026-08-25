@@ -70,6 +70,8 @@ const (
 	PaperCryptContainerVersionMajor1 PaperCryptContainerVersion = 1
 	// PaperCryptContainerVersionMajor2 container format for PaperCrypt
 	PaperCryptContainerVersionMajor2 PaperCryptContainerVersion = 2
+	// PaperCryptContainerVersionMajor3 container format for PaperCrypt
+	PaperCryptContainerVersionMajor3 PaperCryptContainerVersion = 3
 	// PaperCryptContainerVersionDevel is used instead of a set version number for development builds
 	PaperCryptContainerVersionDevel PaperCryptContainerVersion = PaperCryptContainerVersion(
 		0xFFFFFFFF,
@@ -83,6 +85,8 @@ func (v PaperCryptContainerVersion) String() string {
 		return "1"
 	case PaperCryptContainerVersionMajor2:
 		return "2"
+	case PaperCryptContainerVersionMajor3:
+		return "3"
 	case PaperCryptContainerVersionDevel:
 		return "devel"
 	default:
@@ -100,6 +104,8 @@ func PaperCryptContainerVersionFromString(s string) PaperCryptContainerVersion {
 		return PaperCryptContainerVersionMajor1
 	case "2":
 		return PaperCryptContainerVersionMajor2
+	case "3":
+		return PaperCryptContainerVersionMajor3
 	case "devel":
 		return PaperCryptContainerVersionDevel
 	default:
