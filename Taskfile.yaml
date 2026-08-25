@@ -71,6 +71,12 @@ tasks:
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
       - >-
+        bash -c 'cat t-1.png
+        | go run . scan --to-json
+        | go run . decode-json -f -o test.json --passphrase "test"
+        && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document with decode-json."'
+      - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
 
   test:raw:
