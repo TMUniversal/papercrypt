@@ -16,5 +16,6 @@ LABEL repository="https://github.com/TMUniversal/papercrypt" \
     org.opencontainers.image.url="https://github.com/users/TMUniversal/packages/container/package/papercrypt" \
     org.label-schema.usage="docker run --rm -it -v \$PWD:/data ghcr.io/tmuniversal/papercrypt:latest generate -i /data/myfile.txt -o /data/output.pdf --purpose 'Backup' --comment 'This is a backup of myfile.txt'"
 
-COPY papercrypt /
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/papercrypt /
 ENTRYPOINT ["/papercrypt"]
