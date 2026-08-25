@@ -32,9 +32,9 @@ const (
 var table [tableSize]uint32
 
 func init() {
-	for i := uint32(0); i < tableSize; i++ {
+	for i := range tableSize {
 		crc := i << 16
-		for j := 0; j < 8; j++ {
+		for range 8 {
 			if (crc & 0x800000) != 0 {
 				crc = (crc << 1) ^ polynomial
 			} else {
