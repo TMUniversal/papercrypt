@@ -94,11 +94,6 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	return string(dataBlock)
 }
 
-// SerializeBinaryV2 serializes binary data using SerializeBinary.
-func SerializeBinaryV2(data *[]byte) string {
-	return SerializeBinary(data, BytesPerLine)
-}
-
 // DeserializeBinary deserializes bytes from human-readable archive format encoded by SerializeBinary
 func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})

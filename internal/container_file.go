@@ -284,7 +284,7 @@ func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 		return "", errors.New("no data to serialize")
 	}
 
-	return SerializeBinaryV2(&p.Data), nil
+	return SerializeBinary(&p.Data, BytesPerLine), nil
 }
 
 // GetDataLength returns the length of the data in bytes as an integer.
@@ -735,9 +735,9 @@ func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	return dataSplit[0], dataSplit[1], nil
 }
 
-// DeserializeV2Text deserializes a PaperCrypt document from a byte slice containing text.
+// DeserializeText deserializes a PaperCrypt document from a byte slice containing text.
 // It expects the text to be in the format defined by PaperCrypt version 2. (PaperCryptContainerVersionMajor2).
-func DeserializeV2Text(
+func DeserializeText(
 	data []byte,
 	ignoreVersionMismatch bool,
 	ignoreChecksumMismatch bool,

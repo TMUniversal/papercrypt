@@ -106,7 +106,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		switch paperCryptMajorVersion {
 		case internal.PaperCryptContainerVersionDevel,
 			internal.PaperCryptContainerVersionMajor3:
-			pc, err := internal.DeserializeV2Text(
+			pc, err := internal.DeserializeText(
 				paperCryptFileContents,
 				ignoreVersionMismatch,
 				ignoreChecksumMismatch,
