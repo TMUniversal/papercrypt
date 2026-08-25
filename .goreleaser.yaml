@@ -104,7 +104,7 @@ signs:
     args:
       - "sign-blob"
       - "--key=cosign.key"
-      - "--output-signature=${signature}"
+      - "--bundle=${signature}"
       - "${artifact}"
       - "--yes"
     artifacts: checksum
