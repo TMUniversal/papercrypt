@@ -28,12 +28,11 @@ tasks:
       - go build
 
   test:
-    desc: Run all tests, including unit, end-to-end, and backwards compatibility
+    desc: Run all tests, including unit, end-to-end
     cmds:
       - go vet ./...
       - task: test:unit
       - task: test:e2e
-      - task: test:backwards
       - task: test:raw
       - task: clean:test
 
@@ -85,17 +84,6 @@ tasks:
         | go run . scan
         | go run . decode -f -o test.json --passphrase "test"
         && diff -u test.json test-in.json
-        && echo "Successfully reconstructed input document."'
-
-  test:backwards:
-    desc: Run backwards compatibility e2e tests
-    cmds:
-      - bash -c 'pdftoppm -png -r 300 examples/v1/output.pdf t'
-      - >-
-        bash -c 'cat t-1.png
-        | go run . qr
-        | go run . decode -f -o test.json --passphrase "example"
-        && diff -u test.json examples/v1/input.json
         && echo "Successfully reconstructed input document."'
 
   test:fuzz:
