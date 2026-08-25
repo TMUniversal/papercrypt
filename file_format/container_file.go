@@ -44,6 +44,7 @@ import (
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
@@ -424,8 +425,8 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		representationText := fmt.Sprintf(
 			PDFSectionRepresentationContentBase,
 			BytesPerLine,
-			internal.CRC24Polynomial,
-			internal.CRC24Initial,
+			crc24.CRC24Polynomial,
+			crc24.CRC24Initial,
 		)
 		if p.DataFormat == PaperCryptDataFormatPGP {
 			representationText += PDFSectionRepresentationContentGzip
@@ -737,7 +738,7 @@ func DeserializeText(
 			[]byte{},
 		)
 
-		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
+		if !crc24.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
 				return nil, errors.Join(
 					errorParsingHeader,

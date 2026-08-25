@@ -22,10 +22,10 @@
 package crc24
 
 const (
-	// Polynomial defines the CRC-24 polynomial used in OpenPGP and RTCM104v3.
-	Polynomial = uint32(0x864CFB)
-	// Initial is the initial value for CRC-24 calculations.
-	Initial   = uint32(0xB704CE)
+	// polynomial defines the CRC-24 polynomial used in OpenPGP and RTCM104v3.
+	polynomial = uint32(0x864CFB)
+	// initial is the initial value for CRC-24 calculations.
+	initial   = uint32(0xB704CE)
 	tableSize = uint32(256)
 )
 
@@ -36,7 +36,7 @@ func init() {
 		crc := i << 16
 		for j := 0; j < 8; j++ {
 			if (crc & 0x800000) != 0 {
-				crc = (crc << 1) ^ Polynomial
+				crc = (crc << 1) ^ polynomial
 			} else {
 				crc <<= 1
 			}
@@ -47,7 +47,7 @@ func init() {
 
 // Checksum generates a CRC-24 checksum for the given data.
 func Checksum(data []byte) uint32 {
-	crc := Initial
+	crc := initial
 	for _, b := range data {
 		index := byte(crc>>16) ^ b
 		crc = (crc << 8) ^ table[index]

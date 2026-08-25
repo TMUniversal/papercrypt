@@ -18,29 +18,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package internal
+package crc24
 
 import (
 	"hash/crc32"
-
-	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
 )
 
 const (
 	// CRC24Polynomial is the CRC-24 polynomial used by PaperCrypt.
-	CRC24Polynomial = crc24.Polynomial
+	CRC24Polynomial = polynomial
 	// CRC24Initial is the initial value for CRC-24 computation.
-	CRC24Initial = crc24.Initial
+	CRC24Initial = initial
 )
 
 // Crc24Checksum generates a CRC-24 checksum for the given data.
 func Crc24Checksum(data []byte) uint32 {
-	return crc24.Checksum(data)
+	return Checksum(data)
 }
 
 // ValidateCRC24 validates the CRC-24 checksum of the given data against the provided checksum.
 func ValidateCRC24(data []byte, checksum uint32) bool {
-	return crc24.Validate(data, checksum)
+	return Validate(data, checksum)
 }
 
 // ValidateCRC32 validates the CRC-32 checksum of the given data against the provided checksum.

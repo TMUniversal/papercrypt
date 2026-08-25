@@ -31,7 +31,7 @@ import (
 	"strings"
 
 	"github.com/ccoveille/go-safecast/v2"
-	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
 )
 
 type lineData struct {
@@ -82,13 +82,13 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 			line += fmt.Sprintf("%02X ", (*data)[i+j])
 		}
 
-		lineCRC24 := internal.Crc24Checksum(dataLine)
+		lineCRC24 := crc24.Crc24Checksum(dataLine)
 		line += fmt.Sprintf("%06X\n", lineCRC24)
 
 		dataBlock = append(dataBlock, []byte(line)...)
 	}
 
-	dataCRC24 := internal.Crc24Checksum(*data)
+	dataCRC24 := crc24.Crc24Checksum(*data)
 	finalLineNumber := max(int(lines+1), min(1, int(lines)))
 	dataBlock = append(dataBlock, fmt.Appendf(nil, "%d: %06X\n", finalLineNumber, dataCRC24)...)
 
@@ -166,13 +166,13 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 			CRC24:      checksumData,
 		}
 
-		if internal.ValidateCRC24(lineData.Data, lineData.CRC24) {
+		if crc24.ValidateCRC24(lineData.Data, lineData.CRC24) {
 			result = append(result, lineData)
 		} else {
 			return nil, fmt.Errorf(
 				"invalid line checksum: line %d has checksum %06X, expected %06X",
 				lineData.LineNumber,
-				internal.Crc24Checksum(lineData.Data),
+				crc24.Crc24Checksum(lineData.Data),
 				lineData.CRC24,
 			)
 		}
@@ -220,7 +220,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	}
 
 	// 3. Validate data checksum
-	if !internal.ValidateCRC24(resultData, blockCrc) {
+	if !crc24.ValidateCRC24(resultData, blockCrc) {
 		return nil, errors.New("invalid block checksum")
 	}
 
