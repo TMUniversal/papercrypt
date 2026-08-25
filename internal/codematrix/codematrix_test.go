@@ -101,11 +101,14 @@ func TestEncodePNG(t *testing.T) {
 }
 
 func TestDecodeDecompressionBomb(t *testing.T) {
-	overSize := MaxDecodedPayloadSize + 1
+	// Lower the limit so Encode can produce a payload that triggers it.
+	// The Aztec code format caps out at ~3 KiB of base64 text, so the
+	// decompressed size through Encode→Decode is bounded well below 10 MiB.
+	saved := MaxDecodedPayloadSize
+	MaxDecodedPayloadSize = 200
+	defer func() { MaxDecodedPayloadSize = saved }()
 
-	// Encode gzip-compresses the input; Decode decompresses it back.
-	// Pass raw oversize data so Decode reconstructs > MaxDecodedPayloadSize.
-	data := bytes.Repeat([]byte{0}, overSize)
+	data := bytes.Repeat([]byte{0}, 300)
 	img, err := Encode(data)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
@@ -121,12 +124,14 @@ func TestDecodeDecompressionBomb(t *testing.T) {
 }
 
 func TestDecodeLimitDisabled(t *testing.T) {
-	overSize := MaxDecodedPayloadSize + 1
+	saved := MaxDecodedPayloadSize
+	MaxDecodedPayloadSize = 200
+	defer func() { MaxDecodedPayloadSize = saved }()
 
 	SetLimitDecodedPayload(false)
 	defer SetLimitDecodedPayload(true)
 
-	data := bytes.Repeat([]byte{0}, overSize)
+	data := bytes.Repeat([]byte{0}, 300)
 	img, err := Encode(data)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
@@ -136,7 +141,7 @@ func TestDecodeLimitDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Decode with limit disabled: unexpected error: %v", err)
 	}
-	if len(got) != overSize {
-		t.Errorf("disabled limit roundtrip size mismatch: got %d, want %d", len(got), overSize)
+	if !bytes.Equal(got, data) {
+		t.Errorf("disabled limit roundtrip mismatch: got %d bytes, want %d", len(got), len(data))
 	}
 }

@@ -35,7 +35,7 @@ import (
 // MaxDecodedPayloadSize is the maximum allowed size in bytes for a
 // decompressed payload read by Decode. This guards against decompression
 // bombs.
-const MaxDecodedPayloadSize = 10 * 1024 * 1024 // 10 MiB
+var MaxDecodedPayloadSize = 10 * 1024 * 1024 // 10 MiB
 
 // limitDecodedPayload controls whether Decode enforces MaxDecodedPayloadSize.
 // When true, payloads exceeding the limit are rejected.
@@ -73,7 +73,7 @@ func Decode(img image.Image) ([]byte, error) {
 	}
 	var data []byte
 	if limitDecodedPayload {
-		data, err = io.ReadAll(io.LimitReader(gz, MaxDecodedPayloadSize+1))
+		data, err = io.ReadAll(io.LimitReader(gz, int64(MaxDecodedPayloadSize)+1))
 		if err != nil {
 			return nil, errors.Join(errors.New("codematrix: gzip read"), err)
 		}
