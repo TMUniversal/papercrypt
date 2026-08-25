@@ -77,12 +77,12 @@ tasks:
       - >-
         bash -c 'echo "{\"message\":\"Hello, world!\"}" > test-in.json
         && cat test-in.json
-        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf -f --passphrase "test"
+        | go run . generate --purpose "Test" --comment "Test" --raw -o test.pdf -f
         && pdftoppm -png -r 300 test.pdf t'
       - >-
         bash -c 'cat t-1.png
         | go run . scan
-        | go run . decode -f -o test.json --passphrase "test"
+        | go run . decode -f -o test.json
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
 
