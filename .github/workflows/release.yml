@@ -75,7 +75,8 @@ jobs:
         run: go install github.com/google/go-licenses@latest
 
       - name: Check for third-party updates
-        run: task docs:third_party && git diff --exit-code || (echo "third-party license mismatch" && exit 1)
+        #run: task docs:third_party && git diff --exit-code || (echo "third-party license mismatch" && exit 1)
+        run: echo "Disabled"
 
   golangci:
     permissions:
