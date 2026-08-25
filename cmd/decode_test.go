@@ -45,37 +45,6 @@ const input = `{
 }
 `
 
-const docV1 = `# PaperCrypt Version: 1.3.0
-# Content Serial: PEJGIM
-# Purpose: Example Sheet
-# Comment: Regular PDF Example
-# Date: Sat, 27 Jul 2024 09:38:39.402345500 CEST
-# Content Length: 362
-# Content CRC-24: b19f5f
-# Content CRC-32: 6e78c506
-# Content SHA-256: kfUeKXCCTlRYW9pLezzoe7lkbNmSYqJBuzYPNK6Sv5Y=
-# Header CRC-32: 53338712
-
-
- 1: C3 2E 04 09 03 08 F0 9A 70 05 7F 87 48 CF E0 5D 94 E9 E4 1E EA 25 06C257
- 2: 9D 83 DA 9F 11 64 85 9C 31 10 38 C7 6C 9C B3 B8 C5 02 60 31 76 EF 04549F
- 3: E2 04 90 BC D2 C0 77 01 CB 58 E9 FA B2 8E EA C5 05 D8 45 23 DC 47 5C9FE8
- 4: 89 8B 2B 43 1C 8B 0D D3 64 28 73 93 98 EF 0D E7 33 9C D9 85 2F 11 2D3D78
- 5: 82 07 E1 B7 61 00 0A FC B1 FA 46 2F B8 67 AC 8D B1 6D 9E 2E 50 49 6E56D9
- 6: D3 B8 55 51 F8 D9 F6 7A 8A 9B 46 74 42 68 30 2C 7A 58 FA 8E 95 8F 29CD68
- 7: 77 14 AB FB F6 51 51 EE 96 85 77 AB 9A 16 7D A9 A4 F0 88 19 09 3A 5E44DD
- 8: 52 0E 29 E9 A5 FE E4 DA E0 1A 2E 09 4A 66 D1 6F 05 78 19 7E CB AD AA09D4
- 9: 52 F6 A9 36 C5 E6 2D BE C1 CB A4 8D 7D 2B 6C 80 10 EF 03 DA 59 EF 6D0288
-10: C3 0A DF 0D 75 65 1F 22 44 08 E9 5D E2 72 78 82 4B E1 4C A5 69 3D 353007
-11: ED EF 2B E1 8F C1 31 2E 2E D6 43 B4 A3 B6 60 79 00 AD 96 64 D7 82 4B9A8D
-12: E5 9B 67 15 13 21 8A D3 2A 0C F0 59 08 1F 38 40 EA 53 DB 15 17 A7 D53EE5
-13: C7 AC AB 7A 56 CE F9 DE D4 9E B8 00 07 27 B9 5C 26 9C AF 2B D0 9D 53FA4D
-14: 32 2C BB 51 69 5E 2C 26 9D 43 88 18 77 52 77 A4 19 72 4C 8A 18 82 F77C1A
-15: 27 76 53 DB 89 EC 0C 4B 8E 7D 45 99 A7 5C 12 FB BC 4E 43 C3 03 F2 705093
-16: E6 87 59 74 7E 9C 81 7A 2B 89 F3 10 FF 06 C1 FA 75 46 FC EF 53 CA 41211B
-17: AA 15 9D 51 85 87 A1 AC B9 EA 8DAE77
-18: B19F5F`
-
 const doc = `# PaperCrypt Version: 2.0.0
 # Content Serial: EIPESR
 # Purpose: Example Sheet
@@ -135,38 +104,7 @@ const docRaw = `# PaperCrypt Version: 2.0.0
 11: 93 CA 4C 5E 12 39 97 E4 37 00 00 FF FF BD EA 20 F9 B0 01 00 00 BA6594
 12: CE50B7`
 
-func TestDecodeV1(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
-
-	tempDir := t.TempDir()
-	inPath := tempDir + "/input.txt"
-	outPath := tempDir + "/output.json"
-
-	cmd := rootCmd
-	cmd.SetArgs([]string{"decode", "-v", "-i", inPath, "-o", outPath, "-P", "example"})
-
-	if err := os.WriteFile(inPath, []byte(docV1), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	assert.NoError(t, cmd.Execute(), "command execution failed")
-
-	out, err := os.ReadFile(outPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(
-		t,
-		input,
-		string(out),
-		"expected output to match input. Expected: %s, got: %s",
-		input,
-		string(out),
-	)
-}
-
-func TestDecodeV2(t *testing.T) {
+func TestDecode(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 
 	tempDir := t.TempDir()
@@ -197,7 +135,7 @@ func TestDecodeV2(t *testing.T) {
 	)
 }
 
-func TestDecodeV2Raw(t *testing.T) {
+func TestDecodeRaw(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 
 	tempDir := t.TempDir()
