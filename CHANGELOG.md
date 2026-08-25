@@ -1,3 +1,17 @@
+# [3.1.0](https://github.com/TMUniversal/papercrypt/compare/v3.0.0...v3.1.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* update gettext for new parameters ([5940b15](https://github.com/TMUniversal/papercrypt/commit/5940b159d1d6e68491e498054776f65b9e2f8f00))
+
+
+### Features
+
+* remove content crc-32 in favour of existing sha256 ([64ecfa1](https://github.com/TMUniversal/papercrypt/commit/64ecfa1a85a5760a248ad0985f64c4b9bf7cd707))
+* remove crc24 from header ([bd9ea38](https://github.com/TMUniversal/papercrypt/commit/bd9ea384bcad91ba5b1a405a141d2f07011c4a3d))
+* skip passphrase input in raw mode ([bed42af](https://github.com/TMUniversal/papercrypt/commit/bed42afa5d3d0f695185061f455024b460a11949))
+
 # [2.1.0](https://github.com/TMUniversal/papercrypt/compare/v2.0.3...v2.1.0) (2026-08-25)
 
 
