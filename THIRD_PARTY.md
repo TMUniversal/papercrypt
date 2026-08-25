@@ -3,11 +3,42 @@
 This file lists the third party licenses used by PaperCrypt.
 It is generated using `go-licenses` (`task docs:third_party`) and is not meant to be edited manually.
 
+## charm.land/lipgloss/v2
+
+* Name: charm.land/lipgloss/v2
+* Version: v2.0.6
+* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v2.0.6/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2021-2026 Charmbracelet, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ## github.com/ProtonMail/go-crypto
 
 * Name: github.com/ProtonMail/go-crypto
-* Version: v1.3.0
-* License: [BSD-3-Clause](https://github.com/ProtonMail/go-crypto/blob/v1.3.0/LICENSE)
+* Version: v1.4.1
+* License: [BSD-3-Clause](https://github.com/ProtonMail/go-crypto/blob/v1.4.1/LICENSE)
 
 ```md
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -74,8 +105,8 @@ IN THE SOFTWARE.
 ## github.com/ProtonMail/gopenpgp/v2
 
 * Name: github.com/ProtonMail/gopenpgp/v2
-* Version: v2.9.0
-* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v2.9.0/LICENSE)
+* Version: v2.10.0
+* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v2.10.0/LICENSE)
 
 ```md
 (The MIT License)
@@ -105,8 +136,8 @@ IN THE SOFTWARE.
 ## github.com/ProtonMail/gopenpgp/v3
 
 * Name: github.com/ProtonMail/gopenpgp/v3
-* Version: v3.3.0
-* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v3.3.0/LICENSE)
+* Version: v3.4.1
+* License: [MIT](https://github.com/ProtonMail/gopenpgp/blob/v3.4.1/LICENSE)
 
 ```md
 (The MIT License)
@@ -229,8 +260,8 @@ SOFTWARE.
 ## github.com/caarlos0/log
 
 * Name: github.com/caarlos0/log
-* Version: v0.5.1
-* License: [MIT](https://github.com/caarlos0/log/blob/v0.5.1/LICENSE)
+* Version: v0.6.2
+* License: [MIT](https://github.com/caarlos0/log/blob/v0.6.2/LICENSE)
 
 ```md
 MIT License
@@ -282,11 +313,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-## github.com/ccoveille/go-safecast
+## github.com/ccoveille/go-safecast/v2
 
-* Name: github.com/ccoveille/go-safecast
-* Version: v1.6.1
-* License: [MIT](https://github.com/ccoveille/go-safecast/blob/v1.6.1/LICENSE)
+* Name: github.com/ccoveille/go-safecast/v2
+* Version: v2.0.1
+* License: [MIT](https://github.com/ccoveille/go-safecast/blob/v2.0.1/LICENSE)
 
 ```md
 MIT License
@@ -316,8 +347,8 @@ SOFTWARE.
 ## github.com/charmbracelet/colorprofile
 
 * Name: github.com/charmbracelet/colorprofile
-* Version: v0.3.2
-* License: [MIT](https://github.com/charmbracelet/colorprofile/blob/v0.3.2/LICENSE)
+* Version: v0.4.3
+* License: [MIT](https://github.com/charmbracelet/colorprofile/blob/v0.4.3/LICENSE)
 
 ```md
 MIT License
@@ -375,16 +406,16 @@ SOFTWARE.
 
 ```
 
-## github.com/charmbracelet/lipgloss/v2
+## github.com/charmbracelet/ultraviolet
 
-* Name: github.com/charmbracelet/lipgloss/v2
-* Version: v2.0.0-beta1
-* License: [MIT](https://github.com/charmbracelet/lipgloss/blob/v2.0.0-beta1/LICENSE)
+* Name: github.com/charmbracelet/ultraviolet
+* Version: v0.0.0-20260812204455-68fa937c71be
+* License: [MIT](https://github.com/charmbracelet/ultraviolet/blob/68fa937c71be/LICENSE)
 
 ```md
 MIT License
 
-Copyright (c) 2021-2023 Charmbracelet, Inc
+Copyright (c) 2025 Charmbracelet, Inc
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -409,8 +440,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/ansi
 
 * Name: github.com/charmbracelet/x/ansi
-* Version: v0.10.1
-* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.10.1/ansi/LICENSE)
+* Version: v0.11.8
+* License: [MIT](https://github.com/charmbracelet/x/blob/ansi/v0.11.8/ansi/LICENSE)
 
 ```md
 MIT License
@@ -440,8 +471,8 @@ SOFTWARE.
 ## github.com/charmbracelet/x/cellbuf
 
 * Name: github.com/charmbracelet/x/cellbuf
-* Version: v0.0.13
-* License: [MIT](https://github.com/charmbracelet/x/blob/cellbuf/v0.0.13/cellbuf/LICENSE)
+* Version: v0.0.15
+* License: [MIT](https://github.com/charmbracelet/x/blob/cellbuf/v0.0.15/cellbuf/LICENSE)
 
 ```md
 MIT License
@@ -471,8 +502,70 @@ SOFTWARE.
 ## github.com/charmbracelet/x/term
 
 * Name: github.com/charmbracelet/x/term
-* Version: v0.2.1
-* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.2.1/term/LICENSE)
+* Version: v0.2.2
+* License: [MIT](https://github.com/charmbracelet/x/blob/term/v0.2.2/term/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2023 Charmbracelet, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
+## github.com/charmbracelet/x/termios
+
+* Name: github.com/charmbracelet/x/termios
+* Version: v0.1.1
+* License: [MIT](https://github.com/charmbracelet/x/blob/termios/v0.1.1/termios/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2023 Charmbracelet, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
+## github.com/charmbracelet/x/windows
+
+* Name: github.com/charmbracelet/x/windows
+* Version: v0.2.2
+* License: [MIT](https://github.com/charmbracelet/x/blob/windows/v0.2.2/windows/LICENSE)
 
 ```md
 MIT License
@@ -531,11 +624,73 @@ SOFTWARE.
 
 ```
 
+## github.com/clipperhouse/displaywidth
+
+* Name: github.com/clipperhouse/displaywidth
+* Version: v0.11.0
+* License: [MIT](https://github.com/clipperhouse/displaywidth/blob/v0.11.0/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2025 Matt Sherman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
+## github.com/clipperhouse/uax29/v2/graphemes
+
+* Name: github.com/clipperhouse/uax29/v2/graphemes
+* Version: v2.7.0
+* License: [MIT](https://github.com/clipperhouse/uax29/blob/v2.7.0/LICENSE)
+
+```md
+MIT License
+
+Copyright (c) 2020 Matt Sherman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+```
+
 ## github.com/cloudflare/circl
 
 * Name: github.com/cloudflare/circl
-* Version: v1.6.1
-* License: [BSD-3-Clause](https://github.com/cloudflare/circl/blob/v1.6.1/LICENSE)
+* Version: v1.6.5
+* License: [BSD-3-Clause](https://github.com/cloudflare/circl/blob/v1.6.5/LICENSE)
 
 ```md
 Copyright (c) 2019 Cloudflare. All rights reserved.
@@ -632,8 +787,8 @@ SOFTWARE.
 ## github.com/lucasb-eyer/go-colorful
 
 * Name: github.com/lucasb-eyer/go-colorful
-* Version: v1.3.0
-* License: [MIT](https://github.com/lucasb-eyer/go-colorful/blob/v1.3.0/LICENSE)
+* Version: v1.4.1
+* License: [MIT](https://github.com/lucasb-eyer/go-colorful/blob/v1.4.1/LICENSE)
 
 ```md
 Copyright (c) 2013 Lucas Beyer
@@ -928,8 +1083,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/mattn/go-isatty
 
 * Name: github.com/mattn/go-isatty
-* Version: v0.0.20
-* License: [MIT](https://github.com/mattn/go-isatty/blob/v0.0.20/LICENSE)
+* Version: v0.0.24
+* License: [MIT](https://github.com/mattn/go-isatty/blob/v0.0.24/LICENSE)
 
 ```md
 Copyright (c) Yasuhiro MATSUMOTO <mattn.jp@gmail.com>
@@ -947,8 +1102,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## github.com/mattn/go-runewidth
 
 * Name: github.com/mattn/go-runewidth
-* Version: v0.0.17
-* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.17/LICENSE)
+* Version: v0.0.28
+* License: [MIT](https://github.com/mattn/go-runewidth/blob/v0.0.28/LICENSE)
 
 ```md
 The MIT License (MIT)
@@ -1228,8 +1383,8 @@ SOFTWARE.
 ## github.com/spf13/cobra
 
 * Name: github.com/spf13/cobra
-* Version: v1.10.1
-* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.10.1/LICENSE.txt)
+* Version: v1.10.2
+* License: [Apache-2.0](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt)
 
 ```md
                                 Apache License
@@ -1450,8 +1605,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## github.com/xo/terminfo
 
 * Name: github.com/xo/terminfo
-* Version: v0.0.0-20220910002029-abceb7e1c41e
-* License: [MIT](https://github.com/xo/terminfo/blob/abceb7e1c41e/LICENSE)
+* Version: v1.0.0
+* License: [MIT](https://github.com/xo/terminfo/blob/v1.0.0/LICENSE)
 
 ```md
 The MIT License (MIT)
@@ -1481,8 +1636,45 @@ SOFTWARE.
 ## golang.org/x/crypto
 
 * Name: golang.org/x/crypto
-* Version: v0.42.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.42.0:LICENSE)
+* Version: v0.55.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/crypto/+/v0.55.0:LICENSE)
+
+```md
+Copyright 2009 The Go Authors.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+```
+
+## golang.org/x/sync/errgroup
+
+* Name: golang.org/x/sync/errgroup
+* Version: v0.22.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sync/+/v0.22.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
@@ -1518,8 +1710,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/sys
 
 * Name: golang.org/x/sys
-* Version: v0.36.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.36.0:LICENSE)
+* Version: v0.47.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/sys/+/v0.47.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
@@ -1555,8 +1747,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/term
 
 * Name: golang.org/x/term
-* Version: v0.35.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.35.0:LICENSE)
+* Version: v0.45.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/term/+/v0.45.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
@@ -1592,8 +1784,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## golang.org/x/text
 
 * Name: golang.org/x/text
-* Version: v0.29.0
-* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.29.0:LICENSE)
+* Version: v0.41.0
+* License: [BSD-3-Clause](https://cs.opensource.google/go/x/text/+/v0.41.0:LICENSE)
 
 ```md
 Copyright 2009 The Go Authors.
