@@ -25,14 +25,13 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
 // PrintWrittenSizeToDebug logs the amount of data written in human-readable notation.
 // A warning is issues when the size is 0.
 func PrintWrittenSizeToDebug(size int, file *os.File) {
 	if size == 0 {
-		log.Warn(internal.Warning(fmt.Sprintf("No data written to %s", file.Name())))
+		log.Warn(Warning(fmt.Sprintf("No data written to %s", file.Name())))
 	} else {
 		log.WithField("size", size).
 			WithField("path", file.Name()).

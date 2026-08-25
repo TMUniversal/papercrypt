@@ -45,7 +45,7 @@ var (
 
 const wordListURL = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt"
 
-var wordListURLFormatted = internal.URL(wordListURL)
+var wordListURLFormatted = terminal.URL(wordListURL)
 
 var generateKeyCmd = &cobra.Command{
 	Aliases:      []string{"key", "gen", "k"},
@@ -79,7 +79,7 @@ which can be found here: %s.`,
 
 		wordString := strings.Join(keyPhrase, " ")
 		if outFile == os.Stdout {
-			wordString = internal.Bold(wordString)
+			wordString = terminal.Bold(wordString)
 		}
 
 		n, err := outFile.WriteString(wordString)

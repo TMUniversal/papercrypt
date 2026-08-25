@@ -80,7 +80,7 @@ encrypted data.`,
 		// 2. generate serial number if not provided
 		if serialNumber == "" {
 			var err error
-			serialNumber, err = internal.GenerateSerial(6)
+			serialNumber, err = file_format2.GenerateSerial(6)
 			if err != nil {
 				return errors.Join(errors.New("error generating serial number"), err)
 			}

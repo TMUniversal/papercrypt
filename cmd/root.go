@@ -25,8 +25,8 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (
@@ -64,7 +64,7 @@ and then prepare a printable document that is optimized for being able to restor
 		cmd.Println("This is free software, and you are welcome to redistribute it")
 		cmd.Println("under certain conditions; type `papercrypt show c' for details.")
 		cmd.Print("PaperCrypt's source code can be found at ")
-		cmd.Print(internal.URL(repo))
+		cmd.Print(terminal.URL(repo))
 		cmd.Println(".")
 		cmd.Println()
 		return cmd.Help()

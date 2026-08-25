@@ -44,6 +44,7 @@ import (
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 const (
@@ -695,7 +696,7 @@ func DeserializeText(
 			return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldVersion))
 		}
 
-		log.Warn(internal.Warning("PaperCrypt Version not present in header."))
+		log.Warn(terminal.Warning("PaperCrypt Version not present in header."))
 	}
 
 	majorVersion := PaperCryptContainerVersionFromString(versionLine)
@@ -718,7 +719,7 @@ func DeserializeText(
 				)
 			}
 
-			log.Warn(internal.Warning("Header CRC-32 not present in header"))
+			log.Warn(terminal.Warning("Header CRC-32 not present in header"))
 		}
 
 		headerCrc = strings.ToLower(headerCrc)
@@ -750,7 +751,7 @@ func DeserializeText(
 				)
 			}
 
-			log.Warn(internal.Warning("Header CRC-32 mismatch!"))
+			log.Warn(terminal.Warning("Header CRC-32 mismatch!"))
 		}
 	}
 
@@ -826,13 +827,13 @@ func DeserializeText(
 			)
 		}
 
-		log.Warn(internal.Warning("Content SHA-256 mismatch!"))
+		log.Warn(terminal.Warning("Content SHA-256 mismatch!"))
 	}
 
 	// 6. Construct PaperCrypt object
 	headerDate, ok := headers[HeaderFieldDate]
 	if !ok {
-		log.Warn(internal.Warning("Date not present in header!"))
+		log.Warn(terminal.Warning("Date not present in header!"))
 	}
 
 	timestamp, err := time.Parse(internal.TimeStampFormatLong, headerDate)
