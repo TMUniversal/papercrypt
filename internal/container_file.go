@@ -736,7 +736,7 @@ func DeserializeText(
 
 	majorVersion := PaperCryptContainerVersionFromString(versionLine)
 	if !ignoreVersionMismatch &&
-		(majorVersion != PaperCryptContainerVersionMajor2 && majorVersion != PaperCryptContainerVersionDevel) {
+		(majorVersion != PaperCryptContainerVersionMajor3 && majorVersion != PaperCryptContainerVersionDevel) {
 		return nil, errors.Join(
 			errorParsingHeader,
 			fmt.Errorf("unsupported PaperCrypt version '%s'", versionLine),
