@@ -21,8 +21,6 @@
 package cmd
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,10 +29,9 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/aztec"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
 var (
@@ -50,74 +47,69 @@ type versionContainer struct {
 // scanCmd represents the data command.
 var scanCmd = &cobra.Command{
 	Aliases:      []string{"q", "qr", "scan"},
-	Args:         cobra.MaximumNArgs(1),
+	Args:         cobra.MinimumNArgs(1),
 	SilenceUsage: true,
-	Use:          "scan <input>",
-	Short:        "Decode a document from a 2D code (aztec or qr).",
-	Long: `Decode a document from a 2D code (aztec or qr).
+	Use:          "scan <input> [input...]",
+	Short:        "Decode a document from Data Matrix code(s).",
+	Long: `Decode a document from one or more Data Matrix codes.
 
-This command allows you to decode data saved by PaperCrypt.
-The Aztec/QR code in a PaperCrypt document contains a JSON serialized object
-that contains the encrypted data and the PaperCrypt metadata.
+This command reads one or more images containing Data Matrix codes and
+reassembles the encoded PaperCrypt data. When multiple images are supplied,
+they are treated as a single split payload (up to 4 codes).
 
-If you have trouble scanning the QR code with this command,
-you may also try a QR code scanner app on your phone or tablet,
-such as "Scandit" (https://apps.apple.com/de/app/scandit-barcode-scanner/id453880584
-or https://play.google.com/store/apps/details?id=com.scandit.demoapp).
-The resulting JSON data can be read by this command, by supplying the --json flag.
-`,
-	Example: `papercrypt scan ./code.png | papercrypt decode -o ./out.json -P passphrase`,
+If you have --from-json, a single JSON-encoded input is accepted instead.`,
+	Example: `papercrypt scan ./code1.png ./code2.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
-		// 1. get data from either argument or inFileName
-		if len(args) != 0 {
-			inFileName = args[0]
-		}
-
-		inFile, err := internal.PrintInputAndGetReader(inFileName)
-		if err != nil {
-			return err
-		}
-
 		var data []byte
+		var err error
 
 		if qrCmdFromJSON {
+			inFile, err := internal.PrintInputAndGetReader(inFileName)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if err := internal.CloseFileIfNotStd(inFile); err != nil {
+					log.WithError(err).Error("Error closing file")
+				}
+			}()
+
 			data, err = io.ReadAll(inFile)
 			if err != nil && err != io.EOF {
 				return errors.Join(errors.New("error reading input file"), err)
 			}
 		} else {
-			img, _, err := image.Decode(inFile)
-			if err != nil {
-				return errors.Join(errors.New("error decoding image"), err)
+			// Collect image files from args
+			filePaths := args
+			if len(filePaths) == 0 && inFileName != "" {
+				filePaths = []string{inFileName}
 			}
 
-			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-			if err != nil {
-				return errors.Join(errors.New("error creating binary bitmap"), err)
+			if len(filePaths) == 0 {
+				return errors.New("no input files provided")
+			}
+			if len(filePaths) > codematrix.MaxSymbols {
+				return fmt.Errorf("too many input files: %d (max %d)", len(filePaths), codematrix.MaxSymbols)
 			}
 
-			// decode aztec code
-			aztecReader := aztec.NewAztecReader()
-			result, err := aztecReader.Decode(bmp, nil)
-			if err != nil {
-				return errors.Join(errors.New("error decoding Aztec code"), err)
+			images := make([]image.Image, len(filePaths))
+			for i, fp := range filePaths {
+				f, err := os.Open(fp)
+				if err != nil {
+					return errors.Join(fmt.Errorf("error opening file %s", fp), err)
+				}
+				img, _, err := image.Decode(f)
+				f.Close()
+				if err != nil {
+					return errors.Join(fmt.Errorf("error decoding image %s", fp), err)
+				}
+				images[i] = img
 			}
 
-			data = []byte(result.GetText())
-		}
-
-		if err := internal.CloseFileIfNotStd(inFile); err != nil {
-			return errors.Join(errors.New("error closing input file"), err)
-		}
-
-		// Decompress gzip
-		gz, err := gzip.NewReader(bytes.NewReader(data))
-		if err != nil {
-			return errors.Join(errors.New("error creating gzip reader"), err)
-		}
-		data, err = io.ReadAll(gz)
-		if err != nil {
-			return errors.Join(errors.New("error reading gzip data"), err)
+			data, err = codematrix.Decode(images)
+			if err != nil {
+				return errors.Join(errors.New("error decoding Data Matrix codes"), err)
+			}
 		}
 
 		// 2. Open output file
@@ -161,7 +153,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			err = json.Unmarshal(data, &pc)
 			if err != nil {
 				return errors.Join(
-					errors.New("error deserializing json data as PaperCrypt v2"),
+					errors.New("error deserializing json data as PaperCrypt"),
 					err,
 				)
 			}
