@@ -32,6 +32,11 @@ import (
 	"github.com/makiuchi-d/gozxing/aztec"
 )
 
+// MaxDecodedPayloadSize is the maximum allowed size in bytes for a
+// decompressed payload read by Decode. This guards against decompression
+// bombs.
+const MaxDecodedPayloadSize = 10 * 1024 * 1024 // 10 MiB
+
 // Decode reads a single Aztec code image, base64-decodes the gzip payload,
 // and returns the original data.
 func Decode(img image.Image) ([]byte, error) {
@@ -55,9 +60,12 @@ func Decode(img image.Image) ([]byte, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: gzip reader"), err)
 	}
-	data, err := io.ReadAll(gz)
+	data, err := io.ReadAll(io.LimitReader(gz, MaxDecodedPayloadSize+1))
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: gzip read"), err)
+	}
+	if len(data) > MaxDecodedPayloadSize {
+		return nil, errors.New("codematrix: decoded payload exceeds maximum size")
 	}
 
 	return data, nil
