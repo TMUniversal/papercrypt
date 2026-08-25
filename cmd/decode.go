@@ -87,9 +87,15 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.New("unknown version")
 		}
 
-		// 8. Read passphrase from stdin
+		dataFormat := internal.PaperCryptDataFormatFromString(
+			headers[internal.HeaderFieldDataFormat],
+		)
+
+		// 8. Read passphrase from stdin (skip for raw mode)
 		var passphraseBytes []byte
-		if !cmd.Flags().Lookup("passphrase").Changed {
+		if dataFormat == internal.PaperCryptDataFormatRaw {
+			passphraseBytes = nil
+		} else if !cmd.Flags().Lookup("passphrase").Changed {
 			cmd.Println(
 				"Enter your decryption passphrase (the passphrase you used to encrypt the data)",
 			)

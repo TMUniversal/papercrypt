@@ -109,33 +109,33 @@ encrypted data.`,
 			return err
 		}
 
-		// 5. Read passphrase from stdin
-		var passphraseBytes []byte
-		if !cmd.Flags().Lookup("passphrase").Changed {
-			log.Info("Enter your encryption passphrase")
-			passphraseBytes, err = internal.SensitivePrompt()
-			if err != nil {
-				return errors.Join(errors.New("error reading passphrase"), err)
-			}
-
-			log.Info("Enter your passphrase again to confirm")
-			passphraseAgain, err := internal.SensitivePrompt()
-			if err != nil {
-				return errors.Join(errors.New("error reading passphrase"), err)
-			}
-			if string(passphraseBytes) != string(passphraseAgain) {
-				return errors.New("passphrases do not match")
-			}
-		} else {
-			passphraseBytes = []byte(passphrase)
-		}
-
 		var data []byte
 
 		if rawData {
 			// Raw mode: do not compress, place data directly
 			data = secretContentsFile
 		} else {
+			// 5. Read passphrase from stdin
+			var passphraseBytes []byte
+			if !cmd.Flags().Lookup("passphrase").Changed {
+				log.Info("Enter your encryption passphrase")
+				passphraseBytes, err = internal.SensitivePrompt()
+				if err != nil {
+					return errors.Join(errors.New("error reading passphrase"), err)
+				}
+
+				log.Info("Enter your passphrase again to confirm")
+				passphraseAgain, err := internal.SensitivePrompt()
+				if err != nil {
+					return errors.Join(errors.New("error reading passphrase"), err)
+				}
+				if string(passphraseBytes) != string(passphraseAgain) {
+					return errors.New("passphrases do not match")
+				}
+			} else {
+				passphraseBytes = []byte(passphrase)
+			}
+
 			// 6. Encrypt with passphrase
 			encryptedSecretContents, err := encrypt(passphraseBytes, secretContentsFile)
 			if err != nil {
