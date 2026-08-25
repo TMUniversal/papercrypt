@@ -33,7 +33,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/aztec"
-	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 )
@@ -97,18 +96,11 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error creating binary bitmap"), err)
 			}
 
-			// attempt to decode as aztec first
+			// decode aztec code
 			aztecReader := aztec.NewAztecReader()
 			result, err := aztecReader.Decode(bmp, nil)
 			if err != nil {
-				log.Debugf("error decoding aztec: %s", err)
-				// if that fails, try qrcode
-				qrReader := qrcode.NewQRCodeReader()
-				result, err = qrReader.Decode(bmp, nil)
-				if err != nil {
-					return errors.Join(errors.New("error decoding QR code"), err)
-				}
-				log.Debug("decoded as QR code")
+				return errors.Join(errors.New("error decoding Aztec code"), err)
 			}
 
 			data = []byte(result.GetText())
