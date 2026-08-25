@@ -210,46 +210,21 @@ blobs:
     bucket: "{{.Env.S3_BUCKET}}"
     directory: "papercrypt/{{.Version}}"
 
-dockers:
-  - image_templates:
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-amd64
-    goarch: amd64
-    use: buildx
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/amd64"
-  - image_templates:
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-arm64
-    goarch: arm64
-    use: buildx
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/arm64"
-
-docker_manifests:
-  - id: papercrypt-latest
-    name_template: ghcr.io/tmuniversal/papercrypt:latest
-    image_templates:
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-amd64
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-arm64
-    skip_push: auto
-  - id: papercrypt-Tag
-    name_template: ghcr.io/tmuniversal/papercrypt:{{ .Tag }}
-    image_templates:
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-amd64
-      - ghcr.io/tmuniversal/papercrypt:{{ .Tag }}-arm64
+dockers_v2:
+  - images:
+      - ghcr.io/tmuniversal/papercrypt
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.name: "{{.ProjectName}}"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
 
 sboms:
   - artifacts: archive
