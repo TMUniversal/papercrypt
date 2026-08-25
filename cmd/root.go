@@ -53,7 +53,7 @@ and then prepare a printable document that is optimized for being able to restor
 		log.Debug("verbosity set to " + level.String())
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		cmd.Println("PaperCrypt  Copyright (C) 2023-2024  TMUniversal <me@tmuniversal.eu>")
+		cmd.Println("PaperCrypt  Copyright (C) 2023-2026  TMUniversal <me@tmuniversal.eu>")
 		cmd.Println(
 			"This program comes with ABSOLUTELY NO WARRANTY; for details type `papercrypt show w'.",
 		)
