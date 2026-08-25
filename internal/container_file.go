@@ -92,8 +92,6 @@ const (
 	HeaderFieldDataFormat = "Data Format"
 	// HeaderFieldContentLength holds the name of the header field Content Length. Constant to avoid parsing issues.
 	HeaderFieldContentLength = "Content Length"
-	// HeaderFieldCRC24 holds the name of the header field for the CRC-24 checksum. Constant to avoid parsing issues.
-	HeaderFieldCRC24 = "Content CRC-24"
 	// HeaderFieldCRC32 holds the name of the header field for the CRC-32 checksum. Constant to avoid parsing issues.
 	HeaderFieldCRC32 = "Content CRC-32"
 	// HeaderFieldSHA256 holds the name of the header field for the SHA-256 checksum. Constant to avoid parsing issues.
@@ -149,9 +147,6 @@ type PaperCrypt struct {
 	// CreatedAt is the creation timestamp
 	CreatedAt time.Time `json:"ct"`
 
-	// DataCRC24 is the CRC-24 checksum of the encrypted data
-	DataCRC24 uint32 `json:"-"`
-
 	// DataCRC32 is the CRC-32 checksum of the encrypted data
 	DataCRC32 uint32 `json:"-"`
 
@@ -175,7 +170,6 @@ type JSONPaperCrypt struct {
 	Purpose      string `json:"p,omitempty"`
 	Comment      string `json:"cm,omitempty"`
 	CreatedAt    string `json:"t"`
-	DataCRC24    string `json:"c24"`
 	DataCRC32    string `json:"c32"`
 	DataSHA256   string `json:"s256"`
 	Data         []byte `json:"d"`
@@ -190,7 +184,6 @@ func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
 		Purpose:      p.Purpose,
 		Comment:      p.Comment,
 		CreatedAt:    p.CreatedAt.Format(TimeStampFormatJSON),
-		DataCRC24:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC24)),
 		DataCRC32:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC32)),
 		DataSHA256:   base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
 		Data:         p.Data,
@@ -210,15 +203,6 @@ func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.CreatedAt = createdAt
-
-	dataCRC24Bytes, err := base64.StdEncoding.DecodeString(jpc.DataCRC24)
-	if err != nil {
-		return err
-	}
-	if len(dataCRC24Bytes) != 4 {
-		return errors.New("invalid DataCRC24 length")
-	}
-	p.DataCRC24 = binary.BigEndian.Uint32(dataCRC24Bytes)
 
 	dataCRC32Bytes, err := base64.StdEncoding.DecodeString(jpc.DataCRC32)
 	if err != nil {
@@ -258,7 +242,6 @@ func NewPaperCrypt(
 	createdAt time.Time,
 	format PaperCryptDataFormat,
 ) *PaperCrypt {
-	dataCRC24 := Crc24Checksum(data)
 	dataCRC32 := crc32.ChecksumIEEE(data)
 	dataSHA256 := sha256.Sum256(data)
 
@@ -269,7 +252,6 @@ func NewPaperCrypt(
 		Purpose:      purpose,
 		Comment:      comment,
 		CreatedAt:    createdAt,
-		DataCRC24:    dataCRC24,
 		DataCRC32:    dataCRC32,
 		DataSHA256:   dataSHA256,
 		DataFormat:   format,
@@ -577,8 +559,6 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		p.DataFormat,
 		HeaderFieldContentLength,
 		p.GetDataLength(),
-		HeaderFieldCRC24,
-		p.DataCRC24,
 		HeaderFieldCRC32,
 		p.DataCRC32,
 		HeaderFieldSHA256,
@@ -870,29 +850,7 @@ func DeserializeText(
 		log.Warn(Warning("Content CRC-32 mismatch!"))
 	}
 
-	// 5.3 Verify CRC-24
-	bodyCrc24, ok := headers[HeaderFieldCRC24]
-	if !ok {
-		return nil, errors.Join(errorParsingBody, newFieldNotPresentError(HeaderFieldCRC24))
-	}
-
-	bodyCrc24Uint32, err := ParseHexUint32(bodyCrc24)
-	if err != nil {
-		return nil, errors.Join(errorParsingBody, err)
-	}
-
-	if !ValidateCRC24(body, bodyCrc24Uint32) {
-		if !ignoreChecksumMismatch {
-			return nil, errors.Join(
-				errorValidationFailure,
-				fmt.Errorf("`%s` mismatch", HeaderFieldCRC24),
-			)
-		}
-
-		log.Warn(Warning("Content CRC-24 mismatch!"))
-	}
-
-	// 5.4 Verify SHA-256
+	// 5.3 Verify SHA-256
 	bodySha256, ok := headers[HeaderFieldSHA256]
 	if !ok {
 		return nil, errors.Join(errorParsingBody, newFieldNotPresentError(HeaderFieldSHA256))
