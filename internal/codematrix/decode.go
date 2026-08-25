@@ -13,7 +13,8 @@ import (
 )
 
 // Decode reads a single Aztec code image, base64-decodes the gzip payload,
-// and returns the original data.
+// Decode decodes an Aztec code in img and decompresses its payload.
+// It returns the decoded original data and any processing error encountered.
 func Decode(img image.Image) ([]byte, error) {
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {
