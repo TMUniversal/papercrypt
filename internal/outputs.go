@@ -33,7 +33,9 @@ func PrintWrittenSizeToDebug(size int, file *os.File) {
 	if size == 0 {
 		log.Warn(Warning(fmt.Sprintf("No data written to %s", file.Name())))
 	} else {
-		log.WithField("size", size).WithField("path", file.Name()).Debug(fmt.Sprintf("%s written to %s.", SprintBinarySize(size), file.Name()))
+		log.WithField("size", size).
+			WithField("path", file.Name()).
+			Debug(fmt.Sprintf("%s written to %s.", SprintBinarySize(size), file.Name()))
 	}
 }
 

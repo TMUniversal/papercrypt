@@ -177,7 +177,12 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		if ValidateCRC24(lineData.Data, lineData.CRC24) {
 			result = append(result, lineData)
 		} else {
-			return nil, fmt.Errorf("invalid line checksum: line %d has checksum %06X, expected %06X", lineData.LineNumber, Crc24Checksum(lineData.Data), lineData.CRC24)
+			return nil, fmt.Errorf(
+				"invalid line checksum: line %d has checksum %06X, expected %06X",
+				lineData.LineNumber,
+				Crc24Checksum(lineData.Data),
+				lineData.CRC24,
+			)
 		}
 	}
 
