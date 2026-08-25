@@ -104,22 +104,8 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		var decoded []byte
 		switch paperCryptMajorVersion {
-		case internal.PaperCryptContainerVersionMajor1:
-			pc, err := internal.DeserializeV1Text(
-				paperCryptFileContents,
-				ignoreVersionMismatch,
-				ignoreChecksumMismatch,
-			)
-			if err != nil {
-				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
-			}
-
-			decoded, err = pc.Decode(passphraseBytes)
-			if err != nil {
-				return errors.Join(errors.New("error decrypting data"), err)
-			}
 		case internal.PaperCryptContainerVersionDevel,
-			internal.PaperCryptContainerVersionMajor2:
+			internal.PaperCryptContainerVersionMajor3:
 			pc, err := internal.DeserializeV2Text(
 				paperCryptFileContents,
 				ignoreVersionMismatch,

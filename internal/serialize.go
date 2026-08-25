@@ -94,11 +94,6 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	return string(dataBlock)
 }
 
-// SerializeBinaryV1 serializes binary data using SerializeBinary. Used for backwards compatibility.
-func SerializeBinaryV1(data *[]byte) string {
-	return SerializeBinary(data, BytesPerLineV1)
-}
-
 // SerializeBinaryV2 serializes binary data using SerializeBinary.
 func SerializeBinaryV2(data *[]byte) string {
 	return SerializeBinary(data, BytesPerLine)
