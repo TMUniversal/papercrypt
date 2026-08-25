@@ -9,12 +9,12 @@ require (
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.6.2
 	github.com/ccoveille/go-safecast/v2 v2.0.1
+	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/manifoldco/promptui v0.9.0
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
-	github.com/muesli/termenv v0.16.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
 	github.com/tmuniversal/papercrypt v1.4.0
@@ -26,7 +26,6 @@ require (
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
 	github.com/ProtonMail/gopenpgp/v2 v2.10.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260812204455-68fa937c71be // indirect
 	github.com/charmbracelet/x/ansi v0.11.8 // indirect
@@ -45,6 +44,7 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/mango v0.2.0 // indirect
 	github.com/muesli/mango-pflag v0.2.0 // indirect
+	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect

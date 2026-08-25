@@ -25,9 +25,9 @@ import (
 	_ "embed"
 	"os"
 
+	"charm.land/lipgloss/v2"
 	goversion "github.com/caarlos0/go-version"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
+	"github.com/charmbracelet/colorprofile"
 	"github.com/tmuniversal/papercrypt/v2/cmd"
 	"github.com/tmuniversal/papercrypt/v2/internal"
 )
@@ -76,7 +76,7 @@ var (
 func init() {
 	// enable colored output in ci
 	if os.Getenv("CI") != "" {
-		lipgloss.SetColorProfile(termenv.TrueColor)
+		lipgloss.Writer = colorprofile.NewWriter(os.Stdout, os.Environ())
 	}
 }
 
