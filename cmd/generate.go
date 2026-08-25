@@ -130,25 +130,28 @@ encrypted data.`,
 			passphraseBytes = []byte(passphrase)
 		}
 
-		// 6. Compress secret data
-		compressedData := new(bytes.Buffer)
-		gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
-		if err != nil {
-			return errors.Join(errors.New("error creating gzip writer"), err)
-		}
-
-		_, err = gzipWriter.Write(secretContentsFile)
-		if err != nil {
-			return errors.Join(errors.New("error writing to gzip writer"), err)
-		}
-		if err := gzipWriter.Close(); err != nil {
-			return errors.Join(errors.New("error closing gzip writer"), err)
-		}
-
 		var data []byte
 
-		// 7. Encrypt with passphrase
-		if !rawData {
+		if rawData {
+			// Raw mode: do not compress, place data directly
+			data = secretContentsFile
+		} else {
+			// 6. Compress secret data
+			compressedData := new(bytes.Buffer)
+			gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
+			if err != nil {
+				return errors.Join(errors.New("error creating gzip writer"), err)
+			}
+
+			_, err = gzipWriter.Write(secretContentsFile)
+			if err != nil {
+				return errors.Join(errors.New("error writing to gzip writer"), err)
+			}
+			if err := gzipWriter.Close(); err != nil {
+				return errors.Join(errors.New("error closing gzip writer"), err)
+			}
+
+			// 7. Encrypt with passphrase
 			encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
 			if err != nil {
 				return errors.Join(errors.New("error encrypting secret contents"), err)
@@ -163,10 +166,9 @@ encrypted data.`,
 			if err := gzipWriter.Close(); err != nil {
 				return errors.Join(errors.New("error closing gzip writer"), err)
 			}
-		}
 
-		// Take the unencrypted, compressed data (if rawData is true) or the encrypted, re-compressed data
-		data = compressedData.Bytes()
+			data = compressedData.Bytes()
+		}
 
 		// 8. Write encryptedSecretContents to outFile
 		format := internal.PaperCryptDataFormatPGP

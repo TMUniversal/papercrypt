@@ -679,23 +679,26 @@ func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 		}
 
 		data = decrypted.Bytes()
+
+		// 10. Decompress content
+		gzipReader, err = gzip.NewReader(bytes.NewReader(data))
+		if err != nil {
+			return nil, errors.Join(errors.New("error creating gzip reader"), err)
+		}
+
+		decompressed.Reset()
+		if _, err := decompressed.ReadFrom(gzipReader); err != nil {
+			return nil, errors.Join(errors.New("error reading from gzip reader"), err)
+		}
+		if err := gzipReader.Close(); err != nil {
+			return nil, errors.Join(errors.New("error closing gzip reader"), err)
+		}
+
+		return decompressed.Bytes(), nil
 	}
 
-	// 10. Decompress content
-	gzipReader, err := gzip.NewReader(bytes.NewReader(data))
-	if err != nil {
-		return nil, errors.Join(errors.New("error creating gzip reader"), err)
-	}
-
-	decompressed := new(bytes.Buffer)
-	if _, err := decompressed.ReadFrom(gzipReader); err != nil {
-		return nil, errors.Join(errors.New("error reading from gzip reader"), err)
-	}
-	if err := gzipReader.Close(); err != nil {
-		return nil, errors.Join(errors.New("error closing gzip reader"), err)
-	}
-
-	return decompressed.Bytes(), nil
+	// Raw mode: data is stored as-is
+	return data, nil
 }
 
 // TextToHeaderMap converts a byte slice containing text headers into a map of header fields.
