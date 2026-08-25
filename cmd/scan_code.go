@@ -30,10 +30,10 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	file_format2 "github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
-	"github.com/tmuniversal/papercrypt/v3/terminal"
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
+	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 var (
@@ -124,7 +124,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 		// 3. Deserialize
 		var output []byte
-		var paperCryptMajorVersion file_format2.PaperCryptContainerVersion
+		var paperCryptMajorVersion file_format.PaperCryptContainerVersion
 
 		vc := versionContainer{}
 		err = json.Unmarshal(data, &vc)
@@ -132,12 +132,12 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			return errors.Join(errors.New("error deserializing version"), err)
 		}
 
-		paperCryptMajorVersion = file_format2.PaperCryptContainerVersionFromString(vc.Version)
+		paperCryptMajorVersion = file_format.PaperCryptContainerVersionFromString(vc.Version)
 
 		switch paperCryptMajorVersion {
-		case file_format2.PaperCryptContainerVersionDevel,
-			file_format2.PaperCryptContainerVersionMajor3:
-			pc := file_format2.PaperCrypt{}
+		case file_format.PaperCryptContainerVersionDevel,
+			file_format.PaperCryptContainerVersionMajor3:
+			pc := file_format.PaperCrypt{}
 			err = json.Unmarshal(data, &pc)
 			if err != nil {
 				return errors.Join(

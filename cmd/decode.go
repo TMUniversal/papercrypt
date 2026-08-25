@@ -27,9 +27,9 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	file_format2 "github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
+	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 var (
@@ -67,7 +67,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 		paperCryptFileContents = internal.NormalizeLineEndings(paperCryptFileContents)
 
-		headersSection, bodySection, err := file_format2.SplitTextHeaderAndBody(paperCryptFileContents)
+		headersSection, bodySection, err := file_format.SplitTextHeaderAndBody(paperCryptFileContents)
 		if err != nil {
 			return errors.Join(errors.New("header not found"), err)
 		}
@@ -76,32 +76,32 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.New("no content found")
 		}
 
-		headers, err := file_format2.TextToHeaderMap(headersSection)
+		headers, err := file_format.TextToHeaderMap(headersSection)
 		if err != nil {
 			return errors.Join(errors.New("error reading headers"), err)
 		}
 
-		paperCryptMajorVersion := file_format2.PaperCryptContainerVersionFromString(
-			headers[file_format2.HeaderFieldVersion],
+		paperCryptMajorVersion := file_format.PaperCryptContainerVersionFromString(
+			headers[file_format.HeaderFieldVersion],
 		)
 
-		if paperCryptMajorVersion == file_format2.PaperCryptContainerVersionUnknown {
+		if paperCryptMajorVersion == file_format.PaperCryptContainerVersionUnknown {
 			return errors.New("unknown version")
 		}
 
-		dataFormat := file_format2.PaperCryptDataFormatFromString(
-			headers[file_format2.HeaderFieldDataFormat],
+		dataFormat := file_format.PaperCryptDataFormatFromString(
+			headers[file_format.HeaderFieldDataFormat],
 		)
 
 		// 8. Read passphrase from stdin (skip for raw mode)
 		var passphraseBytes []byte
-		if dataFormat == file_format2.PaperCryptDataFormatRaw {
+		if dataFormat == file_format.PaperCryptDataFormatRaw {
 			passphraseBytes = nil
 		} else if !cmd.Flags().Lookup("passphrase").Changed {
 			cmd.Println(
 				"Enter your decryption passphrase (the passphrase you used to encrypt the data)",
 			)
-			passphraseBytes, err = terminal2.SensitivePrompt()
+			passphraseBytes, err = terminal.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
@@ -112,9 +112,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		var decoded []byte
 		switch paperCryptMajorVersion {
-		case file_format2.PaperCryptContainerVersionDevel,
-			file_format2.PaperCryptContainerVersionMajor3:
-			pc, err := file_format2.DeserializeText(
+		case file_format.PaperCryptContainerVersionDevel,
+			file_format.PaperCryptContainerVersionMajor3:
+			pc, err := file_format.DeserializeText(
 				paperCryptFileContents,
 				ignoreVersionMismatch,
 				ignoreChecksumMismatch,
@@ -137,7 +137,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		terminal2.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

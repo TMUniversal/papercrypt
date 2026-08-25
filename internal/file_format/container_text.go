@@ -35,7 +35,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
-	"github.com/tmuniversal/papercrypt/v3/terminal"
+	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 // GetText returns the text representation of the paper crypt.

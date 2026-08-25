@@ -30,9 +30,9 @@ import (
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	file_format2 "github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
+	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 var (
@@ -80,7 +80,7 @@ encrypted data.`,
 		// 2. generate serial number if not provided
 		if serialNumber == "" {
 			var err error
-			serialNumber, err = file_format2.GenerateSerial(6)
+			serialNumber, err = file_format.GenerateSerial(6)
 			if err != nil {
 				return errors.Join(errors.New("error generating serial number"), err)
 			}
@@ -121,13 +121,13 @@ encrypted data.`,
 			var passphraseBytes []byte
 			if !cmd.Flags().Lookup("passphrase").Changed {
 				log.Info("Enter your encryption passphrase")
-				passphraseBytes, err = terminal2.SensitivePrompt()
+				passphraseBytes, err = terminal.SensitivePrompt()
 				if err != nil {
 					return errors.Join(errors.New("error reading passphrase"), err)
 				}
 
 				log.Info("Enter your passphrase again to confirm")
-				passphraseAgain, err := terminal2.SensitivePrompt()
+				passphraseAgain, err := terminal.SensitivePrompt()
 				if err != nil {
 					return errors.Join(errors.New("error reading passphrase"), err)
 				}
@@ -163,11 +163,11 @@ encrypted data.`,
 		}
 
 		// 8. Write encryptedSecretContents to outFile
-		format := file_format2.PaperCryptDataFormatPGP
+		format := file_format.PaperCryptDataFormatPGP
 		if rawData {
-			format = file_format2.PaperCryptDataFormatRaw
+			format = file_format.PaperCryptDataFormatRaw
 		}
-		crypt := file_format2.NewPaperCrypt(
+		crypt := file_format.NewPaperCrypt(
 			internal.VersionInfo.GitVersion,
 			data,
 			serialNumber,
@@ -189,7 +189,7 @@ encrypted data.`,
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		terminal2.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

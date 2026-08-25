@@ -32,8 +32,8 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/phrase_sheet"
-	"github.com/tmuniversal/papercrypt/v3/terminal"
+	"github.com/tmuniversal/papercrypt/v3/internal/phrase_sheet"
+	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 const (
