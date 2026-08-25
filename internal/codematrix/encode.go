@@ -62,14 +62,7 @@ func Encode(data []byte) (image.Image, error) {
 		return nil, errors.Join(errors.New("codematrix: scale"), err)
 	}
 
-	rgba := image.NewRGBA(code.Bounds())
-	for y := 0; y < code.Bounds().Dy(); y++ {
-		for x := 0; x < code.Bounds().Dx(); x++ {
-			rgba.Set(x, y, code.At(x, y))
-		}
-	}
-
-	return rgba, nil
+	return code, nil
 }
 
 // EncodePNG encodes data into a single Aztec code and returns the PNG-encoded bytes.
