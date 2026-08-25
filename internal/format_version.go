@@ -94,8 +94,7 @@ func (v PaperCryptContainerVersion) String() string {
 	}
 }
 
-// PaperCryptContainerVersionFromString identifies the container version represented by a version string.
-// It recognizes major versions 1, 2, and 3, as well as development versions.
+// PaperCryptContainerVersionFromString parses a version string to discover the major version of this software
 func PaperCryptContainerVersionFromString(s string) PaperCryptContainerVersion {
 	major := strings.Split(s, ".")[0]
 	log.Debugf("PaperCrypt Version: %s", major)

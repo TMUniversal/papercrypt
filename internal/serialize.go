@@ -53,10 +53,7 @@ type lineData struct {
 // n-1: ... <CRC-24 of this line>
 // n: <CRC-24 of the block>
 //
-// SerializeBinary serializes data into numbered hexadecimal lines with per-line
-// CRC-24 checksums and a final CRC-24 checksum for the complete data block.
-// bytesPerLine specifies the maximum number of data bytes included in each line.
-// It returns the formatted serialized data.
+// See [example.pdf](example.pdf) for an example.
 func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	lines := math.Ceil(float64(len(*data)) / float64(bytesPerLine))
 	lineNumberDigits := int(math.Floor(math.Log10(lines + 1)))
@@ -97,8 +94,7 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	return string(dataBlock)
 }
 
-// DeserializeBinary reconstructs binary data from the human-readable archive format produced by SerializeBinary.
-// It validates each line checksum, line numbering, and the checksum for the complete data block before returning the data.
+// DeserializeBinary deserializes bytes from human-readable archive format encoded by SerializeBinary
 func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})
 	lines := make([][]byte, 0)
@@ -255,13 +251,12 @@ func ParseHexUint32(hex string) (uint32, error) {
 	return n, nil
 }
 
-// BytesFromBase64 decodes standard Base64 text into a byte slice.
-// It returns an error when the input is not valid Base64.
+// BytesFromBase64 decodes a base64 string using base64.StdEncoding to a byte slice
 func BytesFromBase64(data string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(data)
 }
 
-// uint32ToBytes converts n to its four-byte big-endian representation.
+// uint32ToBytes converts a uint32 to a 4-byte slice (big endian)
 func uint32ToBytes(n uint32) []byte {
 	var b [4]byte
 	binary.BigEndian.PutUint32(b[:], n)

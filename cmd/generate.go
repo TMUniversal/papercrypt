@@ -208,7 +208,6 @@ func encrypt(passphrase []byte, data []byte) (*crypto.PGPMessage, error) {
 	return pgpMessage, nil
 }
 
-// init registers the generate command and configures its document, formatting, and encryption flags.
 func init() {
 	rootCmd.AddCommand(generateCmd)
 

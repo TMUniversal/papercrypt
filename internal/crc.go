@@ -43,7 +43,7 @@ func ValidateCRC24(data []byte, checksum uint32) bool {
 	return crc24.Validate(data, checksum)
 }
 
-// ValidateCRC32 reports whether the IEEE CRC-32 checksum of data matches checksum.
+// ValidateCRC32 validates the CRC-32 checksum of the given data against the provided checksum.
 func ValidateCRC32(data []byte, checksum uint32) bool {
 	return crc32.ChecksumIEEE(data) == checksum
 }

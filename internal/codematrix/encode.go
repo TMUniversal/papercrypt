@@ -16,8 +16,7 @@ import (
 const aztecSize = 7795
 
 // Encode compresses data with gzip, base64-encodes it, and encodes it
-// Encode compresses data and encodes it as a 7,795-by-7,795-pixel Aztec code image.
-// It returns the image or an error if compression, encoding, or scaling fails.
+// into a single Aztec code image.
 func Encode(data []byte) (image.Image, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)

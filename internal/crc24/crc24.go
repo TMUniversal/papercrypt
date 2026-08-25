@@ -55,8 +55,7 @@ func Checksum(data []byte) uint32 {
 	return crc & 0xFFFFFF
 }
 
-// Validate determines whether data produces the supplied CRC-24 checksum.
-// It returns true if the computed checksum matches checksum, false otherwise.
+// Validate checks data against a provided CRC-24 checksum.
 func Validate(data []byte, checksum uint32) bool {
 	return Checksum(data) == checksum
 }
