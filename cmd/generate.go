@@ -136,29 +136,19 @@ encrypted data.`,
 			// Raw mode: do not compress, place data directly
 			data = secretContentsFile
 		} else {
-			// 6. Compress secret data
+			// 6. Encrypt with passphrase
+			encryptedSecretContents, err := encrypt(passphraseBytes, secretContentsFile)
+			if err != nil {
+				return errors.Join(errors.New("error encrypting secret contents"), err)
+			}
+
+			// 7. Compress ciphertext
 			compressedData := new(bytes.Buffer)
 			gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
 			if err != nil {
 				return errors.Join(errors.New("error creating gzip writer"), err)
 			}
 
-			_, err = gzipWriter.Write(secretContentsFile)
-			if err != nil {
-				return errors.Join(errors.New("error writing to gzip writer"), err)
-			}
-			if err := gzipWriter.Close(); err != nil {
-				return errors.Join(errors.New("error closing gzip writer"), err)
-			}
-
-			// 7. Encrypt with passphrase
-			encryptedSecretContents, err := encrypt(passphraseBytes, compressedData.Bytes())
-			if err != nil {
-				return errors.Join(errors.New("error encrypting secret contents"), err)
-			}
-
-			compressedData.Reset()
-			gzipWriter.Reset(compressedData)
 			_, err = gzipWriter.Write(encryptedSecretContents.Bytes())
 			if err != nil {
 				return errors.Join(errors.New("error writing to gzip writer"), err)
