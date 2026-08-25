@@ -39,6 +39,15 @@ while also providing a physical backup that 's not susceptible to digital threat
   location. This provides a layer of security, as it ensures that your data remains safe and accessible even in the
   event of a catastrophic failure, malicious attack, or natural disaster.
 
+## Version Compatibility
+
+PaperCrypt v3 introduces a new container format (version 3). Note the following compatibility constraints:
+
+- PaperCrypt v3 only decodes v3 documents.
+- v1 and v2 can be decoded by PaperCrypt v2.
+
+It is recommended to use the exact same version of PaperCrypt to decode a document that was used to encode it. That version is indicated on the document itself.
+
 ## Installation
 
 ### Pre-built binaries
@@ -232,6 +241,8 @@ for which you can use your mnemonic phrase from earlier.
 > The caveat is that, when on Windows, you can't be prompted for your passphrase,
 > so you would have to pass it with the `--passphrase` flag.
 
+Use `--raw` to skip encryption.
+
 [![generate example](examples/demo/generate.gif)](examples/output.pdf)
 
 Please see the [examples](examples) directory for the generated PDF files.
@@ -264,7 +275,7 @@ Once you have the text from the printed document,
 which should look something like this:
 
 ```
-# PaperCrypt Version: 2.0.0
+# PaperCrypt Version: 3.0.0
 # Content Serial: EIPESR
 # Purpose: Example Sheet
 # Comment: Regular PDF Example
