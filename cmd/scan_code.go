@@ -21,6 +21,8 @@
 package cmd
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -114,6 +116,16 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 		if err := internal.CloseFileIfNotStd(inFile); err != nil {
 			return errors.Join(errors.New("error closing input file"), err)
+		}
+
+		// Decompress gzip
+		gz, err := gzip.NewReader(bytes.NewReader(data))
+		if err != nil {
+			return errors.Join(errors.New("error creating gzip reader"), err)
+		}
+		data, err = io.ReadAll(gz)
+		if err != nil {
+			return errors.Join(errors.New("error reading gzip data"), err)
 		}
 
 		// 2. Open output file

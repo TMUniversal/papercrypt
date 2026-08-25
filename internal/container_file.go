@@ -350,15 +350,25 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	dm := new(bytes.Buffer)
 
 	if !no2D {
-		// for the qr-code, encode the *p as json, then base64 encode it
 		qrDataJSON, err := json.Marshal(p)
 		if err != nil {
 			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
 		}
 
-		// qrSize := 1949 // 165 mm at 300 dpi
+		var compressed bytes.Buffer
+		gzipWriter, err := gzip.NewWriterLevel(&compressed, gzip.BestCompression)
+		if err != nil {
+			return nil, errors.Join(errors.New("error creating gzip writer"), err)
+		}
+		if _, err := gzipWriter.Write(qrDataJSON); err != nil {
+			return nil, errors.Join(errors.New("error writing to gzip writer"), err)
+		}
+		if err := gzipWriter.Close(); err != nil {
+			return nil, errors.Join(errors.New("error closing gzip writer"), err)
+		}
+
 		qrSize := 7795 // 165 mm at 1200 dpi
-		code, err := aztec.Encode(qrDataJSON, 35, 0)
+		code, err := aztec.Encode(compressed.Bytes(), 35, 0)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating 2D code"), err)
 		}
