@@ -217,7 +217,10 @@ func init() {
 	generateCmd.Flags().StringVarP(&comment, "comment", "c", "", "Comment on the sheet (optional)")
 	generateCmd.Flags().
 		StringVarP(&date, "date", "d", "", "Date of the sheet (optional, defaults to now)")
-	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Do not generate 2D code (optional)")
+	generateCmd.Flags().
+		BoolVar(&noQR, "no-code", false, "Do not generate 2D code (optional)")
+	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Alias for --no-code (hidden)")
+	generateCmd.Flags().MarkHidden("no-qr")
 	generateCmd.Flags().
 		BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
 	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")
