@@ -26,6 +26,7 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -147,13 +148,13 @@ type PaperCrypt struct {
 	CreatedAt time.Time `json:"ct"`
 
 	// DataCRC24 is the CRC-24 checksum of the encrypted data
-	DataCRC24 uint32 `json:"d_c24"`
+	DataCRC24 uint32 `json:"-"`
 
 	// DataCRC32 is the CRC-32 checksum of the encrypted data
-	DataCRC32 uint32 `json:"d_c32"`
+	DataCRC32 uint32 `json:"-"`
 
 	// DataSHA256 is the SHA-256 checksum of the encrypted data
-	DataSHA256 [32]byte `json:"d_s256"`
+	DataSHA256 [32]byte `json:"-"`
 
 	// Data is the contents of the document
 	// it can be either of two formats:
@@ -164,46 +165,83 @@ type PaperCrypt struct {
 	Data []byte `json:"d"`
 }
 
+// JSONPaperCrypt is the JSON representation of PaperCrypt with base64 encoded hashes.
+type JSONPaperCrypt struct {
+	Version      string `json:"v"`
+	DataFormat   string `json:"f"`
+	SerialNumber string `json:"sn"`
+	Purpose      string `json:"p"`
+	Comment      string `json:"cm"`
+	CreatedAt    string `json:"ct"`
+	DataCRC24    string `json:"d_c24"`
+	DataCRC32    string `json:"d_c32"`
+	DataSHA256   string `json:"d_s256"`
+	Data         []byte `json:"d"`
+}
+
 // MarshalJSON implements the json.Marshaler interface for PaperCrypt.
-func (p *PaperCrypt) MarshalJSON() ([]byte, error) { // nosemgrep
-	type Alias PaperCrypt
-	return json.Marshal(&struct {
-		CreatedAt  string `json:"ct"`
-		DataSHA256 string `json:"d_s256"`
-		*Alias
-	}{
-		CreatedAt:  p.CreatedAt.Format(TimeStampFormatLong),
-		DataSHA256: base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
-		Alias:      (*Alias)(p),
-	})
+func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
+	jpc := JSONPaperCrypt{
+		Version:      p.Version,
+		DataFormat:   p.DataFormat.String(),
+		SerialNumber: p.SerialNumber,
+		Purpose:      p.Purpose,
+		Comment:      p.Comment,
+		CreatedAt:    p.CreatedAt.Format(TimeStampFormatLong),
+		DataCRC24:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC24)),
+		DataCRC32:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC32)),
+		DataSHA256:   base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
+		Data:         p.Data,
+	}
+	return json.Marshal(jpc)
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface for PaperCrypt.
 func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
-	type Alias PaperCrypt
-	aux := &struct {
-		CreatedAt  string `json:"ct"`
-		DataSHA256 string `json:"d_s256"`
-		*Alias
-	}{
-		Alias: (*Alias)(p),
-	}
-
-	if err := json.Unmarshal(data, &aux); err != nil {
+	var jpc JSONPaperCrypt
+	if err := json.Unmarshal(data, &jpc); err != nil {
 		return err
 	}
 
-	createdAt, err := time.Parse(TimeStampFormatLong, aux.CreatedAt)
+	createdAt, err := time.Parse(TimeStampFormatLong, jpc.CreatedAt)
 	if err != nil {
 		return err
 	}
 	p.CreatedAt = createdAt
 
-	dataSHA256, err := BytesFromBase64(aux.DataSHA256)
+	dataCRC24Bytes, err := base64.StdEncoding.DecodeString(jpc.DataCRC24)
 	if err != nil {
 		return err
 	}
-	copy(p.DataSHA256[:], dataSHA256)
+	if len(dataCRC24Bytes) != 4 {
+		return errors.New("invalid DataCRC24 length")
+	}
+	p.DataCRC24 = binary.BigEndian.Uint32(dataCRC24Bytes)
+
+	dataCRC32Bytes, err := base64.StdEncoding.DecodeString(jpc.DataCRC32)
+	if err != nil {
+		return err
+	}
+	if len(dataCRC32Bytes) != 4 {
+		return errors.New("invalid DataCRC32 length")
+	}
+	p.DataCRC32 = binary.BigEndian.Uint32(dataCRC32Bytes)
+
+	dataSHA256Bytes, err := base64.StdEncoding.DecodeString(jpc.DataSHA256)
+	if err != nil {
+		return err
+	}
+	if len(dataSHA256Bytes) != 32 {
+		return errors.New("invalid DataSHA256 length")
+	}
+	copy(p.DataSHA256[:], dataSHA256Bytes)
+
+	p.Version = jpc.Version
+	p.DataFormat = PaperCryptDataFormatFromString(jpc.DataFormat)
+	p.SerialNumber = jpc.SerialNumber
+	p.Purpose = jpc.Purpose
+	p.Comment = jpc.Comment
+	p.Data = jpc.Data
 
 	return nil
 }
