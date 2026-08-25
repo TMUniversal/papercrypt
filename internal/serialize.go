@@ -29,7 +29,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/ccoveille/go-safecast"
+	"github.com/ccoveille/go-safecast/v2"
 )
 
 type lineData struct {
@@ -208,7 +208,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	// this also ensures that we have all lines, as the last line number must equal the number of lines
 	var resultLength uint32
 	var err error
-	resultLength, err = safecast.ToUint32(len(result))
+	resultLength, err = safecast.Convert[uint32, int](len(result))
 	if err != nil {
 		return nil, err
 	}
