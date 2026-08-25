@@ -24,7 +24,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/v2/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
 var versionCmd = &cobra.Command{

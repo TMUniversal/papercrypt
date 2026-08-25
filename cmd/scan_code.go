@@ -33,7 +33,7 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/spf13/cobra"
 	pcv1 "github.com/tmuniversal/papercrypt/internal"
-	"github.com/tmuniversal/papercrypt/v2/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
 var (

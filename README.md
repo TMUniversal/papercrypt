@@ -2,7 +2,7 @@
   <h3 align="center">PaperCrypt</h3>
     <p align="center">Printable Backup Documents</p>
     <p align="center">
-      <a href="https://goreportcard.com/report/github.com/TMUniversal/papercrypt/v2"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/TMUniversal/papercrypt/v2" /></a>
+      <a href="https://goreportcard.com/report/github.com/TMUniversal/papercrypt/v3"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/TMUniversal/papercrypt/v3" /></a>
       <a href="https://pkg.go.dev/github.com/TMUniversal/papercrypt"><img alt="Go Reference" src="https://pkg.go.dev/badge/github.com/TMUniversal/papercrypt.svg" /></a>
       <a href="https://github.com/TMUniversal/papercrypt/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/TMUniversal/papercrypt?sort=semver" /></a>
       <a href="https://github.com/TMUniversal/papercrypt"><img alt="GitHub" src="https://img.shields.io/github/license/TMUniversal/papercrypt" /></a>
@@ -104,7 +104,7 @@ goreleaser build --snapshot --clean --single-target
 2. **Install PaperCrypt**: Run the following command to install PaperCrypt:
 
 ```bash
-go install github.com/tmuniversal/papercrypt/v2@latest
+go install github.com/tmuniversal/papercrypt/v3@latest
 ```
 
 ### Running with Docker

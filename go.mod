@@ -1,6 +1,6 @@
-module github.com/tmuniversal/papercrypt/v2
+module github.com/tmuniversal/papercrypt/v3
 
-go 1.25.0
+go 1.27.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.6

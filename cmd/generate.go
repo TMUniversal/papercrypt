@@ -30,7 +30,7 @@ import (
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/v2/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
 var (
