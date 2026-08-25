@@ -21,8 +21,6 @@
 package cmd
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,10 +29,9 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/aztec"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
 var (
@@ -91,33 +88,14 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error decoding image"), err)
 			}
 
-			bmp, err := gozxing.NewBinaryBitmapFromImage(img)
+			data, err = codematrix.Decode(img)
 			if err != nil {
-				return errors.Join(errors.New("error creating binary bitmap"), err)
+				return errors.Join(errors.New("error decoding aztec code"), err)
 			}
-
-			// decode aztec code
-			aztecReader := aztec.NewAztecReader()
-			result, err := aztecReader.Decode(bmp, nil)
-			if err != nil {
-				return errors.Join(errors.New("error decoding Aztec code"), err)
-			}
-
-			data = []byte(result.GetText())
 		}
 
 		if err := internal.CloseFileIfNotStd(inFile); err != nil {
 			return errors.Join(errors.New("error closing input file"), err)
-		}
-
-		// Decompress gzip
-		gz, err := gzip.NewReader(bytes.NewReader(data))
-		if err != nil {
-			return errors.Join(errors.New("error creating gzip reader"), err)
-		}
-		data, err = io.ReadAll(gz)
-		if err != nil {
-			return errors.Join(errors.New("error reading gzip data"), err)
 		}
 
 		// 2. Open output file

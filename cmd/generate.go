@@ -220,7 +220,7 @@ func init() {
 	generateCmd.Flags().
 		BoolVar(&noQR, "no-code", false, "Do not generate 2D code (optional)")
 	generateCmd.Flags().BoolVar(&noQR, "no-qr", false, "Alias for --no-code (hidden)")
-	generateCmd.Flags().MarkHidden("no-qr")
+	_ = generateCmd.Flags().MarkHidden("no-qr")
 	generateCmd.Flags().
 		BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
 	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")

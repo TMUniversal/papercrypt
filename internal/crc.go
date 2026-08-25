@@ -27,8 +27,10 @@ import (
 )
 
 const (
+	// CRC24Polynomial is the CRC-24 polynomial used by PaperCrypt.
 	CRC24Polynomial = crc24.Polynomial
-	CRC24Initial    = crc24.Initial
+	// CRC24Initial is the initial value for CRC-24 computation.
+	CRC24Initial = crc24.Initial
 )
 
 // Crc24Checksum generates a CRC-24 checksum for the given data.

@@ -38,12 +38,12 @@ import (
 
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/aztec"
 	"github.com/boombuler/barcode/qr"
 	"github.com/caarlos0/log"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
+	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
 const (
@@ -355,40 +355,11 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
 		}
 
-		var compressed bytes.Buffer
-		gzipWriter, err := gzip.NewWriterLevel(&compressed, gzip.BestCompression)
+		pngBytes, err := codematrix.EncodePNG(qrDataJSON)
 		if err != nil {
-			return nil, errors.Join(errors.New("error creating gzip writer"), err)
+			return nil, err
 		}
-		if _, err := gzipWriter.Write(qrDataJSON); err != nil {
-			return nil, errors.Join(errors.New("error writing to gzip writer"), err)
-		}
-		if err := gzipWriter.Close(); err != nil {
-			return nil, errors.Join(errors.New("error closing gzip writer"), err)
-		}
-
-		qrSize := 7795 // 165 mm at 1200 dpi
-		code, err := aztec.Encode(compressed.Bytes(), 35, 0)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating 2D code"), err)
-		}
-
-		code, err = barcode.Scale(code, qrSize, qrSize)
-		if err != nil {
-			return nil, errors.Join(errors.New("error scaling 2D code"), err)
-		}
-
-		converted := image.NewGray(code.Bounds())
-		for y := 0; y < code.Bounds().Dy(); y++ {
-			for x := 0; x < code.Bounds().Dx(); x++ {
-				converted.Set(x, y, code.At(x, y))
-			}
-		}
-
-		err = png.Encode(data2D, converted)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating 2D code PNG"), err)
-		}
+		data2D.Write(pngBytes)
 	}
 
 	{
