@@ -223,7 +223,7 @@ func init() {
 	_ = generateCmd.Flags().MarkHidden("no-qr")
 	generateCmd.Flags().
 		BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
-	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Do not encrypt the data, just compress it")
+	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Store raw (uncompressed, unencrypted) data")
 
 	generateCmd.Flags().
 		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")

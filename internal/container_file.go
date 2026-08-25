@@ -111,7 +111,9 @@ const (
 	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
 	PDFSectionRepresentationHeading = "Binary Data Representation"
 	// PDFSectionRepresentationContent holds the content of the section describing the data representation.
-	PDFSectionRepresentationContent = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used. Data is compressed using the gzip algorithm."
+	PDFSectionRepresentationContentBase = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
+	// PDFSectionRepresentationContentGzip is the gzip-specific suffix appended for PGP-format data.
+	PDFSectionRepresentationContentGzip = " Data is compressed using the gzip algorithm."
 	// PDFSectionRecoveryHeading holds the title of the section describing how to recover the data.
 	PDFSectionRecoveryHeading = "Recovering the data"
 	// PDFSectionRecoveryContent holds the content of the section describing how to recover the data.
@@ -132,7 +134,7 @@ type PaperCrypt struct {
 	// Version is the version of papercrypt used to generate the document.
 	Version string `json:"v"`
 
-	// DataFormat determines whether the data is raw (although still gzipped), or follows the PGP message format (gzipped).
+	// DataFormat determines whether the data is raw (uncompressed, unencrypted), or follows the PGP message format (encrypted and gzipped).
 	DataFormat PaperCryptDataFormat `json:"f"`
 
 	// SerialNumber is the serial number of document, used to identify it. It is generated randomly if not provided.
@@ -454,15 +456,19 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.Ln(5)
 
 		pdf.SetFont(PdfTextFont, "", 10)
+		representationText := fmt.Sprintf(
+			PDFSectionRepresentationContentBase,
+			BytesPerLine,
+			CRC24Polynomial,
+			CRC24Initial,
+		)
+		if p.DataFormat == PaperCryptDataFormatPGP {
+			representationText += PDFSectionRepresentationContentGzip
+		}
 		pdf.MultiCell(
 			0,
 			5,
-			fmt.Sprintf(
-				PDFSectionRepresentationContent,
-				BytesPerLine,
-				CRC24Polynomial,
-				CRC24Initial,
-			),
+			representationText,
 			"",
 			"",
 			false,
