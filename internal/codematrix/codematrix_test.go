@@ -23,6 +23,7 @@ package codematrix
 import (
 	"bytes"
 	"image"
+	"strings"
 	"testing"
 )
 
@@ -96,5 +97,46 @@ func TestEncodePNG(t *testing.T) {
 	}
 	if !bytes.Equal(got, data) {
 		t.Errorf("roundtrip mismatch")
+	}
+}
+
+func TestDecodeDecompressionBomb(t *testing.T) {
+	overSize := MaxDecodedPayloadSize + 1
+
+	// Encode gzip-compresses the input; Decode decompresses it back.
+	// Pass raw oversize data so Decode reconstructs > MaxDecodedPayloadSize.
+	data := bytes.Repeat([]byte{0}, overSize)
+	img, err := Encode(data)
+	if err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+
+	_, err = Decode(img)
+	if err == nil {
+		t.Fatal("expected error for decompression bomb, got nil")
+	}
+	if !strings.Contains(err.Error(), "exceeds maximum size") {
+		t.Fatalf("expected 'exceeds maximum size' error, got: %v", err)
+	}
+}
+
+func TestDecodeLimitDisabled(t *testing.T) {
+	overSize := MaxDecodedPayloadSize + 1
+
+	SetLimitDecodedPayload(false)
+	defer SetLimitDecodedPayload(true)
+
+	data := bytes.Repeat([]byte{0}, overSize)
+	img, err := Encode(data)
+	if err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+
+	got, err := Decode(img)
+	if err != nil {
+		t.Fatalf("Decode with limit disabled: unexpected error: %v", err)
+	}
+	if len(got) != overSize {
+		t.Errorf("disabled limit roundtrip size mismatch: got %d, want %d", len(got), overSize)
 	}
 }
