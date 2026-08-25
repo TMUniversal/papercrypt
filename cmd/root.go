@@ -26,6 +26,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
 var (
@@ -35,6 +36,8 @@ var (
 )
 
 var verbosity int
+
+var noLimitDecodedPayload bool
 
 const repo = "https://github.com/TMUniversal/papercrypt"
 
@@ -51,6 +54,7 @@ and then prepare a printable document that is optimized for being able to restor
 		level := max(log.InfoLevel-log.Level(verbosity), log.DebugLevel)
 		log.SetLevel(level)
 		log.Debug("verbosity set to " + level.String())
+		codematrix.SetLimitDecodedPayload(!noLimitDecodedPayload)
 	},
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		cmd.Println("PaperCrypt  Copyright (C) 2023-2026  TMUniversal <me@tmuniversal.eu>")
@@ -84,4 +88,6 @@ func init() {
 	rootCmd.PersistentFlags().
 		BoolVarP(&overrideOutFile, "force", "f", false, "Force override of existing file")
 	rootCmd.PersistentFlags().CountVarP(&verbosity, "verbose", "v", "Increase verbosity level")
+	rootCmd.PersistentFlags().
+		BoolVar(&noLimitDecodedPayload, "no-limit-decoded-payload", false, "Disable the decoded payload size limit (allows decompression bombs)")
 }
