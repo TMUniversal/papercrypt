@@ -31,6 +31,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/phrase_sheet"
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
@@ -122,7 +123,7 @@ func generateMnemonic(amount int) ([]string, error) {
 		return nil, errors.Join(errors.New("error generating random seed"), err)
 	}
 
-	return internal.GenerateFromSeed(randInt.Int64(), amount, &wordList)
+	return phrase_sheet.GenerateFromSeed(randInt.Int64(), amount, &wordList)
 }
 
 func init() {

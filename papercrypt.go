@@ -29,6 +29,7 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/charmbracelet/colorprofile"
 	"github.com/tmuniversal/papercrypt/v3/cmd"
+	"github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
@@ -85,12 +86,12 @@ func main() {
 	cmd.ThirdPartyText = &ThirdPartyLicenses
 	cmd.WordListFile = &WordList
 	internal.VersionInfo = buildVersion(version, commit, date, builtBy, treeState)
-	internal.PdfTextFontRegularBytes = []byte(pdfFontTextRegular)
-	internal.PdfTextFontItalicBytes = []byte(pdfFontTextItalic)
-	internal.PdfTextFontBoldBytes = []byte(pdfFontTextBold)
-	internal.PdfMonoFontRegularBytes = []byte(pdfFontMonoRegular)
-	internal.PdfMonoFontBoldBytes = []byte(pdfFontMonoBold)
-	internal.PdfMonoFontItalicBytes = []byte(pdfFontMonoItalic)
+	file_format.PdfTextFontRegularBytes = []byte(pdfFontTextRegular)
+	file_format.PdfTextFontItalicBytes = []byte(pdfFontTextItalic)
+	file_format.PdfTextFontBoldBytes = []byte(pdfFontTextBold)
+	file_format.PdfMonoFontRegularBytes = []byte(pdfFontMonoRegular)
+	file_format.PdfMonoFontBoldBytes = []byte(pdfFontMonoBold)
+	file_format.PdfMonoFontItalicBytes = []byte(pdfFontMonoItalic)
 
 	cmd.Execute()
 }

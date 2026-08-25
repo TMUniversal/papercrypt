@@ -32,6 +32,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/phrase_sheet"
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
@@ -84,13 +85,13 @@ var phraseSheetCmd = &cobra.Command{
 		}
 
 		// 3. Get words
-		words, err := internal.GenerateFromSeed(seed, passphraseSheetWordCount, &wordList)
+		words, err := phrase_sheet.GenerateFromSeed(seed, passphraseSheetWordCount, &wordList)
 		if err != nil {
 			return errors.Join(errors.New("error generating words"), err)
 		}
 
 		// 4. Generate PDF
-		data, err := internal.GeneratePassphraseSheetPDF(seed, words)
+		data, err := phrase_sheet.GeneratePassphraseSheetPDF(seed, words)
 		if err != nil {
 			return errors.Join(errors.New("error generating PDF"), err)
 		}

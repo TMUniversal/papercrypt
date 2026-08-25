@@ -30,6 +30,7 @@ import (
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
+	file_format2 "github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
 )
@@ -162,11 +163,11 @@ encrypted data.`,
 		}
 
 		// 8. Write encryptedSecretContents to outFile
-		format := internal.PaperCryptDataFormatPGP
+		format := file_format2.PaperCryptDataFormatPGP
 		if rawData {
-			format = internal.PaperCryptDataFormatRaw
+			format = file_format2.PaperCryptDataFormatRaw
 		}
-		crypt := internal.NewPaperCrypt(
+		crypt := file_format2.NewPaperCrypt(
 			internal.VersionInfo.GitVersion,
 			data,
 			serialNumber,

@@ -27,6 +27,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
+	file_format2 "github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
 )
@@ -66,7 +67,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 		paperCryptFileContents = internal.NormalizeLineEndings(paperCryptFileContents)
 
-		headersSection, bodySection, err := internal.SplitTextHeaderAndBody(paperCryptFileContents)
+		headersSection, bodySection, err := file_format2.SplitTextHeaderAndBody(paperCryptFileContents)
 		if err != nil {
 			return errors.Join(errors.New("header not found"), err)
 		}
@@ -75,26 +76,26 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.New("no content found")
 		}
 
-		headers, err := internal.TextToHeaderMap(headersSection)
+		headers, err := file_format2.TextToHeaderMap(headersSection)
 		if err != nil {
 			return errors.Join(errors.New("error reading headers"), err)
 		}
 
-		paperCryptMajorVersion := internal.PaperCryptContainerVersionFromString(
-			headers[internal.HeaderFieldVersion],
+		paperCryptMajorVersion := file_format2.PaperCryptContainerVersionFromString(
+			headers[file_format2.HeaderFieldVersion],
 		)
 
-		if paperCryptMajorVersion == internal.PaperCryptContainerVersionUnknown {
+		if paperCryptMajorVersion == file_format2.PaperCryptContainerVersionUnknown {
 			return errors.New("unknown version")
 		}
 
-		dataFormat := internal.PaperCryptDataFormatFromString(
-			headers[internal.HeaderFieldDataFormat],
+		dataFormat := file_format2.PaperCryptDataFormatFromString(
+			headers[file_format2.HeaderFieldDataFormat],
 		)
 
 		// 8. Read passphrase from stdin (skip for raw mode)
 		var passphraseBytes []byte
-		if dataFormat == internal.PaperCryptDataFormatRaw {
+		if dataFormat == file_format2.PaperCryptDataFormatRaw {
 			passphraseBytes = nil
 		} else if !cmd.Flags().Lookup("passphrase").Changed {
 			cmd.Println(
@@ -111,9 +112,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 
 		var decoded []byte
 		switch paperCryptMajorVersion {
-		case internal.PaperCryptContainerVersionDevel,
-			internal.PaperCryptContainerVersionMajor3:
-			pc, err := internal.DeserializeText(
+		case file_format2.PaperCryptContainerVersionDevel,
+			file_format2.PaperCryptContainerVersionMajor3:
+			pc, err := file_format2.DeserializeText(
 				paperCryptFileContents,
 				ignoreVersionMismatch,
 				ignoreChecksumMismatch,

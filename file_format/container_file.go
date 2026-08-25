@@ -19,7 +19,7 @@
  */
 
 // Package internal implements file reading and processing, as well as generation.
-package internal
+package file_format
 
 import (
 	"bytes"
@@ -42,6 +42,7 @@ import (
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
+	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
@@ -176,7 +177,7 @@ func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
 		SerialNumber: p.SerialNumber,
 		Purpose:      p.Purpose,
 		Comment:      p.Comment,
-		CreatedAt:    p.CreatedAt.Format(TimeStampFormatJSON),
+		CreatedAt:    p.CreatedAt.Format(internal.TimeStampFormatJSON),
 		DataSHA256:   base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
 		Data:         p.Data,
 	}
@@ -190,7 +191,7 @@ func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	createdAt, err := time.Parse(TimeStampFormatJSON, jpc.CreatedAt)
+	createdAt, err := time.Parse(internal.TimeStampFormatJSON, jpc.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -288,7 +289,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	if printProductQrCode {
 		qrSize := 709
 
-		code, err := qr.Encode(VersionInfo.URL, qr.M, qr.Auto)
+		code, err := qr.Encode(internal.VersionInfo.URL, qr.M, qr.Auto)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating 2D code"), err)
 		}
@@ -341,7 +342,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	pdf := getPdf()
+	pdf := GetPdf()
 	pdf.SetHeaderFuncMode(func() {
 		pdf.SetY(5)
 		pdf.SetFont(PdfMonoFont, "", 10)
@@ -349,7 +350,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			"%s: %s - %s",
 			PDFHeaderSheetID,
 			p.SerialNumber,
-			p.CreatedAt.Format(TimeStampFormatPDFHeader),
+			p.CreatedAt.Format(internal.TimeStampFormatPDFHeader),
 		)
 		if p.Purpose != "" {
 			headerLine += fmt.Sprintf(" - %s", p.Purpose)
@@ -422,8 +423,8 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		representationText := fmt.Sprintf(
 			PDFSectionRepresentationContentBase,
 			BytesPerLine,
-			CRC24Polynomial,
-			CRC24Initial,
+			internal.CRC24Polynomial,
+			internal.CRC24Initial,
 		)
 		if p.DataFormat == PaperCryptDataFormatPGP {
 			representationText += PDFSectionRepresentationContentGzip
@@ -533,7 +534,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		HeaderFieldDate,
 		// format time with nanosecond precision
 		// Sat, 12 Aug 2023 17:33:20.123456789
-		p.CreatedAt.Format(TimeStampFormatLong),
+		p.CreatedAt.Format(internal.TimeStampFormatLong),
 		HeaderFieldDataFormat,
 		p.DataFormat,
 		HeaderFieldContentLength,
@@ -563,9 +564,9 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		serializedData), nil
 }
 
-func getPdf() *gofpdf.Fpdf {
+func GetPdf() *gofpdf.Fpdf {
 	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetCreator("PaperCrypt/"+VersionInfo.GitVersion, true)
+	pdf.SetCreator("PaperCrypt/"+internal.VersionInfo.GitVersion, true)
 	pdf.SetTextRenderingMode(4)
 	pdf.SetTopMargin(20)
 	pdf.SetLeftMargin(20)
@@ -672,7 +673,7 @@ func DeserializeText(
 	ignoreVersionMismatch bool,
 	ignoreChecksumMismatch bool,
 ) (*PaperCrypt, error) {
-	paperCryptFileContents := NormalizeLineEndings(data)
+	paperCryptFileContents := internal.NormalizeLineEndings(data)
 
 	headersSection, bodySection, err := SplitTextHeaderAndBody(paperCryptFileContents)
 	if err != nil {
@@ -694,7 +695,7 @@ func DeserializeText(
 			return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldVersion))
 		}
 
-		log.Warn(Warning("PaperCrypt Version not present in header."))
+		log.Warn(internal.Warning("PaperCrypt Version not present in header."))
 	}
 
 	majorVersion := PaperCryptContainerVersionFromString(versionLine)
@@ -717,7 +718,7 @@ func DeserializeText(
 				)
 			}
 
-			log.Warn(Warning("Header CRC-32 not present in header"))
+			log.Warn(internal.Warning("Header CRC-32 not present in header"))
 		}
 
 		headerCrc = strings.ToLower(headerCrc)
@@ -735,7 +736,7 @@ func DeserializeText(
 			[]byte{},
 		)
 
-		if !ValidateCRC32(headerWithoutCrc, headerCrc32) {
+		if !internal.ValidateCRC32(headerWithoutCrc, headerCrc32) {
 			if !ignoreChecksumMismatch {
 				return nil, errors.Join(
 					errorParsingHeader,
@@ -749,7 +750,7 @@ func DeserializeText(
 				)
 			}
 
-			log.Warn(Warning("Header CRC-32 mismatch!"))
+			log.Warn(internal.Warning("Header CRC-32 mismatch!"))
 		}
 	}
 
@@ -825,16 +826,16 @@ func DeserializeText(
 			)
 		}
 
-		log.Warn(Warning("Content SHA-256 mismatch!"))
+		log.Warn(internal.Warning("Content SHA-256 mismatch!"))
 	}
 
 	// 6. Construct PaperCrypt object
 	headerDate, ok := headers[HeaderFieldDate]
 	if !ok {
-		log.Warn(Warning("Date not present in header!"))
+		log.Warn(internal.Warning("Date not present in header!"))
 	}
 
-	timestamp, err := time.Parse(TimeStampFormatLong, headerDate)
+	timestamp, err := time.Parse(internal.TimeStampFormatLong, headerDate)
 	if err != nil {
 		return nil, errors.Join(errors.New("invalid date format"), err)
 	}
