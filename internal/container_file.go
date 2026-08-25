@@ -38,12 +38,12 @@ import (
 
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/aztec"
 	"github.com/boombuler/barcode/qr"
 	"github.com/caarlos0/log"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 )
 
 const (
@@ -346,7 +346,8 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	dmImages := make([]image.Image, 0, codematrix.MaxSymbols)
+	data2D := new(bytes.Buffer)
+	dm := new(bytes.Buffer)
 
 	if !no2D {
 		qrDataJSON, err := json.Marshal(p)
@@ -354,13 +355,42 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
 		}
 
-		dmImages, err = codematrix.Encode(qrDataJSON)
+		var compressed bytes.Buffer
+		gzipWriter, err := gzip.NewWriterLevel(&compressed, gzip.BestCompression)
 		if err != nil {
-			return nil, errors.Join(errors.New("error generating 2D codes"), err)
+			return nil, errors.Join(errors.New("error creating gzip writer"), err)
+		}
+		if _, err := gzipWriter.Write(qrDataJSON); err != nil {
+			return nil, errors.Join(errors.New("error writing to gzip writer"), err)
+		}
+		if err := gzipWriter.Close(); err != nil {
+			return nil, errors.Join(errors.New("error closing gzip writer"), err)
+		}
+
+		qrSize := 7795 // 165 mm at 1200 dpi
+		code, err := aztec.Encode(compressed.Bytes(), 35, 0)
+		if err != nil {
+			return nil, errors.Join(errors.New("error generating 2D code"), err)
+		}
+
+		code, err = barcode.Scale(code, qrSize, qrSize)
+		if err != nil {
+			return nil, errors.Join(errors.New("error scaling 2D code"), err)
+		}
+
+		converted := image.NewGray(code.Bounds())
+		for y := 0; y < code.Bounds().Dy(); y++ {
+			for x := 0; x < code.Bounds().Dx(); x++ {
+				converted.Set(x, y, code.At(x, y))
+			}
+		}
+
+		err = png.Encode(data2D, converted)
+		if err != nil {
+			return nil, errors.Join(errors.New("error generating 2D code PNG"), err)
 		}
 	}
 
-	var serialDM *bytes.Buffer
 	{
 		// generate a data matrix with the sheet id
 		enc := datamatrix.NewDataMatrixWriter()
@@ -369,8 +399,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
 		}
 
-		serialDM = new(bytes.Buffer)
-		err = png.Encode(serialDM, code)
+		err = png.Encode(dm, code)
 		if err != nil {
 			return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
 		}
@@ -393,11 +422,11 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			"", 0, "C", false, 0, "")
 
 		{
-			// add the serial data matrix code
-			pdf.RegisterImageReader("serial_dm.png", "PNG", serialDM)
+			// add the data matrix code
+			pdf.RegisterImageReader("dm.png", "PNG", dm)
 			imageSize := 5.0
 			pdf.ImageOptions(
-				"serial_dm.png",
+				"dm.png",
 				195,
 				50,
 				imageSize,
@@ -481,53 +510,22 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		pdf.MultiCell(0, 5, recoverInstruction, "", "", false)
 	}
 
-	// add the data matrix codes in a grid
+	// add the qr code
 	if !no2D {
-		rows, cols := codematrix.GridDimensions(len(dmImages))
-		pageWidth := 168.0
-		codeSize := pageWidth / float64(cols)
-		if codeSize > 80.0 {
-			codeSize = 80.0
-		}
-		startX := (pageWidth-codeSize*float64(cols))/2.0 + 21.0
-
-		pngBufs := make([]*bytes.Buffer, len(dmImages))
-		for i, img := range dmImages {
-			buf := new(bytes.Buffer)
-			if err := png.Encode(buf, img); err != nil {
-				return nil, errors.Join(errors.New("error encoding DM image to PNG"), err)
-			}
-			pngBufs[i] = buf
-		}
-
-		for i, buf := range pngBufs {
-			r := i / cols
-			c := i % cols
-			x := startX + float64(c)*codeSize
-			y := pdf.GetY() + float64(r)*(codeSize+7.0)
-
-			imgKey := fmt.Sprintf("dm_%d.png", i)
-			pdf.RegisterImageReader(imgKey, "PNG", buf)
-			pdf.ImageOptions(
-				imgKey,
-				x,
-				y,
-				codeSize,
-				codeSize,
-				true,
-				gofpdf.ImageOptions{ImageType: "PNG"},
-				0,
-				"",
-			)
-
-			pdf.SetFont(PdfMonoFont, "", 9)
-			label := codematrix.CodeLabel(i, len(dmImages))
-			pdf.SetXY(x, y+codeSize+1)
-			pdf.CellFormat(codeSize, 5, label, "", 0, "C", false, 0, "")
-		}
-
-		totalHeight := float64(rows) * (codeSize + 7.0)
-		pdf.Ln(totalHeight + 2)
+		pdf.RegisterImageReader("data2D.png", "PNG", data2D)
+		imageSize := 167.0
+		pdf.ImageOptions(
+			"data2D.png",
+			21,
+			5,
+			imageSize,
+			imageSize,
+			true,
+			gofpdf.ImageOptions{ImageType: "PNG"},
+			0,
+			"",
+		)
+		pdf.Ln(50)
 	}
 
 	pdf.AddPage()
