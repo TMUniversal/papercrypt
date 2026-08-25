@@ -1,4 +1,4 @@
-FROM ghcr.io/charmbracelet/vhs:v0.10.0 as vhs
+FROM ghcr.io/charmbracelet/vhs:v0.11.0 as vhs
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
   apt-get update && \
