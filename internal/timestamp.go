@@ -23,8 +23,8 @@ package internal
 const (
 	// TimeStampFormatLong shows the full date and time precisely for humans. It is used for the container file, as well as the timestamp command-line parameter.
 	TimeStampFormatLong = "Mon, 02 Jan 2006 15:04:05.000000000 -0700"
-	// TimeStampFormatLongTZ is used for v1 backwards compatibility.
-	TimeStampFormatLongTZ = "Mon, 02 Jan 2006 15:04:05.000000000 MST"
+	// TimeStampFormatJSON is the compact ISO 8601 format used for JSON marshal/unmarshal.
+	TimeStampFormatJSON = "2006-01-02T15:04:05-0700"
 	// TimeStampFormatShort is used in parsing the timestamp command-line parameter [cmd/generateCmd].
 	TimeStampFormatShort = "2006-01-02 15:04:05"
 	// TimeStampFormatDate is used as an alternative format for the command-line parameter.

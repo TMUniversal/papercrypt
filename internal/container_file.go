@@ -170,12 +170,12 @@ type JSONPaperCrypt struct {
 	Version      string `json:"v"`
 	DataFormat   string `json:"f"`
 	SerialNumber string `json:"sn"`
-	Purpose      string `json:"p"`
-	Comment      string `json:"cm"`
-	CreatedAt    string `json:"ct"`
-	DataCRC24    string `json:"d_c24"`
-	DataCRC32    string `json:"d_c32"`
-	DataSHA256   string `json:"d_s256"`
+	Purpose      string `json:"p,omitempty"`
+	Comment      string `json:"cm,omitempty"`
+	CreatedAt    string `json:"t"`
+	DataCRC24    string `json:"c24"`
+	DataCRC32    string `json:"c32"`
+	DataSHA256   string `json:"s256"`
 	Data         []byte `json:"d"`
 }
 
@@ -187,7 +187,7 @@ func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
 		SerialNumber: p.SerialNumber,
 		Purpose:      p.Purpose,
 		Comment:      p.Comment,
-		CreatedAt:    p.CreatedAt.Format(TimeStampFormatLong),
+		CreatedAt:    p.CreatedAt.Format(TimeStampFormatJSON),
 		DataCRC24:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC24)),
 		DataCRC32:    base64.StdEncoding.EncodeToString(uint32ToBytes(p.DataCRC32)),
 		DataSHA256:   base64.StdEncoding.EncodeToString(p.DataSHA256[:]),
@@ -203,7 +203,7 @@ func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	createdAt, err := time.Parse(TimeStampFormatLong, jpc.CreatedAt)
+	createdAt, err := time.Parse(TimeStampFormatJSON, jpc.CreatedAt)
 	if err != nil {
 		return err
 	}
