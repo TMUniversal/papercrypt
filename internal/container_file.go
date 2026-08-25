@@ -588,17 +588,16 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		serializedData = strings.ToLower(serializedData)
 	}
 
-	return []byte(
-		fmt.Sprintf(`%s
+	return fmt.Appendf(nil, `%s
 %s: %08x
 
 
 %s
 `,
-			header,
-			HeaderFieldHeaderCRC32,
-			headerCRC32,
-			serializedData)), nil
+		header,
+		HeaderFieldHeaderCRC32,
+		headerCRC32,
+		serializedData), nil
 }
 
 func getPdf() *gofpdf.Fpdf {
