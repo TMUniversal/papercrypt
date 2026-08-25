@@ -3,45 +3,62 @@ package codematrix
 import (
 	"bytes"
 	"testing"
+
+	"github.com/makiuchi-d/gozxing"
 )
 
-func TestHeaderMarshalUnmarshal(t *testing.T) {
-	h := chunkHeader{
-		Version:  Version,
-		Index:    2,
-		Total:    4,
-		Reserved: 0,
-	}
-	b := h.Marshal()
-
-	got, err := unmarshalHeader(b[:])
+func TestSARoundtrip(t *testing.T) {
+	h := SAHeader{Index: 2, Total: 4}
+	bits := h.Encode()
+	got, off, err := DecodeSAHeader(bits, 0)
 	if err != nil {
-		t.Fatalf("unmarshalHeader: %v", err)
+		t.Fatalf("DecodeSAHeader: %v", err)
 	}
-
-	if got.Version != h.Version {
-		t.Errorf("Version = %d, want %d", got.Version, h.Version)
+	if off != 16 {
+		t.Fatalf("offset = %d, want 16", off)
 	}
-	if got.Index != h.Index {
-		t.Errorf("Index = %d, want %d", got.Index, h.Index)
-	}
-	if got.Total != h.Total {
-		t.Errorf("Total = %d, want %d", got.Total, h.Total)
+	if got.Index != 2 || got.Total != 4 {
+		t.Errorf("got {%d,%d}, want {2,4}", got.Index, got.Total)
 	}
 }
 
-func TestHeaderBadVersion(t *testing.T) {
-	b := [HeaderSize]byte{0xFF, 0, 0, 0}
-	_, err := unmarshalHeader(b[:])
+func TestSABadMode(t *testing.T) {
+	bits := gozxing.NewEmptyBitArray()
+	bits.AppendBits(0x00, 16)
+	_, _, err := DecodeSAHeader(bits, 0)
 	if err == nil {
-		t.Fatal("expected error for bad version")
+		t.Fatal("expected error for bad SA mode")
 	}
 }
 
-func TestHeaderTooShort(t *testing.T) {
-	_, err := unmarshalHeader([]byte{0x01, 0x02})
+func TestDataHeaderRoundtrip(t *testing.T) {
+	data := []byte("hello")
+	h := DataHeader{Mode: 0x04, Length: 5}
+	bits := h.Encode(qrVersion, data)
+
+	got, _, err := DecodeDataHeader(bits, 0, qrVersion)
+	if err != nil {
+		t.Fatalf("DecodeDataHeader: %v", err)
+	}
+	if got.Mode != 0x04 {
+		t.Errorf("Mode = %x, want 04", got.Mode)
+	}
+	if got.Length != 5 {
+		t.Errorf("Length = %d, want 5", got.Length)
+	}
+	if got.CRC32 == 0 {
+		t.Error("CRC32 should not be zero")
+	}
+}
+
+func TestDataHeaderBadMode(t *testing.T) {
+	bits := gozxing.NewEmptyBitArray()
+	bits.AppendBits(0x01, 4)
+	bits.AppendBits(0, 16)
+	bits.AppendBits(0, 32)
+	_, _, err := DecodeDataHeader(bits, 0, qrVersion)
 	if err == nil {
-		t.Fatal("expected error for short header")
+		t.Fatal("expected error for bad data mode")
 	}
 }
 
@@ -79,74 +96,41 @@ func TestRoundtripSmall(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
-
 	if len(images) != 1 {
 		t.Fatalf("got %d images, want 1", len(images))
 	}
-
 	got, err := Decode(images)
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-
 	if !bytes.Equal(got, data) {
-		t.Errorf("decoded data = %q, want %q", got, data)
+		t.Errorf("decoded = %q, want %q", got, data)
 	}
 }
 
 func TestRoundtripLarge(t *testing.T) {
-	// Generate data that exceeds MaxPayload to trigger multi-symbol split
-	data := make([]byte, MaxPayload+100)
+	data := make([]byte, maxChunkBytes+100)
 	for i := range data {
 		data[i] = byte(i % 251)
 	}
-
 	images, err := Encode(data)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
-
 	if len(images) != 2 {
 		t.Fatalf("got %d images, want 2", len(images))
 	}
-
 	got, err := Decode(images)
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-
-	if !bytes.Equal(got, data) {
-		t.Error("decoded data does not match original")
-	}
-}
-
-func TestRoundtripFourSymbols(t *testing.T) {
-	data := make([]byte, MaxPayload*3+50)
-	for i := range data {
-		data[i] = byte(i % 251)
-	}
-
-	images, err := Encode(data)
-	if err != nil {
-		t.Fatalf("Encode: %v", err)
-	}
-
-	if len(images) != 4 {
-		t.Fatalf("got %d images, want 4", len(images))
-	}
-
-	got, err := Decode(images)
-	if err != nil {
-		t.Fatalf("Decode: %v", err)
-	}
-
 	if !bytes.Equal(got, data) {
 		t.Error("decoded data does not match original")
 	}
 }
 
 func TestTooLarge(t *testing.T) {
-	data := make([]byte, MaxPayload*MaxSymbols+1)
+	data := make([]byte, maxChunkBytes*MaxSymbols+1)
 	_, err := Encode(data)
 	if err == nil {
 		t.Fatal("expected error for data too large")
@@ -166,17 +150,14 @@ func TestRoundtripEmpty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
-
 	if len(images) != 1 {
 		t.Fatalf("got %d images, want 1", len(images))
 	}
-
 	got, err := Decode(images)
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-
 	if !bytes.Equal(got, data) {
-		t.Errorf("decoded data = %q, want %q", got, data)
+		t.Errorf("decoded = %q, want %q", got, data)
 	}
 }

@@ -1,77 +1,128 @@
 package codematrix
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
-	"errors"
 	"fmt"
+	"hash/crc32"
 	"image"
+	"image/color"
 
 	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/makiuchi-d/gozxing/datamatrix/encoder"
+	"github.com/makiuchi-d/gozxing/multi/qrcode"
 )
 
 func Encode(data []byte) ([]image.Image, error) {
-	var buf bytes.Buffer
-	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: failed to create gzip writer"), err)
-	}
-	if _, err := gz.Write(data); err != nil {
-		return nil, errors.Join(errors.New("codematrix: failed to write gzip data"), err)
-	}
-	if err := gz.Close(); err != nil {
-		return nil, errors.Join(errors.New("codematrix: failed to close gzip writer"), err)
+	chunks := splitData(data)
+	if len(chunks) > MaxSymbols {
+		return nil, fmt.Errorf("codematrix: data too large: %d chunks (max %d)", len(chunks), MaxSymbols)
 	}
 
-	compressed := buf.Bytes()
-	if len(compressed) == 0 {
-		compressed = []byte{0}
-	}
-
-	numSymbols := (len(compressed) + MaxPayload - 1) / MaxPayload
-	if numSymbols > MaxSymbols {
-		return nil, fmt.Errorf("codematrix: data too large: %d bytes compressed requires %d symbols (max %d)", len(compressed), numSymbols, MaxSymbols)
-	}
-
-	images := make([]image.Image, numSymbols)
-	for i := 0; i < numSymbols; i++ {
-		start := i * MaxPayload
-		end := start + MaxPayload
-		if end > len(compressed) {
-			end = len(compressed)
-		}
-		chunk := compressed[start:end]
-
-		h := chunkHeader{
-			Version:  Version,
-			Index:    byte(i),
-			Total:    byte(numSymbols),
-			CRC24:    crc24Checksum(chunk),
-			Reserved: 0,
-		}
-		hdr := h.Marshal()
-
-		inner := make([]byte, 0, HeaderSize+len(chunk))
-		inner = append(inner, hdr[:]...)
-		inner = append(inner, chunk...)
-
-		payload := base64.StdEncoding.EncodeToString(inner)
-
-		dmWriter := datamatrix.NewDataMatrixWriter()
-		hints := map[gozxing.EncodeHintType]interface{}{
-			gozxing.EncodeHintType_DATA_MATRIX_SHAPE: encoder.SymbolShapeHint_FORCE_SQUARE,
-		}
-
-		bits, err := dmWriter.Encode(payload, gozxing.BarcodeFormat_DATA_MATRIX, 0, 0, hints)
+	images := make([]image.Image, len(chunks))
+	for i, chunk := range chunks {
+		payload, err := buildPayload(chunk, i, len(chunks))
 		if err != nil {
-			return nil, errors.Join(fmt.Errorf("codematrix: failed to encode symbol %d/%d", i+1, numSymbols), err)
+			return nil, fmt.Errorf("codematrix: build payload %d/%d: %w", i+1, len(chunks), err)
 		}
 
-		images[i] = bits
+		bm, err := encodeQRMatrix(payload)
+		if err != nil {
+			return nil, fmt.Errorf("codematrix: encode QR %d/%d: %w", i+1, len(chunks), err)
+		}
+
+		images[i] = bitMatrixToImage(bm)
 	}
 
 	return images, nil
+}
+
+func Decode(images []image.Image) ([]byte, error) {
+	if len(images) == 0 {
+		return nil, errNoImages
+	}
+	if len(images) > MaxSymbols {
+		return nil, errTooManyImages
+	}
+
+	reader := qrcode.NewQRCodeMultiReader()
+
+	var allResults []*gozxing.Result
+	for i, img := range images {
+		bm, err := gozxing.NewBinaryBitmapFromImage(img)
+		if err != nil {
+			return nil, fmt.Errorf("codematrix: create bitmap %d: %w", i+1, err)
+		}
+		results, err := reader.DecodeMultipleWithoutHint(bm)
+		if err != nil {
+			return nil, fmt.Errorf("codematrix: decode QR %d: %w", i+1, err)
+		}
+		allResults = append(allResults, results...)
+	}
+
+	if len(allResults) == 0 {
+		return nil, fmt.Errorf("codematrix: no QR codes decoded")
+	}
+
+	var raw []byte
+	if len(allResults) == 1 {
+		raw = []byte(allResults[0].GetText())
+	} else {
+		for _, r := range allResults {
+			raw = append(raw, []byte(r.GetText())...)
+		}
+	}
+
+	return decodePayload(raw)
+}
+
+func decodePayload(raw []byte) ([]byte, error) {
+	bits := gozxing.NewEmptyBitArray()
+	for _, b := range raw {
+		bits.AppendBits(int(b), 8)
+	}
+
+	offset := 0
+
+	_, newOffset, err := DecodeSAHeader(bits, offset)
+	if err != nil {
+		return nil, fmt.Errorf("codematrix: decode SA header: %w", err)
+	}
+	offset = newOffset
+
+	dh, newOffset, err := DecodeDataHeader(bits, offset, qrVersion)
+	if err != nil {
+		return nil, fmt.Errorf("codematrix: decode data header: %w", err)
+	}
+	offset = newOffset
+
+	remaining := bits.GetSize() - offset
+	needed := dh.Length * 8
+	if remaining < needed {
+		return nil, fmt.Errorf("codematrix: not enough data bits: need %d, have %d", needed, remaining)
+	}
+
+	data := make([]byte, dh.Length)
+	bits.ToBytes(offset, data, 0, dh.Length)
+
+	if crc32.ChecksumIEEE(data) != dh.CRC32 {
+		return nil, fmt.Errorf("codematrix: CRC32 mismatch")
+	}
+
+	return data, nil
+}
+
+func bitMatrixToImage(bm *gozxing.BitMatrix) image.Image {
+	w := bm.GetWidth()
+	h := bm.GetHeight()
+	gray := image.NewGray(image.Rect(0, 0, w, h))
+
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			if bm.Get(x, y) {
+				gray.SetGray(x, y, color.Gray{Y: 0})
+			} else {
+				gray.SetGray(x, y, color.Gray{Y: 255})
+			}
+		}
+	}
+
+	return gray
 }
