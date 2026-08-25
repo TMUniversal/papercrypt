@@ -37,38 +37,14 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
-)
-
-const (
-	// PdfTextFont gives the typeface as it is named in the PDF
-	PdfTextFont = "Text"
-	// PdfMonoFont gives the typeface for monospace passages as it is named in the PDF
-	PdfMonoFont = "Mono"
-	// PdfDataLineFontSize sets the font size of data lines in the PDF [pt]
-	PdfDataLineFontSize = 11
+	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
 )
 
 const printProductQrCode = false
 
-var (
-	// PdfTextFontRegularBytes holds the font data for the text typeface, as embedded at compile time. For regular text.
-	PdfTextFontRegularBytes []byte
-	// PdfTextFontBoldBytes holds the font data for the text typeface, as embedded at compile time. For bold text.
-	PdfTextFontBoldBytes []byte
-	// PdfTextFontItalicBytes holds the font data for the text typeface, as embedded at compile time. For italic text.
-	PdfTextFontItalicBytes []byte
-)
-
-var (
-	// PdfMonoFontRegularBytes holds the font data for the monospace typeface, as embedded at compile time. For regular text.
-	PdfMonoFontRegularBytes []byte
-	// PdfMonoFontBoldBytes holds the font data for the monospace typeface, as embedded at compile time. For bold text.
-	PdfMonoFontBoldBytes []byte
-	// PdfMonoFontItalicBytes holds the font data for the monospace typeface, as embedded at compile time. For italic text.
-	PdfMonoFontItalicBytes []byte
-)
-
 const (
+	// DataLineFontSize sets the font size of data lines in the PDF [pt]
+	DataLineFontSize = 11
 	// PDFHeaderSheetID holds the text label displayed in the PDF header for the sheet ID.
 	PDFHeaderSheetID = "Sheet ID"
 	// PDFHeading holds the title of the PDF document, as shown on the first page.
@@ -175,10 +151,10 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	pdf := GetPdf()
-	pdf.SetHeaderFuncMode(func() {
-		pdf.SetY(5)
-		pdf.SetFont(PdfMonoFont, "", 10)
+	doc := pdf.GetPdf()
+	doc.SetHeaderFuncMode(func() {
+		doc.SetY(5)
+		doc.SetFont(pdf.MonoFont, "", 10)
 		headerLine := fmt.Sprintf(
 			"%s: %s - %s",
 			PDFHeaderSheetID,
@@ -188,14 +164,14 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		if p.Purpose != "" {
 			headerLine += fmt.Sprintf(" - %s", p.Purpose)
 		}
-		pdf.CellFormat(0, 10, headerLine,
+		doc.CellFormat(0, 10, headerLine,
 			"", 0, "C", false, 0, "")
 
 		{
 			// add the data matrix code
-			pdf.RegisterImageReader("dm.png", "PNG", dm)
+			doc.RegisterImageReader("dm.png", "PNG", dm)
 			imageSize := 5.0
-			pdf.ImageOptions(
+			doc.ImageOptions(
 				"dm.png",
 				195,
 				50,
@@ -208,13 +184,13 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			)
 		}
 
-		pdf.Ln(10)
+		doc.Ln(10)
 
 		if printProductQrCode {
 			// add product qr code in upper left corner
-			pdf.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
+			doc.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
 			imageSize := 15.0
-			pdf.ImageOptions(
+			doc.ImageOptions(
 				"product_link_qr.png",
 				186,
 				11,
@@ -227,32 +203,32 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			)
 		}
 	}, true)
-	pdf.SetFooterFunc(func() {
-		pdf.SetY(-15)
-		pdf.SetFont(PdfMonoFont, "", 10)
-		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
+	doc.SetFooterFunc(func() {
+		doc.SetY(-15)
+		doc.SetFont(pdf.MonoFont, "", 10)
+		doc.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()), "", 0, "R", false, 0, "")
 	})
-	pdf.AddPage()
+	doc.AddPage()
 
 	{
 		// Info text
-		pdf.SetFont(PdfTextFont, "B", 16)
-		pdf.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
-		pdf.Ln(10)
+		doc.SetFont(pdf.TextFont, "B", 16)
+		doc.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
+		doc.Ln(10)
 
-		pdf.SetFont(PdfTextFont, "B", 10)
-		pdf.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
-		pdf.Ln(5)
+		doc.SetFont(pdf.TextFont, "B", 10)
+		doc.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
+		doc.Ln(5)
 
-		pdf.SetFont(PdfTextFont, "", 10)
-		pdf.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
-		pdf.Ln(5)
+		doc.SetFont(pdf.TextFont, "", 10)
+		doc.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
+		doc.Ln(5)
 
-		pdf.SetFont(PdfTextFont, "B", 10)
-		pdf.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
-		pdf.Ln(5)
+		doc.SetFont(pdf.TextFont, "B", 10)
+		doc.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
+		doc.Ln(5)
 
-		pdf.SetFont(PdfTextFont, "", 10)
+		doc.SetFont(pdf.TextFont, "", 10)
 		representationText := fmt.Sprintf(
 			PDFSectionRepresentationContentBase,
 			BytesPerLine,
@@ -262,7 +238,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		if p.DataFormat == PaperCryptDataFormatPGP {
 			representationText += PDFSectionRepresentationContentGzip
 		}
-		pdf.MultiCell(
+		doc.MultiCell(
 			0,
 			5,
 			representationText,
@@ -270,25 +246,25 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			"",
 			false,
 		)
-		pdf.Ln(5)
+		doc.Ln(5)
 
-		pdf.SetFont(PdfTextFont, "B", 10)
-		pdf.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
-		pdf.Ln(5)
+		doc.SetFont(pdf.TextFont, "B", 10)
+		doc.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
+		doc.Ln(5)
 
-		pdf.SetFont(PdfTextFont, "", 10)
+		doc.SetFont(pdf.TextFont, "", 10)
 		recoverInstruction := PDFSectionRecoveryContent
 		if no2D {
 			recoverInstruction = PDFSectionRecoveryContentNo2D
 		}
-		pdf.MultiCell(0, 5, recoverInstruction, "", "", false)
+		doc.MultiCell(0, 5, recoverInstruction, "", "", false)
 	}
 
 	// add the qr code
 	if !no2D {
-		pdf.RegisterImageReader("data2D.png", "PNG", data2D)
+		doc.RegisterImageReader("data2D.png", "PNG", data2D)
 		imageSize := 167.0
-		pdf.ImageOptions(
+		doc.ImageOptions(
 			"data2D.png",
 			21,
 			5,
@@ -299,17 +275,17 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			0,
 			"",
 		)
-		pdf.Ln(50)
+		doc.Ln(50)
 	}
 
-	pdf.AddPage()
+	doc.AddPage()
 	// print header lines
-	pdf.SetFont(PdfMonoFont, "B", PdfDataLineFontSize)
+	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
 	for _, line := range strings.Split(parts[0], "\n") {
-		pdf.Cell(0, 5, "# "+line)
-		pdf.Ln(5)
+		doc.Cell(0, 5, "# "+line)
+		doc.Ln(5)
 	}
-	pdf.Ln(10)
+	doc.Ln(10)
 
 	// print data lines
 	dataLines := strings.Split(parts[1], "\n")
@@ -322,47 +298,25 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		}
 	}
 
-	pdf.SetFont(PdfMonoFont, "B", PdfDataLineFontSize)
+	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
 	for n, line := range filtered {
 		// mark every second line with a grey background
 		if n%2 == 0 {
-			pdf.SetFillColor(240, 240, 240)
-			pdf.Rect(20, pdf.GetY(), 166, 5, "F")
+			doc.SetFillColor(240, 240, 240)
+			doc.Rect(20, doc.GetY(), 166, 5, "F")
 		}
 
-		pdf.Cell(0, 5, line)
-		pdf.Ln(5)
+		doc.Cell(0, 5, line)
+		doc.Ln(5)
 	}
 
-	pdf.Close()
+	doc.Close()
 
 	var buf bytes.Buffer
-	err = pdf.Output(&buf)
+	err = doc.Output(&buf)
 	if err != nil {
 		return nil, errors.Join(errors.New("error generating pdf"), err)
 	}
 
 	return buf.Bytes(), nil
-}
-
-// GetPdf returns a new PDF instance configured with PaperCrypt fonts and layout settings.
-func GetPdf() *gofpdf.Fpdf {
-	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetCreator("PaperCrypt/"+internal.VersionInfo.GitVersion, true)
-	pdf.SetTextRenderingMode(4)
-	pdf.SetTopMargin(20)
-	pdf.SetLeftMargin(20)
-	pdf.SetRightMargin(20)
-	pdf.SetAutoPageBreak(true, 15)
-	pdf.AliasNbPages("")
-
-	pdf.AddUTF8FontFromBytes(PdfTextFont, "", PdfTextFontRegularBytes)
-	pdf.AddUTF8FontFromBytes(PdfTextFont, "B", PdfTextFontBoldBytes)
-	pdf.AddUTF8FontFromBytes(PdfTextFont, "I", PdfTextFontItalicBytes)
-
-	pdf.AddUTF8FontFromBytes(PdfMonoFont, "", PdfMonoFontRegularBytes)
-	pdf.AddUTF8FontFromBytes(PdfMonoFont, "B", PdfMonoFontBoldBytes)
-	pdf.AddUTF8FontFromBytes(PdfMonoFont, "I", PdfMonoFontItalicBytes)
-
-	return pdf
 }

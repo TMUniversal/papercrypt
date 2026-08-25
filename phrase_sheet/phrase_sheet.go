@@ -35,8 +35,8 @@ import (
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
 )
 
 // GenerateFromSeed selects a number of words from the given list
@@ -69,7 +69,7 @@ func GenerateFromSeed(seed int64, amount int, wordList *[]string) ([]string, err
 
 // GeneratePassphraseSheetPDF creates a PDF file displaying the given words in three columns, the seed in the header.
 func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
-	pdf := file_format.GetPdf()
+	doc := pdf.GetPdf()
 
 	dm := new(bytes.Buffer)
 	dmDims := [2]int{}
@@ -107,16 +107,16 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 
 	date := time.Now().Format(internal.TimeStampFormatPDFHeader)
 
-	pdf.SetHeaderFuncMode(func() {
-		pdf.SetY(5)
-		pdf.SetFont(file_format.PdfMonoFont, "", 10)
+	doc.SetHeaderFuncMode(func() {
+		doc.SetY(5)
+		doc.SetFont(pdf.MonoFont, "", 10)
 		headerLine := fmt.Sprintf("Seed: %s - %s", encodedSeed, date)
-		pdf.CellFormat(0, 10, headerLine,
+		doc.CellFormat(0, 10, headerLine,
 			"", 0, "C", false, 0, "")
 
 		{
 			// add the data matrix code
-			pdf.RegisterImageReader("dm.png", "PNG", dm)
+			doc.RegisterImageReader("dm.png", "PNG", dm)
 			width := float64(dmDims[0])
 			height := float64(dmDims[1])
 
@@ -126,7 +126,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			imageWidth := width * scale
 			imageHeight := height * scale
 
-			pdf.ImageOptions(
+			doc.ImageOptions(
 				"dm.png",
 				170,
 				7,
@@ -139,23 +139,23 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			)
 		}
 
-		pdf.Ln(10)
+		doc.Ln(10)
 	}, true)
-	pdf.SetFooterFunc(func() {
-		pdf.SetY(-15)
-		pdf.SetFont(file_format.PdfMonoFont, "", 10)
-		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
+	doc.SetFooterFunc(func() {
+		doc.SetY(-15)
+		doc.SetFont(pdf.MonoFont, "", 10)
+		doc.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()), "", 0, "R", false, 0, "")
 	})
-	pdf.AddPage()
+	doc.AddPage()
 
 	{
 		// Info text
-		pdf.SetFont(file_format.PdfTextFont, "B", 16)
-		pdf.CellFormat(0, 10, "PaperCrypt Passphrase Sheet", "", 0, "C", false, 0, "")
-		pdf.Ln(10)
+		doc.SetFont(pdf.TextFont, "B", 16)
+		doc.CellFormat(0, 10, "PaperCrypt Passphrase Sheet", "", 0, "C", false, 0, "")
+		doc.Ln(10)
 
-		pdf.SetFont(file_format.PdfTextFont, "", 10)
-		pdf.MultiCell(
+		doc.SetFont(pdf.TextFont, "", 10)
+		doc.MultiCell(
 			0,
 			5,
 			`To create a passphrase or password with this sheet, start by choosing words on this sheet, preferably following these guidelines:
@@ -165,8 +165,8 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			"L",
 			false,
 		)
-		pdf.Ln(2)
-		pdf.MultiCell(
+		doc.Ln(2)
+		doc.MultiCell(
 			0,
 			5,
 			`You can regenerate this sheet using the seed printed at the top of each page, which is also encoded in the Data Matrix at the top.`,
@@ -175,7 +175,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			false,
 		)
 
-		pdf.Ln(3)
+		doc.Ln(3)
 	}
 
 	tableWidth := 170.0 // 210mm - 20mm left margin - 20mm right margin
@@ -186,19 +186,19 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		for j := 0; j < 3; j++ {
 			if i+j < len(words) {
 				// print index
-				pdf.SetFont(file_format.PdfMonoFont, "", 10)
-				pdf.CellFormat(10, 10, fmt.Sprintf("%d", i+j+1), "", 0, "R", false, 0, "")
+				doc.SetFont(pdf.MonoFont, "", 10)
+				doc.CellFormat(10, 10, fmt.Sprintf("%d", i+j+1), "", 0, "R", false, 0, "")
 				// print word
-				pdf.SetFont(file_format.PdfMonoFont, "B", 14)
-				pdf.CellFormat(columnWidth, 10, words[i+j], "", 0, "L", false, 0, "")
+				doc.SetFont(pdf.MonoFont, "B", 14)
+				doc.CellFormat(columnWidth, 10, words[i+j], "", 0, "L", false, 0, "")
 			}
 		}
-		pdf.Ln(-1)
+		doc.Ln(-1)
 	}
 
 	{
 		// amount of possible combinations
-		pdf.Ln(10)
+		doc.Ln(10)
 
 		// calculate n choose k (n! / (k! * (n-k)!)
 		// for 6 words, 12, and 24 of 135 words
@@ -211,9 +211,9 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		twelveOf135Power := math.Log2(float64(twelveOf135.Int64()))
 		twentyFourOf135Power := math.Log2(float64(twentyFourOf135.Int64()))
 
-		pdf.SetFont(file_format.PdfTextFont, "", 10)
+		doc.SetFont(pdf.TextFont, "", 10)
 
-		pdf.MultiCell(
+		doc.MultiCell(
 			0,
 			5,
 			fmt.Sprintf(
@@ -232,9 +232,9 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 		)
 	}
 
-	pdf.Close()
+	doc.Close()
 	var buf bytes.Buffer
-	err := pdf.Output(&buf)
+	err := doc.Output(&buf)
 	if err != nil {
 		return nil, errors.Join(errors.New("error generating PDF"), err)
 	}

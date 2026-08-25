@@ -29,8 +29,8 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/charmbracelet/colorprofile"
 	"github.com/tmuniversal/papercrypt/v3/cmd"
-	"github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
 )
 
 // LicenseText is the license of the application as a string
@@ -86,12 +86,12 @@ func main() {
 	cmd.ThirdPartyText = &ThirdPartyLicenses
 	cmd.WordListFile = &WordList
 	internal.VersionInfo = buildVersion(version, commit, date, builtBy, treeState)
-	file_format.PdfTextFontRegularBytes = []byte(pdfFontTextRegular)
-	file_format.PdfTextFontItalicBytes = []byte(pdfFontTextItalic)
-	file_format.PdfTextFontBoldBytes = []byte(pdfFontTextBold)
-	file_format.PdfMonoFontRegularBytes = []byte(pdfFontMonoRegular)
-	file_format.PdfMonoFontBoldBytes = []byte(pdfFontMonoBold)
-	file_format.PdfMonoFontItalicBytes = []byte(pdfFontMonoItalic)
+	pdf.TextFontRegularBytes = []byte(pdfFontTextRegular)
+	pdf.TextFontItalicBytes = []byte(pdfFontTextItalic)
+	pdf.TextFontBoldBytes = []byte(pdfFontTextBold)
+	pdf.MonoFontRegularBytes = []byte(pdfFontMonoRegular)
+	pdf.MonoFontBoldBytes = []byte(pdfFontMonoBold)
+	pdf.MonoFontItalicBytes = []byte(pdfFontMonoItalic)
 
 	cmd.Execute()
 }
