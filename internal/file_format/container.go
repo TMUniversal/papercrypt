@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package file_format implements PaperCrypt document container formats.
 package file_format
 
 import (

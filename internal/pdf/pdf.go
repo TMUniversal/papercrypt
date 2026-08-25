@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package pdf provides PDF generation utilities for PaperCrypt documents.
 package pdf
 
 import (

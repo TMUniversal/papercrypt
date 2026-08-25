@@ -43,6 +43,8 @@ linters:
       - path: "internal/phrase_sheet.go"
         # this should be entirely fine, since the seed is generated with crypto/rand
         text: "G404.*"
+      - path: "internal/phrase_sheet/phrase_sheet.go"
+        text: "G404.*"
       - # disable file inclusion via variable (gosec) here, it is a test file
         path: "cmd/decode_test.go"
         text: "G304:*"

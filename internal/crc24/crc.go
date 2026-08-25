@@ -31,11 +31,6 @@ const (
 	CRC24Initial = initial
 )
 
-// Crc24Checksum generates a CRC-24 checksum for the given data.
-func Crc24Checksum(data []byte) uint32 {
-	return Checksum(data)
-}
-
 // ValidateCRC24 validates the CRC-24 checksum of the given data against the provided checksum.
 func ValidateCRC24(data []byte, checksum uint32) bool {
 	return Validate(data, checksum)

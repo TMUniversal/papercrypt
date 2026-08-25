@@ -81,13 +81,13 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 			line += fmt.Sprintf("%02X ", (*data)[i+j])
 		}
 
-		lineCRC24 := crc24.Crc24Checksum(dataLine)
+		lineCRC24 := crc24.Checksum(dataLine)
 		line += fmt.Sprintf("%06X\n", lineCRC24)
 
 		dataBlock = append(dataBlock, []byte(line)...)
 	}
 
-	dataCRC24 := crc24.Crc24Checksum(*data)
+	dataCRC24 := crc24.Checksum(*data)
 	finalLineNumber := max(int(lines+1), min(1, int(lines)))
 	dataBlock = append(dataBlock, fmt.Appendf(nil, "%d: %06X\n", finalLineNumber, dataCRC24)...)
 
@@ -171,7 +171,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 			return nil, fmt.Errorf(
 				"invalid line checksum: line %d has checksum %06X, expected %06X",
 				lineData.LineNumber,
-				crc24.Crc24Checksum(lineData.Data),
+				crc24.Checksum(lineData.Data),
 				lineData.CRC24,
 			)
 		}

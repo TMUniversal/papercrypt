@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Package phrase_sheet generates passphrase recovery sheets as PDFs.
 package phrase_sheet
 
 import (

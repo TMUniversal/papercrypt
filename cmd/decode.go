@@ -67,7 +67,9 @@ The data should be read from a file or stdin, you will be required to provide a 
 		}
 		paperCryptFileContents = internal.NormalizeLineEndings(paperCryptFileContents)
 
-		headersSection, bodySection, err := file_format.SplitTextHeaderAndBody(paperCryptFileContents)
+		headersSection, bodySection, err := file_format.SplitTextHeaderAndBody(
+			paperCryptFileContents,
+		)
 		if err != nil {
 			return errors.Join(errors.New("header not found"), err)
 		}
