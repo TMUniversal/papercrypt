@@ -1,3 +1,32 @@
+# [2.1.0](https://github.com/TMUniversal/papercrypt/compare/v2.0.3...v2.1.0) (2026-08-25)
+
+
+### Bug Fixes
+
+* convert colour model to remove 16-bit depth ([21a5ce1](https://github.com/TMUniversal/papercrypt/commit/21a5ce100ca8fee3d9bcf5b6d66c43112543f5ac))
+* **deps:** undo accidental papercrypt v1 upgrade ([5c25deb](https://github.com/TMUniversal/papercrypt/commit/5c25deb28e024d3c1ac10b78dc9df002c9776490))
+* limit gzip decoding from scanned code ([bd91145](https://github.com/TMUniversal/papercrypt/commit/bd91145c9f43abb97fb58b6aa8c46998acdc9a6c))
+* set version support to v3 ([a78489b](https://github.com/TMUniversal/papercrypt/commit/a78489bdadca12d8b89b4608acf24e8a1de4bc2b))
+* update copyright notice ([65ea0c5](https://github.com/TMUniversal/papercrypt/commit/65ea0c573619b4af90045a9a9be78a60185e6627))
+* update version handling ([a1e211e](https://github.com/TMUniversal/papercrypt/commit/a1e211e95db1f38134d88f65dba9f3d58ccbb718))
+
+
+### Features
+
+* add encoding modes ([ad5d612](https://github.com/TMUniversal/papercrypt/commit/ad5d6128353251e8b84def7386f38036a5cf93cb))
+* add timestamp format for marshalled document ([6af36d4](https://github.com/TMUniversal/papercrypt/commit/6af36d48a910a32573fae614e78c6802e2079dc5))
+* compress 2d code contents ([6944ba7](https://github.com/TMUniversal/papercrypt/commit/6944ba7443fd5e3044bdfdbf48e838a64f79ca7a))
+* disable payload limit via flag ([309cd98](https://github.com/TMUniversal/papercrypt/commit/309cd98d1bdcad3315d83bb35d088d585d123591))
+* do not compress data in raw mode ([727c9a7](https://github.com/TMUniversal/papercrypt/commit/727c9a7faf1db1dd574b7aecb5cea584be65b002))
+* remove extra encoding and validation header ([b5a23ab](https://github.com/TMUniversal/papercrypt/commit/b5a23ab264d05617ddefa77e0896f7ed11b76f08))
+* remove inner compression layer from encrypted mode ([df5ba0b](https://github.com/TMUniversal/papercrypt/commit/df5ba0b4dce3ad8435ddbb08024827085ee79f32))
+* update json format ([0d55fef](https://github.com/TMUniversal/papercrypt/commit/0d55fef48eb8cf671b651d3d7696995de4dfe9b0))
+
+
+### Performance Improvements
+
+* remove image-to-image copy ([9783e62](https://github.com/TMUniversal/papercrypt/commit/9783e62dc863173bae193a25d548a86b99bfa36a))
+
 ## [2.0.3](https://github.com/TMUniversal/papercrypt/compare/v2.0.2...v2.0.3) (2025-09-28)
 
 
