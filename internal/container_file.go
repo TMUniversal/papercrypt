@@ -110,7 +110,7 @@ const (
 	PDFSectionDescriptionContent = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
 	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
 	PDFSectionRepresentationHeading = "Binary Data Representation"
-	// PDFSectionRepresentationContent holds the content of the section describing the data representation.
+	// PDFSectionRepresentationContentBase holds the content of the section describing the data representation.
 	PDFSectionRepresentationContentBase = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
 	// PDFSectionRepresentationContentGzip is the gzip-specific suffix appended for PGP-format data.
 	PDFSectionRepresentationContentGzip = " Data is compressed using the gzip algorithm."
