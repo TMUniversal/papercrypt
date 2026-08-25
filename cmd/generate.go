@@ -2,7 +2,7 @@
  * This file is part of PaperCrypt.
  *
  * PaperCrypt lets you prepare encrypted messages for printing on paper.
- * Copyright (C) 2023-2024 TMUniversal <me@tmuniversal.eu>.
+ * Copyright (C) 2023-2026 TMUniversal <me@tmuniversal.eu>.
  *
  * PaperCrypt is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -223,7 +223,8 @@ func init() {
 	_ = generateCmd.Flags().MarkHidden("no-qr")
 	generateCmd.Flags().
 		BoolVar(&lowerCasedBase16, "lowercase", false, "Whether to use lower case letters for hexadecimal digits")
-	generateCmd.Flags().BoolVar(&rawData, "raw", false, "Store raw (uncompressed, unencrypted) data")
+	generateCmd.Flags().
+		BoolVar(&rawData, "raw", false, "Store raw (uncompressed, unencrypted) data")
 
 	generateCmd.Flags().
 		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption. Not recommended, will be prompted for if not provided")
