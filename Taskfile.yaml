@@ -37,7 +37,16 @@ tasks:
       - task: clean:test
 
   test:unit:
-    desc: Run unit tests
+    desc: Run unit tests (skips slow aztec encode/decode tests)
+    vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+    cmds:
+      - go test {{.TEST_OPTIONS}} -short -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+
+  test:unit:full:
+    desc: Run all unit tests including slow aztec encode/decode tests
     vars:
       TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'

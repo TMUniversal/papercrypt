@@ -28,6 +28,9 @@ import (
 )
 
 func TestRoundtrip(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	data := append(
 		[]byte(`{"v":"3.0.0-dev","f":"PGP","sn":"test","d":"`),
 		bytes.Repeat([]byte("hello world "), 100)...,
@@ -47,6 +50,9 @@ func TestRoundtrip(t *testing.T) {
 }
 
 func TestRoundtripRawBytes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	data := make([]byte, 500)
 	for i := range data {
 		data[i] = byte(i % 251)
@@ -65,6 +71,9 @@ func TestRoundtripRawBytes(t *testing.T) {
 }
 
 func TestRoundtripEmpty(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	img, err := Encode([]byte{})
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
@@ -79,6 +88,9 @@ func TestRoundtripEmpty(t *testing.T) {
 }
 
 func TestEncodePNG(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	data := []byte("hello")
 	pngBytes, err := EncodePNG(data)
 	if err != nil {
@@ -101,6 +113,9 @@ func TestEncodePNG(t *testing.T) {
 }
 
 func TestDecodeDecompressionBomb(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	// Lower the limit so Encode can produce a payload that triggers it.
 	// The Aztec code format caps out at ~3 KiB of base64 text, so the
 	// decompressed size through Encode→Decode is bounded well below 10 MiB.
@@ -124,6 +139,9 @@ func TestDecodeDecompressionBomb(t *testing.T) {
 }
 
 func TestDecodeLimitDisabled(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow aztec encode/decode test")
+	}
 	saved := MaxDecodedPayloadSize
 	MaxDecodedPayloadSize = 200
 	defer func() { MaxDecodedPayloadSize = saved }()
