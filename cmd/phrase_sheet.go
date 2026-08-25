@@ -32,6 +32,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 const (
@@ -99,10 +100,10 @@ var phraseSheetCmd = &cobra.Command{
 		if err != nil {
 			return errors.Join(errors.New("error writing PDF"), err)
 		}
-		internal.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 
 		log.WithField("size", n).
-			Infof("Wrote %s PDF file to %s.", internal.SprintBinarySize(n), outFile.Name())
+			Infof("Wrote %s PDF file to %s.", terminal.SprintBinarySize(n), outFile.Name())
 
 		return nil
 	},

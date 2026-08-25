@@ -31,6 +31,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var words int
@@ -89,7 +90,7 @@ which can be found here: %s.`,
 			_, _ = fmt.Fprintln(outFile)
 		}
 
-		internal.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

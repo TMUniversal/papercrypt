@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build windows
 
 /*
  * This file is part of PaperCrypt.
@@ -20,7 +20,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package internal
+package terminal
 
 import (
 	"errors"
@@ -33,9 +33,9 @@ import (
 
 func readTtyLinePlatform() ([]byte, error) {
 	// if stdin is a terminal, use it with promptui
-	if term.IsTerminal(syscall.Stdin) {
+	if term.IsTerminal(int(syscall.Stdin)) {
 		prompt := promptui.Prompt{
-			Label:  "Passphrase (hidden)",
+			Label:  "Passphrase",
 			Mask:   '*',
 			Stdout: os.Stderr,
 		}
@@ -48,24 +48,7 @@ func readTtyLinePlatform() ([]byte, error) {
 		return []byte(result), nil
 	}
 
-	// otherwise, try /dev/tty
-	tty, err := os.Open("/dev/tty")
-	if err != nil {
-		return nil, errors.Join(errors.New("could not open /dev/tty"), err)
-	}
-
-	password, err := term.ReadPassword(int(tty.Fd()))
-	if err != nil {
-		return nil, errors.Join(errors.New("could not read password from /dev/tty"),
-			err)
-	}
-	if password == nil {
-		return nil, errors.New("could not read password from /dev/tty")
-	}
-
-	if err = tty.Close(); err != nil {
-		return nil, errors.Join(errors.New("could not close /dev/tty"), err)
-	}
-
-	return password, nil
+	return nil, errors.New(
+		"cannot access terminal outside stdin on Windows, if you must pass data through stdin, you can use the --passphrase flag",
+	)
 }

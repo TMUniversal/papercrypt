@@ -32,6 +32,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (
@@ -116,7 +117,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 				return errors.Join(errors.New("error writing output"), err)
 			}
 
-			internal.PrintWrittenSizeToDebug(n, outFile)
+			terminal.PrintWrittenSizeToDebug(n, outFile)
 			return nil
 		}
 
@@ -158,7 +159,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 			return errors.Join(errors.New("error writing output"), err)
 		}
 
-		internal.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

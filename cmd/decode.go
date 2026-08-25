@@ -28,6 +28,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (
@@ -99,7 +100,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			cmd.Println(
 				"Enter your decryption passphrase (the passphrase you used to encrypt the data)",
 			)
-			passphraseBytes, err = internal.SensitivePrompt()
+			passphraseBytes, err = terminal2.SensitivePrompt()
 			if err != nil {
 				return errors.Join(errors.New("error reading passphrase"), err)
 			}
@@ -135,7 +136,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		internal.PrintWrittenSizeToDebug(n, outFile)
+		terminal2.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

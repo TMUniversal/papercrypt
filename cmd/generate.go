@@ -31,6 +31,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
+	terminal2 "github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (
@@ -119,13 +120,13 @@ encrypted data.`,
 			var passphraseBytes []byte
 			if !cmd.Flags().Lookup("passphrase").Changed {
 				log.Info("Enter your encryption passphrase")
-				passphraseBytes, err = internal.SensitivePrompt()
+				passphraseBytes, err = terminal2.SensitivePrompt()
 				if err != nil {
 					return errors.Join(errors.New("error reading passphrase"), err)
 				}
 
 				log.Info("Enter your passphrase again to confirm")
-				passphraseAgain, err := internal.SensitivePrompt()
+				passphraseAgain, err := terminal2.SensitivePrompt()
 				if err != nil {
 					return errors.Join(errors.New("error reading passphrase"), err)
 				}
@@ -187,7 +188,7 @@ encrypted data.`,
 			return errors.Join(errors.New("error writing to file"), err)
 		}
 
-		internal.PrintWrittenSizeToDebug(n, outFile)
+		terminal2.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }
