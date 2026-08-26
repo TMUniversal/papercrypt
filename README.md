@@ -286,17 +286,17 @@ PCE1 + base45(CRC-32 of payload) + base45(payload)
 
 **Binary container wire format** (produced by `MarshalBinary`):
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 4 | Magic: `PC\x03\x00` |
-| 4 | 3 | Program Version (major, minor, patch as uint8) |
-| 7 | 1 | Format (data format byte) |
-| 8 | var | Serial number (length-prefixed) |
-| var | var | Purpose (length-prefixed) |
-| var | var | Comment (length-prefixed) |
-| var | 8 | Created at (Unix nanoseconds, int64) |
-| var | 32 | SHA-256 checksum of payload |
-| var | var | Encrypted payload |
+| Offset | Size | Field                                          |
+| ------ | ---- | ---------------------------------------------- |
+| 0      | 4    | Magic: `PC\x03\x00`                            |
+| 4      | 3    | Program Version (major, minor, patch as uint8) |
+| 7      | 1    | Format (data format byte)                      |
+| 8      | var  | Serial number (length-prefixed)                |
+| var    | var  | Purpose (length-prefixed)                      |
+| var    | var  | Comment (length-prefixed)                      |
+| var    | 8    | Created at (Unix nanoseconds, int64)           |
+| var    | 32   | SHA-256 checksum of payload                    |
+| var    | var  | Encrypted payload                              |
 
 **Decoding pipeline** (reverses encoding):
 
