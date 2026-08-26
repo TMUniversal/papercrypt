@@ -23,13 +23,14 @@ package codematrix
 import (
 	"bytes"
 	"image"
+	"image/color"
 	"strings"
 	"testing"
 )
 
 func TestRoundtrip(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	data := append(
 		[]byte(`{"v":"3.0.0-dev","f":"PGP","sn":"test","d":"`),
@@ -51,7 +52,7 @@ func TestRoundtrip(t *testing.T) {
 
 func TestRoundtripRawBytes(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	data := make([]byte, 500)
 	for i := range data {
@@ -72,7 +73,7 @@ func TestRoundtripRawBytes(t *testing.T) {
 
 func TestRoundtripEmpty(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	img, err := Encode([]byte{})
 	if err != nil {
@@ -89,7 +90,7 @@ func TestRoundtripEmpty(t *testing.T) {
 
 func TestEncodePNG(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	data := []byte("hello")
 	pngBytes, err := EncodePNG(data)
@@ -114,10 +115,10 @@ func TestEncodePNG(t *testing.T) {
 
 func TestDecodeDecompressionBomb(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	// Lower the limit so Encode can produce a payload that triggers it.
-	// The Aztec code format caps out at ~3 KiB of base64 text, so the
+	// The QR code format caps out at ~3 KiB of base45 text, so the
 	// decompressed size through Encode→Decode is bounded well below 10 MiB.
 	saved := MaxDecodedPayloadSize
 	MaxDecodedPayloadSize = 200
@@ -140,7 +141,7 @@ func TestDecodeDecompressionBomb(t *testing.T) {
 
 func TestDecodeLimitDisabled(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping slow aztec encode/decode test")
+		t.Skip("skipping slow QR encode/decode test")
 	}
 	saved := MaxDecodedPayloadSize
 	MaxDecodedPayloadSize = 200
@@ -162,4 +163,53 @@ func TestDecodeLimitDisabled(t *testing.T) {
 	if !bytes.Equal(got, data) {
 		t.Errorf("disabled limit roundtrip mismatch: got %d bytes, want %d", len(got), len(data))
 	}
+}
+
+func FuzzRoundtrip(f *testing.F) {
+	f.Add([]byte(""))
+	f.Add([]byte("hello"))
+	f.Add(bytes.Repeat([]byte{0}, 500))
+	f.Add(bytes.Repeat([]byte{0xff}, 500))
+
+	f.Fuzz(func(t *testing.T, data []byte) {
+		doc := []byte(`{"v":"3.0.0-dev","f":"PGP","sn":"fuzz","d":"`)
+		doc = append(doc, data...)
+		doc = append(doc, []byte(`"}`)...)
+
+		img, err := Encode(doc)
+		if err != nil {
+			t.Skipf("Encode failed: %v", err)
+		}
+
+		got, err := Decode(img)
+		if err != nil {
+			t.Fatalf("Decode failed after successful Encode: %v", err)
+		}
+
+		if !bytes.Equal(got, doc) {
+			t.Errorf("roundtrip mismatch: got %d bytes, want %d", len(got), len(doc))
+		}
+	})
+}
+
+func FuzzDecodeRandomImage(f *testing.F) {
+	f.Add(uint8(0), uint8(0))
+	f.Add(uint8(1), uint8(255))
+
+	f.Fuzz(func(_ *testing.T, seed1, seed2 uint8) {
+		w, h := 100+int(seed1)*3, 100+int(seed2)*3
+		img := image.NewGray(image.Rect(0, 0, w, h))
+		for y := 0; y < h; y++ {
+			for x := 0; x < w; x++ {
+				img.SetGray(x, y, color.Gray{
+					Y: uint8((x*7 + y*13 + int(seed1)*31 + int(seed2)*37) % 256),
+				})
+			}
+		}
+
+		SetLimitDecodedPayload(false)
+		defer SetLimitDecodedPayload(true)
+
+		_, _ = Decode(img)
+	})
 }
