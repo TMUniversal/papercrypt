@@ -17,7 +17,6 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
-	github.com/zxing-cpp/zxing-cpp/wrappers/go v0.0.0-20260820103309-77dceca0687d
 	golang.org/x/term v0.45.0
 )
 
