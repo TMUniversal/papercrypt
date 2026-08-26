@@ -22,37 +22,20 @@ package codematrix
 
 import (
 	"bytes"
-	"compress/gzip"
 	"errors"
 	"image"
 	"image/png"
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"github.com/dasio/base45"
 )
 
 // outputSize is the barcode output size in pixels (165mm at 1200dpi).
 const outputSize = 7795
 
-// Encode compresses data with gzip, base45-encodes it, and encodes it
-// into a single QR code image using alphanumeric mode.
-func Encode(data []byte) (image.Image, error) {
-	var buf bytes.Buffer
-	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: gzip writer"), err)
-	}
-	if _, err := gz.Write(data); err != nil {
-		return nil, errors.Join(errors.New("codematrix: gzip write"), err)
-	}
-	if err := gz.Close(); err != nil {
-		return nil, errors.Join(errors.New("codematrix: gzip close"), err)
-	}
-
-	encoded := base45.EncodeToString(buf.Bytes())
-
-	code, err := qr.Encode(encoded, qr.H, qr.AlphaNumeric)
+// Encode encodes a string into a single QR code image using alphanumeric mode.
+func Encode(data string) (image.Image, error) {
+	code, err := qr.Encode(data, qr.H, qr.AlphaNumeric)
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: qr encode"), err)
 	}
@@ -72,8 +55,8 @@ func Encode(data []byte) (image.Image, error) {
 	return converted, nil
 }
 
-// EncodePNG encodes data into a single QR code and returns the PNG-encoded bytes.
-func EncodePNG(data []byte) ([]byte, error) {
+// EncodePNG encodes a string into a single QR code and returns the PNG-encoded bytes.
+func EncodePNG(data string) ([]byte, error) {
 	img, err := Encode(data)
 	if err != nil {
 		return nil, err
