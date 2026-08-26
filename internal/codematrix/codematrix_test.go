@@ -32,11 +32,9 @@ func TestRoundtrip(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	data := append(
-		[]byte(`{"v":"3.0.0-dev","f":"PGP","sn":"test","d":"`),
-		bytes.Repeat([]byte("hello world "), 100)...,
-	)
-	data = append(data, []byte(`"}`)...)
+	data := `{"v":"3.0.0-dev","f":"PGP","sn":"test","d":"` +
+		strings.Repeat("hello world ", 100) + `"}`
+
 	img, err := Encode(data)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
@@ -45,19 +43,16 @@ func TestRoundtrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-	if !bytes.Equal(got, data) {
-		t.Errorf("roundtrip mismatch")
+	if got != data {
+		t.Errorf("roundtrip mismatch: got %q, want %q", got, data)
 	}
 }
 
-func TestRoundtripRawBytes(t *testing.T) {
+func TestRoundtripAlphaNumeric(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	data := make([]byte, 500)
-	for i := range data {
-		data[i] = byte(i % 251)
-	}
+	data := "ABC123$%*+-./:"
 	img, err := Encode(data)
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
@@ -66,8 +61,8 @@ func TestRoundtripRawBytes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-	if !bytes.Equal(got, data) {
-		t.Errorf("roundtrip mismatch")
+	if got != data {
+		t.Errorf("roundtrip mismatch: got %q, want %q", got, data)
 	}
 }
 
@@ -75,7 +70,7 @@ func TestRoundtripEmpty(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	img, err := Encode([]byte{})
+	img, err := Encode("")
 	if err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
@@ -83,8 +78,8 @@ func TestRoundtripEmpty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-	if len(got) != 0 {
-		t.Errorf("expected empty, got %d bytes", len(got))
+	if got != "" {
+		t.Errorf("expected empty, got %q", got)
 	}
 }
 
@@ -92,7 +87,7 @@ func TestEncodePNG(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	data := []byte("hello")
+	data := "hello"
 	pngBytes, err := EncodePNG(data)
 	if err != nil {
 		t.Fatalf("EncodePNG: %v", err)
@@ -108,70 +103,18 @@ func TestEncodePNG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Decode: %v", err)
 	}
-	if !bytes.Equal(got, data) {
-		t.Errorf("roundtrip mismatch")
-	}
-}
-
-func TestDecodeDecompressionBomb(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping slow QR encode/decode test")
-	}
-	// Lower the limit so Encode can produce a payload that triggers it.
-	// The QR code format caps out at ~3 KiB of base45 text, so the
-	// decompressed size through Encode→Decode is bounded well below 10 MiB.
-	saved := MaxDecodedPayloadSize
-	MaxDecodedPayloadSize = 200
-	defer func() { MaxDecodedPayloadSize = saved }()
-
-	data := bytes.Repeat([]byte{0}, 300)
-	img, err := Encode(data)
-	if err != nil {
-		t.Fatalf("Encode: %v", err)
-	}
-
-	_, err = Decode(img)
-	if err == nil {
-		t.Fatal("expected error for decompression bomb, got nil")
-	}
-	if !strings.Contains(err.Error(), "exceeds maximum size") {
-		t.Fatalf("expected 'exceeds maximum size' error, got: %v", err)
-	}
-}
-
-func TestDecodeLimitDisabled(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping slow QR encode/decode test")
-	}
-	saved := MaxDecodedPayloadSize
-	MaxDecodedPayloadSize = 200
-	defer func() { MaxDecodedPayloadSize = saved }()
-
-	SetLimitDecodedPayload(false)
-	defer SetLimitDecodedPayload(true)
-
-	data := bytes.Repeat([]byte{0}, 300)
-	img, err := Encode(data)
-	if err != nil {
-		t.Fatalf("Encode: %v", err)
-	}
-
-	got, err := Decode(img)
-	if err != nil {
-		t.Fatalf("Decode with limit disabled: unexpected error: %v", err)
-	}
-	if !bytes.Equal(got, data) {
-		t.Errorf("disabled limit roundtrip mismatch: got %d bytes, want %d", len(got), len(data))
+	if got != data {
+		t.Errorf("roundtrip mismatch: got %q, want %q", got, data)
 	}
 }
 
 func FuzzRoundtrip(f *testing.F) {
-	f.Add([]byte(""))
-	f.Add([]byte("hello"))
-	f.Add(bytes.Repeat([]byte{0}, 500))
-	f.Add(bytes.Repeat([]byte{0xff}, 500))
+	f.Add("")
+	f.Add("hello")
+	f.Add(strings.Repeat("A", 500))
+	f.Add(strings.Repeat("Z", 500))
 
-	f.Fuzz(func(t *testing.T, data []byte) {
+	f.Fuzz(func(t *testing.T, data string) {
 		img, err := Encode(data)
 		if err != nil {
 			t.Skipf("Encode failed: %v", err)
@@ -182,8 +125,8 @@ func FuzzRoundtrip(f *testing.F) {
 			t.Fatalf("Decode failed after successful Encode: %v", err)
 		}
 
-		if !bytes.Equal(got, data) {
-			t.Errorf("roundtrip mismatch: got %d bytes, want %d", len(got), len(data))
+		if got != data {
+			t.Errorf("roundtrip mismatch: got %d chars, want %d", len(got), len(data))
 		}
 	})
 }
@@ -202,9 +145,6 @@ func FuzzDecodeRandomImage(f *testing.F) {
 				})
 			}
 		}
-
-		SetLimitDecodedPayload(false)
-		defer SetLimitDecodedPayload(true)
 
 		_, _ = Decode(img)
 	})

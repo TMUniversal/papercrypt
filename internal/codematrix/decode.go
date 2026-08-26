@@ -21,71 +21,25 @@
 package codematrix
 
 import (
-	"bytes"
-	"compress/gzip"
 	"errors"
 	"image"
-	"io"
 
-	"github.com/dasio/base45"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
-// MaxDecodedPayloadSize is the maximum allowed size in bytes for a
-// decompressed payload read by Decode. This guards against decompression
-// bombs.
-var MaxDecodedPayloadSize = 10 * 1024 * 1024 // 10 MiB
-
-// limitDecodedPayload controls whether Decode enforces MaxDecodedPayloadSize.
-// When true, payloads exceeding the limit are rejected.
-// Set via SetLimitDecodedPayload; defaults to true.
-var limitDecodedPayload = true
-
-// SetLimitDecodedPayload sets whether Decode enforces the maximum decoded
-// payload size. When disabled, decompression bombs are not guarded against.
-func SetLimitDecodedPayload(enabled bool) {
-	limitDecodedPayload = enabled
-}
-
-// Decode reads a single QR code image, base45-decodes the gzip payload,
-// and returns the original data.
-func Decode(img image.Image) ([]byte, error) {
+// Decode reads a single QR code image and returns the encoded string.
+func Decode(img image.Image) (string, error) {
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: create bitmap"), err)
+		return "", errors.Join(errors.New("codematrix: create bitmap"), err)
 	}
 
 	reader := qrcode.NewQRCodeReader()
 	result, err := reader.Decode(bmp, nil)
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: qr decode"), err)
+		return "", errors.Join(errors.New("codematrix: qr decode"), err)
 	}
 
-	b45, err := base45.DecodeString(result.GetText())
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: base45 decode"), err)
-	}
-
-	gz, err := gzip.NewReader(bytes.NewReader(b45))
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: gzip reader"), err)
-	}
-	var data []byte
-	if limitDecodedPayload {
-		data, err = io.ReadAll(io.LimitReader(gz, int64(MaxDecodedPayloadSize)+1))
-		if err != nil {
-			return nil, errors.Join(errors.New("codematrix: gzip read"), err)
-		}
-		if len(data) > MaxDecodedPayloadSize {
-			return nil, errors.New("codematrix: decoded payload exceeds maximum size")
-		}
-	} else {
-		data, err = io.ReadAll(gz)
-		if err != nil {
-			return nil, errors.Join(errors.New("codematrix: gzip read"), err)
-		}
-	}
-
-	return data, nil
+	return result.GetText(), nil
 }

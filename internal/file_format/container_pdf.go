@@ -22,6 +22,7 @@ package file_format
 
 import (
 	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"image"
@@ -30,6 +31,7 @@ import (
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
+	"github.com/dasio/base45"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
@@ -130,7 +132,20 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 			return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
 		}
 
-		qrData := envelope.Wrap(qrBin)
+		var gzBuf bytes.Buffer
+		gz, err := gzip.NewWriterLevel(&gzBuf, gzip.BestCompression)
+		if err != nil {
+			return nil, errors.Join(errors.New("error creating gzip writer"), err)
+		}
+		if _, err := gz.Write(qrBin); err != nil {
+			return nil, errors.Join(errors.New("error writing gzip data"), err)
+		}
+		if err := gz.Close(); err != nil {
+			return nil, errors.Join(errors.New("error closing gzip writer"), err)
+		}
+
+		encoded := base45.EncodeToString(gzBuf.Bytes())
+		qrData := envelope.Wrap([]byte(encoded), envelope.Base45Encoder{})
 
 		pngBytes, err := codematrix.EncodePNG(qrData)
 		if err != nil {

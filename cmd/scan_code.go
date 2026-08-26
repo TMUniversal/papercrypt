@@ -22,14 +22,15 @@ package cmd
 
 import (
 	"bytes"
-	"encoding/json"
+	"compress/gzip"
 	"errors"
-	"fmt"
 	"image"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/dasio/base45"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
@@ -39,21 +40,9 @@ import (
 )
 
 var (
-	qrCmdFromJSON   = false
-	qrCmdToJSON     = false
 	qrCmdFromBinary = false
 	qrCmdToBinary   = false
 )
-
-type versionContainer struct {
-	// Version should contain the semver version of PaperCrypt used to generate the document
-	Version string `json:"v"`
-}
-
-// isBinaryContainer checks if data starts with the binary container magic.
-func isBinaryContainer(data []byte) bool {
-	return len(data) >= 4 && bytes.Equal(data[0:4], file_format.BinaryMagic[:])
-}
 
 // scanCmd represents the data command.
 var scanCmd = &cobra.Command{
@@ -72,7 +61,7 @@ If you have trouble scanning the QR code with this command,
 you may also try a QR code scanner app on your phone or tablet,
 such as "Scandit" (https://apps.apple.com/de/app/scandit-barcode-scanner/id453880584
 or https://play.google.com/store/apps/details?id=com.scandit.demoapp).
-The resulting data can be read by this command, by supplying the --json or --binary flag.
+The resulting data can be read by this command, by supplying the --binary flag.
 `,
 	Example: `papercrypt scan ./code.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
@@ -86,20 +75,21 @@ The resulting data can be read by this command, by supplying the --json or --bin
 			return err
 		}
 
-		var data []byte
+		var envelopeStr string
 
-		if qrCmdFromJSON || qrCmdFromBinary {
-			data, err = io.ReadAll(inFile)
+		if qrCmdFromBinary {
+			data, err := io.ReadAll(inFile)
 			if err != nil && err != io.EOF {
 				return errors.Join(errors.New("error reading input file"), err)
 			}
+			envelopeStr = string(data)
 		} else {
 			img, _, err := image.Decode(inFile)
 			if err != nil {
 				return errors.Join(errors.New("error decoding image"), err)
 			}
 
-			data, err = codematrix.Decode(img)
+			envelopeStr, err = codematrix.Decode(img)
 			if err != nil {
 				return errors.Join(errors.New("error decoding 2D code"), err)
 			}
@@ -121,37 +111,18 @@ The resulting data can be read by this command, by supplying the --json or --bin
 			}
 		}(outFile)
 
-		// 3. Write raw data (passthrough modes)
-		if qrCmdToJSON || qrCmdToBinary {
-			var out []byte
-
-			if qrCmdToBinary {
-				pc, err := deserializePaperCrypt(data)
-				if err != nil {
-					return err
-				}
-
-				bin, err := file_format.MarshalBinary(pc)
-				if err != nil {
-					return errors.Join(errors.New("error marshalling to binary"), err)
-				}
-
-				out = envelope.Wrap(bin)
-			} else {
-				out = data
-			}
-
-			n, err := outFile.Write(out)
+		// 3. Write raw envelope string (passthrough mode)
+		if qrCmdToBinary {
+			n, err := outFile.WriteString(envelopeStr)
 			if err != nil {
 				return errors.Join(errors.New("error writing output"), err)
 			}
-
 			terminal.PrintWrittenSizeToDebug(n, outFile)
 			return nil
 		}
 
 		// 4. Deserialize to text format
-		pc, err := deserializePaperCrypt(data)
+		pc, err := deserializePaperCrypt(envelopeStr)
 		if err != nil {
 			return err
 		}
@@ -172,65 +143,45 @@ The resulting data can be read by this command, by supplying the --json or --bin
 	},
 }
 
-// deserializePaperCrypt auto-detects binary or JSON format and returns a PaperCrypt.
-func deserializePaperCrypt(data []byte) (*file_format.PaperCrypt, error) {
-	if isBinaryContainer(data) {
-		bin, err := file_format.UnmarshalBinary(data)
-		if err != nil {
-			return nil, errors.Join(errors.New("error deserializing binary container"), err)
-		}
-		return bin, nil
-	}
-
-	// Try envelope-wrapped binary
-	if len(data) >= envelope.HeaderSize && bytes.Equal(data[0:4], envelope.Magic[:]) {
-		payload, err := envelope.Unwrap(data)
+// deserializePaperCrypt unwraps an envelope string and returns a PaperCrypt.
+func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
+	// Try envelope-wrapped binary (format: PCE1 + base45(CRC32) + base45(content))
+	if strings.HasPrefix(data, envelope.Magic) {
+		content, err := envelope.Unwrap(data, envelope.Base45Encoder{})
 		if err != nil {
 			return nil, errors.Join(errors.New("error unwrapping envelope"), err)
 		}
 
-		bin, err := file_format.UnmarshalBinary(payload)
+		// content is base45-encoded gzipped binary
+		gzipped, err := base45.DecodeString(string(content))
+		if err != nil {
+			return nil, errors.Join(errors.New("error base45 decoding"), err)
+		}
+
+		gz, err := gzip.NewReader(bytes.NewReader(gzipped))
+		if err != nil {
+			return nil, errors.Join(errors.New("error creating gzip reader"), err)
+		}
+		binary, err := io.ReadAll(gz)
+		if err != nil {
+			return nil, errors.Join(errors.New("error reading gzip data"), err)
+		}
+
+		pc, err := file_format.UnmarshalBinary(binary)
 		if err != nil {
 			return nil, errors.Join(errors.New("error deserializing binary container"), err)
 		}
-		return bin, nil
+		return pc, nil
 	}
 
-	// Fall back to JSON
-	vc := versionContainer{}
-	err := json.Unmarshal(data, &vc)
-	if err != nil {
-		return nil, errors.Join(errors.New("error deserializing version"), err)
-	}
-
-	paperCryptMajorVersion := file_format.PaperCryptContainerVersionFromString(vc.Version)
-
-	switch paperCryptMajorVersion {
-	case file_format.PaperCryptContainerVersionDevel,
-		file_format.PaperCryptContainerVersionMajor3:
-		pc := file_format.PaperCrypt{}
-		err = json.Unmarshal(data, &pc)
-		if err != nil {
-			return nil, errors.Join(
-				errors.New("error deserializing JSON data as PaperCrypt"),
-				err,
-			)
-		}
-		return &pc, nil
-	default:
-		return nil, fmt.Errorf("unknown version: %s", vc.Version)
-	}
+	return nil, errors.New("unsupported format: expected PCE1 envelope")
 }
 
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
 	scanCmd.Flags().
-		BoolVarP(&qrCmdFromJSON, "from-json", "j", false, "Read input from JSON instead of an image")
+		BoolVarP(&qrCmdFromBinary, "from-binary", "B", false, "Read input as envelope string instead of an image")
 	scanCmd.Flags().
-		BoolVarP(&qrCmdToJSON, "to-json", "J", false, "Write JSON output instead of plaintext")
-	scanCmd.Flags().
-		BoolVarP(&qrCmdFromBinary, "from-binary", "B", false, "Read input as binary container instead of an image")
-	scanCmd.Flags().
-		BoolVarP(&qrCmdToBinary, "to-binary", "b", false, "Write binary container output instead of plaintext")
+		BoolVarP(&qrCmdToBinary, "to-binary", "b", false, "Write envelope string output instead of plaintext")
 }
