@@ -36,7 +36,7 @@ func TestBinaryRoundtrip(t *testing.T) {
 		SerialNumber: "ABC123",
 		Purpose:      "Backup",
 		Comment:      "Test comment",
-		CreatedAt:    time.Date(2026, 8, 26, 12, 0, 0, 0, time.UTC),
+		CreatedAt:    time.Date(2026, 8, 26, 12, 0, 0, 123456789, time.UTC),
 		Data:         []byte("hello, world"),
 	}
 	pc.DataSHA256 = sha256.Sum256(pc.Data)
@@ -51,6 +51,9 @@ func TestBinaryRoundtrip(t *testing.T) {
 		t.Fatalf("UnmarshalBinary: %v", err)
 	}
 
+	if got.Version != pc.Version {
+		t.Errorf("Version: got %q, want %q", got.Version, pc.Version)
+	}
 	if got.SerialNumber != pc.SerialNumber {
 		t.Errorf("SerialNumber: got %q, want %q", got.SerialNumber, pc.SerialNumber)
 	}
@@ -78,7 +81,7 @@ func TestBinaryRoundtripEmptyFields(t *testing.T) {
 	pc := &PaperCrypt{
 		Version:    "v3.0.0",
 		DataFormat: PaperCryptDataFormatRaw,
-		CreatedAt:  time.Now().Truncate(time.Second),
+		CreatedAt:  time.Now(),
 		Data:       []byte{0x01, 0x02, 0x03},
 	}
 	pc.DataSHA256 = sha256.Sum256(pc.Data)
@@ -93,6 +96,9 @@ func TestBinaryRoundtripEmptyFields(t *testing.T) {
 		t.Fatalf("UnmarshalBinary: %v", err)
 	}
 
+	if got.Version != pc.Version {
+		t.Errorf("Version: got %q, want %q", got.Version, pc.Version)
+	}
 	if got.SerialNumber != "" {
 		t.Errorf("expected empty SerialNumber, got %q", got.SerialNumber)
 	}
@@ -114,7 +120,7 @@ func TestBinaryWithEnvelope(t *testing.T) {
 		SerialNumber: "TEST01",
 		Purpose:      "Testing",
 		Comment:      "Envelope roundtrip",
-		CreatedAt:    time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		CreatedAt:    time.Date(2026, 1, 1, 0, 0, 0, 987654321, time.UTC),
 		Data:         bytes.Repeat([]byte{0xFF}, 500),
 	}
 	pc.DataSHA256 = sha256.Sum256(pc.Data)
@@ -183,7 +189,7 @@ func FuzzBinaryRoundtrip(f *testing.F) {
 			SerialNumber: serial,
 			Purpose:      purpose,
 			Comment:      comment,
-			CreatedAt:    time.Now().Truncate(time.Second),
+			CreatedAt:    time.Now(),
 			Data:         data,
 		}
 		pc.DataSHA256 = sha256.Sum256(data)
@@ -211,4 +217,43 @@ func FuzzBinaryRoundtrip(f *testing.F) {
 			t.Errorf("Data mismatch")
 		}
 	})
+}
+
+func TestParseVersion(t *testing.T) {
+	tests := []struct {
+		input                     string
+		wantMaj, wantMin, wantPat uint8
+	}{
+		{"v3.1.2", 3, 1, 2},
+		{"3.1.2", 3, 1, 2},
+		{"v0.0.0", 0, 0, 0},
+		{"v255.255.255", 255, 255, 255},
+		{"devel", 0, 0, 0},
+		{"", 0, 0, 0},
+		{"v1.2", 0, 0, 0},
+	}
+	for _, tt := range tests {
+		maj, mi, pat := parseVersion(tt.input)
+		if maj != tt.wantMaj || mi != tt.wantMin || pat != tt.wantPat {
+			t.Errorf("parseVersion(%q) = %d.%d.%d, want %d.%d.%d",
+				tt.input, maj, mi, pat, tt.wantMaj, tt.wantMin, tt.wantPat)
+		}
+	}
+}
+
+func TestFormatVersion(t *testing.T) {
+	got := formatVersion(3, 1, 2)
+	if got != "v3.1.2" {
+		t.Errorf("formatVersion(3,1,2) = %q, want %q", got, "v3.1.2")
+	}
+}
+
+func TestParseFormatRoundtrip(t *testing.T) {
+	for _, v := range []string{"v1.0.0", "v3.1.2", "v0.0.0", "v255.255.255"} {
+		maj, mi, pat := parseVersion(v)
+		got := formatVersion(maj, mi, pat)
+		if got != v {
+			t.Errorf("roundtrip %q: parse -> format = %q", v, got)
+		}
+	}
 }

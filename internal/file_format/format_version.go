@@ -101,6 +101,8 @@ func PaperCryptContainerVersionFromString(s string) PaperCryptContainerVersion {
 	log.Debugf("PaperCrypt Version: %s", major)
 
 	switch major {
+	case "0":
+		return PaperCryptContainerVersionDevel
 	case "1":
 		return PaperCryptContainerVersionMajor1
 	case "2":
