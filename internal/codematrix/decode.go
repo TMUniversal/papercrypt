@@ -23,13 +23,12 @@ package codematrix
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/base64"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 
-	"github.com/makiuchi-d/gozxing"
-	"github.com/makiuchi-d/gozxing/aztec"
+	"github.com/zxing-cpp/zxing-cpp/wrappers/go/zxingcpp"
 )
 
 // MaxDecodedPayloadSize is the maximum allowed size in bytes for a
@@ -48,26 +47,26 @@ func SetLimitDecodedPayload(enabled bool) {
 	limitDecodedPayload = enabled
 }
 
-// Decode reads a single Aztec code image, base64-decodes the gzip payload,
+// Decode reads a single Aztec code image, decompresses the gzip payload,
 // and returns the original data.
 func Decode(img image.Image) ([]byte, error) {
-	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: create bitmap"), err)
-	}
-
-	reader := aztec.NewAztecReader()
-	result, err := reader.Decode(bmp, nil)
+	barcodes, err := zxingcpp.ReadBarcodes(
+		img,
+		zxingcpp.TryHarder(true),
+		zxingcpp.WithMaxNumberOfSymbols(1),
+		zxingcpp.WithFormats(zxingcpp.BarcodeFormatAztec),
+	)
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: aztec decode"), err)
 	}
-
-	b64, err := base64.StdEncoding.DecodeString(result.GetText())
-	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: base64 decode"), err)
+	if len(barcodes) == 0 {
+		return nil, errors.New("codematrix: no aztec code found")
 	}
+	defer barcodes[0].Close()
 
-	gz, err := gzip.NewReader(bytes.NewReader(b64))
+	raw := barcodes[0].Bytes()
+
+	gz, err := gzip.NewReader(bytes.NewReader(raw))
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: gzip reader"), err)
 	}
@@ -78,7 +77,7 @@ func Decode(img image.Image) ([]byte, error) {
 			return nil, errors.Join(errors.New("codematrix: gzip read"), err)
 		}
 		if len(data) > MaxDecodedPayloadSize {
-			return nil, errors.New("codematrix: decoded payload exceeds maximum size")
+			return nil, fmt.Errorf("codematrix: decoded payload exceeds maximum size (%d > %d)", len(data), MaxDecodedPayloadSize)
 		}
 	} else {
 		data, err = io.ReadAll(gz)

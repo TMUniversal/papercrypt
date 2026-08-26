@@ -23,20 +23,18 @@ package codematrix
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/base64"
 	"errors"
 	"image"
+	"image/color"
 	"image/png"
 
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/aztec"
+	"github.com/zxing-cpp/zxing-cpp/wrappers/go/zxingcpp"
 )
 
 // aztecSize is the Aztec code output size in pixels (165mm at 1200dpi).
 const aztecSize = 7795
 
-// Encode compresses data with gzip, base64-encodes it, and encodes it
-// into a single Aztec code image.
+// Encode compresses data with gzip and encodes it into a single Aztec code image.
 func Encode(data []byte) (image.Image, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -49,27 +47,67 @@ func Encode(data []byte) (image.Image, error) {
 	if err := gz.Close(); err != nil {
 		return nil, errors.Join(errors.New("codematrix: gzip close"), err)
 	}
+	compressed := buf.Bytes()
 
-	encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	code, err := aztec.Encode([]byte(encoded), 35, 0)
+	bc, err := zxingcpp.CreateBarcode(
+		compressed,
+		zxingcpp.BarcodeFormatAztec,
+		zxingcpp.WithEcLevel("30%"),
+	)
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: aztec encode"), err)
 	}
+	defer bc.Close()
 
-	code, err = barcode.Scale(code, aztecSize, aztecSize)
+	nativeImg, err := bc.ToImage()
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: scale"), err)
+		return nil, errors.Join(errors.New("codematrix: aztec to image"), err)
 	}
 
-	converted := image.NewGray(code.Bounds())
-	for y := 0; y < code.Bounds().Dy(); y++ {
-		for x := 0; x < code.Bounds().Dx(); x++ {
-			converted.Set(x, y, code.At(x, y))
+	return scaleToGray(nativeImg, aztecSize, aztecSize), nil
+}
+
+// scaleToGray scales an image to the target dimensions and returns
+// a grayscale image with a white background.
+func scaleToGray(src image.Image, width, height int) *image.Gray {
+	srcBounds := src.Bounds()
+	srcW := srcBounds.Dx()
+	srcH := srcBounds.Dy()
+
+	scaleX := float64(width) / float64(srcW)
+	scaleY := float64(height) / float64(srcH)
+	scale := scaleX
+	if scaleY < scale {
+		scale = scaleY
+	}
+
+	outW := int(float64(srcW) * scale)
+	outH := int(float64(srcH) * scale)
+	offsetX := (width - outW) / 2
+	offsetY := (height - outH) / 2
+
+	out := image.NewGray(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			out.SetGray(x, y, color.Gray{Y: 255})
 		}
 	}
 
-	return converted, nil
+	for dy := 0; dy < outH; dy++ {
+		sy := srcBounds.Min.Y + int(float64(dy)/scale)
+		oy := offsetY + dy
+		for dx := 0; dx < outW; dx++ {
+			sx := srcBounds.Min.X + int(float64(dx)/scale)
+			ox := offsetX + dx
+			r, g, b, _ := src.At(sx, sy).RGBA()
+			lum := uint8((r*299 + g*587 + b*114 + 500) / 1000)
+			if lum < 128 {
+				out.SetGray(ox, oy, color.Gray{Y: 0})
+			}
+		}
+	}
+
+	return out
 }
 
 // EncodePNG encodes data into a single Aztec code and returns the PNG-encoded bytes.
