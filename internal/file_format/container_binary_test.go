@@ -130,8 +130,8 @@ func TestBinaryWithEnvelope(t *testing.T) {
 		t.Fatalf("MarshalBinary: %v", err)
 	}
 
-	wrapped := envelope.Wrap(bin)
-	got, err := envelope.Unwrap(wrapped)
+	wrapped := envelope.Wrap(bin, envelope.Base45Encoder{})
+	got, err := envelope.Unwrap(wrapped, envelope.Base45Encoder{})
 	if err != nil {
 		t.Fatalf("Unwrap: %v", err)
 	}
