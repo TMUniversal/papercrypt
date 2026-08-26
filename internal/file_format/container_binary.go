@@ -26,6 +26,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -42,16 +43,33 @@ var (
 	ErrBinaryTruncated = errors.New("binary: truncated data")
 )
 
+// parseVersion extracts major, minor, patch from a version string like "v3.1.2".
+// Returns 0,0,0 for unparseable strings.
+func parseVersion(v string) (major, minor, patch uint8) {
+	v = strings.TrimPrefix(v, "v")
+	var maj, mi, pat int
+	if _, err := fmt.Sscanf(v, "%d.%d.%d", &maj, &mi, &pat); err != nil {
+		return 0, 0, 0
+	}
+	return uint8(maj), uint8(mi), uint8(pat) //nolint:gosec // version components fit in uint8
+}
+
+// formatVersion returns "vM.m.p" from three uint8 components.
+func formatVersion(major, minor, patch uint8) string {
+	return fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+}
+
 // MarshalBinary serializes the PaperCrypt struct to the compact binary format.
 //
 // Wire format:
 //
 //	[4]byte  magic     — "PC\x03\x00"
+//	[3]byte  version   — major, minor, patch (uint8 each)
 //	[1]byte  format    — 0=PGP, 1=Raw
 //	var      serial    — 1-byte length prefix + UTF-8
 //	var      purpose   — 1-byte length prefix + UTF-8
 //	var      comment   — 1-byte length prefix + UTF-8
-//	[8]byte  createdAt — Unix timestamp, big-endian
+//	[8]byte  createdAt — Unix timestamp in nanoseconds, big-endian
 //	[32]byte dataSHA256
 //	var      data      — remaining bytes
 func MarshalBinary(p *PaperCrypt) ([]byte, error) {
@@ -73,7 +91,11 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 		return nil, fmt.Errorf("binary: comment too long (%d > 255)", len(commentBytes))
 	}
 
+	major, minor, patch := parseVersion(p.Version)
+
 	size := BinaryHeaderSize +
+		1 + // format
+		3 + // version
 		1 + len(serialBytes) +
 		1 + len(purposeBytes) +
 		1 + len(commentBytes) +
@@ -84,6 +106,7 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 	out := make([]byte, 0, size)
 
 	out = append(out, BinaryMagic[:]...)
+	out = append(out, major, minor, patch)
 	out = append(out, byte(p.DataFormat))
 
 	out = append(out, byte(len(serialBytes))) //nolint:gosec // length is validated <= 255 above
@@ -94,7 +117,7 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 	out = append(out, commentBytes...)
 
 	var ts [8]byte
-	tsVal := uint64(p.CreatedAt.Unix()) //nolint:gosec // Unix timestamps fit in uint64
+	tsVal := uint64(p.CreatedAt.UnixNano()) //nolint:gosec // Unix timestamps fit in uint64
 	binary.BigEndian.PutUint64(ts[:], tsVal)
 	out = append(out, ts[:]...)
 
@@ -120,6 +143,12 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 
 	r := data[BinaryHeaderSize:]
 	p := &PaperCrypt{}
+
+	if len(r) < 3 {
+		return nil, ErrBinaryTruncated
+	}
+	p.Version = formatVersion(r[0], r[1], r[2])
+	r = r[3:]
 
 	p.DataFormat = PaperCryptDataFormat(r[0])
 	r = r[1:]
@@ -152,7 +181,7 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 		return nil, ErrBinaryTruncated
 	}
 	tsVal := binary.BigEndian.Uint64(r[:8])
-	p.CreatedAt = time.Unix(int64(tsVal), 0) //nolint:gosec // Unix timestamps are non-negative
+	p.CreatedAt = time.Unix(0, int64(tsVal)) //nolint:gosec // Unix timestamps are non-negative
 	r = r[8:]
 
 	if len(r) < 32 {
@@ -162,12 +191,6 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	r = r[32:]
 
 	p.Data = r
-
-	// Reconstruct version — the binary format does not store the version string;
-	// callers use the envelope magic to determine the format version.
-	// For compatibility with the rest of the system, derive it from the
-	// PaperCryptContainerVersion constant.
-	p.Version = fmt.Sprintf("v%s.0.0", PaperCryptContainerVersionMajor3.String())
 
 	return p, nil
 }
