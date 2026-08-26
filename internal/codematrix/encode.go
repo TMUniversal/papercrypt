@@ -57,7 +57,9 @@ func Encode(data []byte) (image.Image, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: barcode encode"), err)
 	}
-	defer bc.Close()
+	defer func() {
+		_ = bc.Close()
+	}()
 
 	nativeImg, err := bc.ToImage()
 	if err != nil {
@@ -100,7 +102,8 @@ func scaleToGray(src image.Image, width, height int) *image.Gray {
 			sx := srcBounds.Min.X + int(float64(dx)/scale)
 			ox := offsetX + dx
 			r, g, b, _ := src.At(sx, sy).RGBA()
-			lum := uint8((r*299 + g*587 + b*114 + 500) / 1000)
+			// luminance is always 0-255
+			lum := uint8((r*299 + g*587 + b*114 + 500) / 1000) //nolint:gosec
 			if lum < 128 {
 				out.SetGray(ox, oy, color.Gray{Y: 0})
 			}
