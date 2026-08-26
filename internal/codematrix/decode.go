@@ -62,9 +62,7 @@ func Decode(img image.Image) ([]byte, error) {
 	if len(barcodes) == 0 {
 		return nil, errors.New("codematrix: no barcode found")
 	}
-	defer func() {
-		_ = barcodes[0].Close()
-	}()
+	defer barcodes[0].Close()
 
 	raw := barcodes[0].Bytes()
 
@@ -79,10 +77,7 @@ func Decode(img image.Image) ([]byte, error) {
 			return nil, errors.Join(errors.New("codematrix: gzip read"), err)
 		}
 		if len(data) > MaxDecodedPayloadSize {
-			return nil, fmt.Errorf(
-				"codematrix: decoded payload exceeds maximum size (%d > %d)",
-				len(data), MaxDecodedPayloadSize,
-			)
+			return nil, fmt.Errorf("codematrix: decoded payload exceeds maximum size (%d > %d)", len(data), MaxDecodedPayloadSize)
 		}
 	} else {
 		data, err = io.ReadAll(gz)
