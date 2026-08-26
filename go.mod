@@ -10,6 +10,7 @@ require (
 	github.com/caarlos0/log v0.6.2
 	github.com/ccoveille/go-safecast/v2 v2.0.1
 	github.com/charmbracelet/colorprofile v0.4.3
+	github.com/dasio/base45 v1.0.1
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/manifoldco/promptui v0.9.0

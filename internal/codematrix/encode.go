@@ -23,20 +23,20 @@ package codematrix
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/base64"
 	"errors"
 	"image"
 	"image/png"
 
 	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/aztec"
+	"github.com/boombuler/barcode/qr"
+	"github.com/dasio/base45"
 )
 
-// aztecSize is the Aztec code output size in pixels (165mm at 1200dpi).
-const aztecSize = 7795
+// outputSize is the barcode output size in pixels (165mm at 1200dpi).
+const outputSize = 7795
 
-// Encode compresses data with gzip, base64-encodes it, and encodes it
-// into a single Aztec code image.
+// Encode compresses data with gzip, base45-encodes it, and encodes it
+// into a single QR code image using alphanumeric mode.
 func Encode(data []byte) (image.Image, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -50,14 +50,14 @@ func Encode(data []byte) (image.Image, error) {
 		return nil, errors.Join(errors.New("codematrix: gzip close"), err)
 	}
 
-	encoded := base64.StdEncoding.EncodeToString(buf.Bytes())
+	encoded := base45.EncodeToString(buf.Bytes())
 
-	code, err := aztec.Encode([]byte(encoded), 35, 0)
+	code, err := qr.Encode(encoded, qr.H, qr.AlphaNumeric)
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: aztec encode"), err)
+		return nil, errors.Join(errors.New("codematrix: qr encode"), err)
 	}
 
-	code, err = barcode.Scale(code, aztecSize, aztecSize)
+	code, err = barcode.Scale(code, outputSize, outputSize)
 	if err != nil {
 		return nil, errors.Join(errors.New("codematrix: scale"), err)
 	}
@@ -72,7 +72,7 @@ func Encode(data []byte) (image.Image, error) {
 	return converted, nil
 }
 
-// EncodePNG encodes data into a single Aztec code and returns the PNG-encoded bytes.
+// EncodePNG encodes data into a single QR code and returns the PNG-encoded bytes.
 func EncodePNG(data []byte) ([]byte, error) {
 	img, err := Encode(data)
 	if err != nil {
