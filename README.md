@@ -265,6 +265,47 @@ Then, run
 papercrypt scan --in 2d.png --out data.txt
 ```
 
+<details>
+<summary>QR-Code Data Format (Click to expand)</summary>
+
+The QR code uses a custom data format to fit as much information as possible into the QR code,
+while keeping the metadata intact.
+This format is not designed to be human-readable.
+
+**Encoding pipeline:**
+
+```
+MarshalBinary → gzip (best compression) → Base45 → PCE1 envelope → QR code
+```
+
+The `PCE1` envelope wraps the Base45-encoded payload with a CRC-32 integrity check:
+
+```
+PCE1 + base45(CRC-32 of payload) + base45(payload)
+```
+
+**Binary container wire format** (produced by `MarshalBinary`):
+
+| Offset | Size | Field |
+|--------|------|-------|
+| 0 | 4 | Magic: `PC\x03\x00` |
+| 4 | 3 | Program Version (major, minor, patch as uint8) |
+| 7 | 1 | Format (data format byte) |
+| 8 | var | Serial number (length-prefixed) |
+| var | var | Purpose (length-prefixed) |
+| var | var | Comment (length-prefixed) |
+| var | 8 | Created at (Unix nanoseconds, int64) |
+| var | 32 | SHA-256 checksum of payload |
+| var | var | Encrypted payload |
+
+**Decoding pipeline** (reverses encoding):
+
+```
+QR code → PCE1 envelope unwrap → Base45 decode → gzip decompress → UnmarshalBinary
+```
+
+</details>
+
 #### Decoding from text
 
 Once you have the text from the printed document,
@@ -282,8 +323,6 @@ which should look something like this:
 # Date: Thu, 01 Aug 2024 20:38:10.306596100 +0200
 # Data Format: PGP
 # Content Length: 390
-# Content CRC-24: d6f1c0
-# Content CRC-32: bc4b3672
 # Content SHA-256: NT7wwW5Tq5fk1J82M1tzE82VGxIlad5vpF5cDMzg+yg=
 # Header CRC-32: ecded03b
 
