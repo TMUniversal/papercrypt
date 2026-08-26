@@ -172,11 +172,7 @@ func FuzzRoundtrip(f *testing.F) {
 	f.Add(bytes.Repeat([]byte{0xff}, 500))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		doc := []byte(`{"v":"3.0.0-dev","f":"PGP","sn":"fuzz","d":"`)
-		doc = append(doc, data...)
-		doc = append(doc, []byte(`"}`)...)
-
-		img, err := Encode(doc)
+		img, err := Encode(data)
 		if err != nil {
 			t.Skipf("Encode failed: %v", err)
 		}
@@ -186,8 +182,8 @@ func FuzzRoundtrip(f *testing.F) {
 			t.Fatalf("Decode failed after successful Encode: %v", err)
 		}
 
-		if !bytes.Equal(got, doc) {
-			t.Errorf("roundtrip mismatch: got %d bytes, want %d", len(got), len(doc))
+		if !bytes.Equal(got, data) {
+			t.Errorf("roundtrip mismatch: got %d bytes, want %d", len(got), len(data))
 		}
 	})
 }
