@@ -35,8 +35,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y poppler-utils
+          sudo apt-get install -y poppler-utils libzxing-dev
           which pdftoppm
+          pkg-config --cflags --libs zxing
 
       - name: Build
         run: task build
@@ -130,9 +131,16 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo dpkg --add-architecture arm64
+          sudo dpkg --add-architecture armhf
+          sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y poppler-utils
+          sudo apt-get install -y poppler-utils \
+            libzxing-dev libzxing-dev:arm64 libzxing-dev:armhf libzxing-dev:i386 \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-multilib \
+            g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
           which pdftoppm
+          pkg-config --cflags --libs zxing
 
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:

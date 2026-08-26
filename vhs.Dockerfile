@@ -5,6 +5,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
   apt-get install -y --no-install-recommends \
   ca-certificates \
   curl \
+  g++ \
+  gcc \
+  libzxing-dev \
   poppler-utils && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
@@ -22,7 +25,7 @@ WORKDIR /usr/src/app
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
   --mount=type=cache,target=/go/pkg/mod \
-  task build && \
+  CGO_ENABLED=1 task build && \
   cp papercrypt /usr/local/bin/papercrypt && \
   papercrypt version
 

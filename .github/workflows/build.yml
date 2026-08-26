@@ -51,8 +51,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y poppler-utils
+          sudo apt-get install -y poppler-utils libzxing-dev
           which pdftoppm
+          pkg-config --cflags --libs zxing
       - name: setup
         run: |
           task setup
