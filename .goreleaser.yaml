@@ -19,122 +19,49 @@ release:
     owner: tmuniversal
     name: papercrypt
   draft: false
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
   prerelease: auto
+
+builds:
+  - main: .
+    binary: papercrypt
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+      - ppc64
+    goarm:
+      - "7"
+    goos:
+      - linux
+      - windows
+      - darwin
+    ignore:
+      - goos: windows
+        goarch: arm
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.FullCommit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -X main.treeState={{ .IsGitDirty }}
+
+universal_binaries:
+  - replace: false
 
 gomod:
   proxy: true
 
 upx:
-  - enabled: false
+  - enabled: false # temporarily disabled
     compress: best
     lzma: true
     brute: false
-
-builds:
-  - id: papercrypt-amd64
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=gcc
-      - PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
-    goarch:
-      - amd64
-    goos:
-      - linux
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: &ldflags
-      - -s -w -X main.version={{.Version}} -X main.commit={{.FullCommit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -X main.treeState={{ .IsGitDirty }}
-
-  - id: papercrypt-arm64
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc
-      - PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
-    goarch:
-      - arm64
-    goos:
-      - linux
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: *ldflags
-
-  - id: papercrypt-arm
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=arm-linux-gnueabihf-gcc
-      - PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
-    goarch:
-      - arm
-    goarm:
-      - "7"
-    goos:
-      - linux
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: *ldflags
-
-  - id: papercrypt-386
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=gcc
-      - CGO_CFLAGS=-m32
-      - CGO_LDFLAGS=-m32
-      - PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-    goarch:
-      - "386"
-    goos:
-      - linux
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: *ldflags
-
-  - id: papercrypt-darwin
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=o64-clang
-      - CXX=o64-clang++
-    goarch:
-      - amd64
-      - arm64
-    goos:
-      - darwin
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: *ldflags
-
-  - id: papercrypt-windows
-    main: .
-    binary: papercrypt
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-    goarch:
-      - amd64
-    goos:
-      - windows
-    mod_timestamp: "{{ .CommitTimestamp }}"
-    flags:
-      - -trimpath
-    ldflags: *ldflags
-
-universal_binaries:
-  - replace: false
 
 archives:
   - formats: [ "tar.gz" ]
@@ -146,6 +73,7 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
     format_overrides:
       - goos: windows
         formats: [ "zip" ]
@@ -194,6 +122,10 @@ docker_signs:
 
 homebrew_casks:
   - name: papercrypt
+    # alternative_names:
+    #   - papercrypt@{{ .Version }}
+    #   - papercrypt@{{ .Major }}.{{ .Minor }}
+    #   - papercrypt@{{ .Major }}
     skip_upload: auto
     repository:
       owner: tmuniversal
@@ -236,6 +168,40 @@ scoops:
     description: *description
     license: *license
     shortcuts: [ [ "papercrypt.exe", "papercrypt" ] ]
+
+# winget:
+#   - name: papercrypt
+#     publisher: TMUniversal
+#     package_identifier: TMUniversal.PaperCrypt
+#     publisher_url: https://github.com/TMUniversal
+#     publisher_support_url: https://github.com/TMUniversal/papercrypt/issues
+#     short_description: *description
+#     license: *license
+#     commit_author:
+#       <<: *commit_author
+#     homepage: *homepage
+#     license_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/LICENSE
+#     copyright: Copyright © 2023-2024  TMUniversal <me@tmuniversal.eu>
+#     copyright_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/LICENSE
+#     skip_upload: auto
+#     release_notes_url: https://github.com/TMUniversal/papercrypt/blob/{{.Tag}}/CHANGELOG.md
+#     tags:
+#       - golang
+#       - cli
+#       - encryption
+#       - backup
+#     repository:
+#       owner: tmuniversal
+#       name: winget-pkgs
+#       branch: "papercrypt-{{.Version}}"
+#       token: "{{ .Env.GORELEASER_TOKEN }}"
+#       pull_request:
+#         enabled: true
+#         draft: true
+#         base:
+#           owner: microsoft
+#           name: winget-pkgs
+#           branch: master
 
 blobs:
   - provider: s3
