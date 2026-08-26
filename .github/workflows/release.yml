@@ -25,7 +25,7 @@ jobs:
           cache-dependency-path: "**/*.sum"
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
@@ -63,7 +63,7 @@ jobs:
         run: go mod tidy -v && git diff --exit-code || (echo "go mod tidy made changes" && exit 1)
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Install go-licenses
         run: go install github.com/google/go-licenses@latest
@@ -139,7 +139,7 @@ jobs:
           install-only: true
 
       - name: Install Task
-        uses: go-task/setup-task@v1
+        uses: go-task/setup-task@v2
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
