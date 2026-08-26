@@ -22,7 +22,6 @@ package file_format
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
@@ -37,6 +36,7 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
 )
 
@@ -125,12 +125,14 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	dm := new(bytes.Buffer)
 
 	if !no2D {
-		qrDataJSON, err := json.Marshal(p)
+		qrBin, err := MarshalBinary(p)
 		if err != nil {
-			return nil, errors.Join(errors.New("error marshalling PaperCrypt to JSON"), err)
+			return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
 		}
 
-		pngBytes, err := codematrix.EncodePNG(qrDataJSON)
+		qrData := envelope.Wrap(qrBin)
+
+		pngBytes, err := codematrix.EncodePNG(qrData)
 		if err != nil {
 			return nil, err
 		}
