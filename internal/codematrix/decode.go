@@ -47,7 +47,7 @@ func SetLimitDecodedPayload(enabled bool) {
 	limitDecodedPayload = enabled
 }
 
-// Decode reads a single barcode image, decompresses the gzip payload,
+// Decode reads a single Aztec code image, decompresses the gzip payload,
 // and returns the original data.
 func Decode(img image.Image) ([]byte, error) {
 	barcodes, err := zxingcpp.ReadBarcodes(
@@ -57,10 +57,10 @@ func Decode(img image.Image) ([]byte, error) {
 		zxingcpp.WithFormats(zxingcpp.BarcodeFormatAztec),
 	)
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: barcode decode"), err)
+		return nil, errors.Join(errors.New("codematrix: aztec decode"), err)
 	}
 	if len(barcodes) == 0 {
-		return nil, errors.New("codematrix: no barcode found")
+		return nil, errors.New("codematrix: no aztec code found")
 	}
 	defer barcodes[0].Close()
 

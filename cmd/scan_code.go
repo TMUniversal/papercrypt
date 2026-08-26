@@ -52,11 +52,11 @@ var scanCmd = &cobra.Command{
 	Args:         cobra.MaximumNArgs(1),
 	SilenceUsage: true,
 	Use:          "scan <input>",
-	Short:        "Decode a document from a 2D code.",
-	Long: `Decode a document from a 2D code.
+	Short:        "Decode a document from a 2D code (aztec or qr).",
+	Long: `Decode a document from a 2D code (aztec or qr).
 
 This command allows you to decode data saved by PaperCrypt.
-The 2D code in a PaperCrypt document contains a JSON serialized object
+The Aztec/QR code in a PaperCrypt document contains a JSON serialized object
 that contains the encrypted data and the PaperCrypt metadata.
 
 If you have trouble scanning the QR code with this command,
@@ -92,7 +92,7 @@ The resulting JSON data can be read by this command, by supplying the --json fla
 
 			data, err = codematrix.Decode(img)
 			if err != nil {
-				return errors.Join(errors.New("error decoding 2d code"), err)
+				return errors.Join(errors.New("error decoding aztec code"), err)
 			}
 		}
 
