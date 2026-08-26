@@ -31,7 +31,7 @@ import (
 	"github.com/zxing-cpp/zxing-cpp/wrappers/go/zxingcpp"
 )
 
-// aztecSize is the Aztec code output size in pixels (165mm at 1200dpi).
+// aztecSize is the barcode output size in pixels (165mm at 1200dpi).
 const aztecSize = 7795
 
 // Encode compresses data with gzip and encodes it into a single Aztec code image.
@@ -55,13 +55,13 @@ func Encode(data []byte) (image.Image, error) {
 		zxingcpp.WithEcLevel("30%"),
 	)
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: aztec encode"), err)
+		return nil, errors.Join(errors.New("codematrix: barcode encode"), err)
 	}
 	defer bc.Close()
 
 	nativeImg, err := bc.ToImage()
 	if err != nil {
-		return nil, errors.Join(errors.New("codematrix: aztec to image"), err)
+		return nil, errors.Join(errors.New("codematrix: barcode to image"), err)
 	}
 
 	return scaleToGray(nativeImg, aztecSize, aztecSize), nil
@@ -110,7 +110,7 @@ func scaleToGray(src image.Image, width, height int) *image.Gray {
 	return out
 }
 
-// EncodePNG encodes data into a single Aztec code and returns the PNG-encoded bytes.
+// EncodePNG encodes data into a barcode and returns the PNG-encoded bytes.
 func EncodePNG(data []byte) ([]byte, error) {
 	img, err := Encode(data)
 	if err != nil {
