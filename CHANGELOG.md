@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/TMUniversal/papercrypt/compare/v3.1.1...v3.1.2) (2026-08-26)
+
+
+### Bug Fixes
+
+* trim tag prefix from version string ([f65d95a](https://github.com/TMUniversal/papercrypt/commit/f65d95a0148f27a5a8e0ce06ce849cbb522da71f))
+
 # [3.1.0](https://github.com/TMUniversal/papercrypt/compare/v3.0.0...v3.1.0) (2026-08-25)
 
 
