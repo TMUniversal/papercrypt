@@ -18,5 +18,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package codematrix provides single-Aztec-code encoding with gzip compression.
+// Package codematrix provides 2D code (QR) encoding with base45 and gzip compression.
 package codematrix
