@@ -18,62 +18,85 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package envelope provides a binary envelope format with a CRC-32 checksum
+// Package envelope provides a text envelope format with a CRC-32 checksum
 // for integrity verification of enclosed payloads.
 //
 // Wire format:
 //
-//	[4]byte magic  — "PCE1"
-//	[4]byte crc32  — IEEE CRC-32 of payload, big-endian
-//	[N]byte payload — the enclosed data
+//	"PCE1" + encoder(CRC32) + encoder(content)
+//
+// The CRC-32 is IEEE checksum of the content, encoded using the same
+// ContentEncoder as the payload. The content encoder (e.g. base45) is
+// injected via the ContentEncoder interface, making it replaceable.
 package envelope
 
 import (
 	"encoding/binary"
 	"errors"
 	"hash/crc32"
+	"strings"
 )
 
-// Magic is the 4-byte identifier for the envelope format.
-var Magic = [4]byte{'P', 'C', 'E', '1'}
-
-// HeaderSize is the total size of the envelope header (magic + CRC).
-const HeaderSize = 8
+// Magic is the string identifier for the envelope format.
+const Magic = "PCE1"
 
 var (
-	// ErrInvalidMagic indicates the envelope header does not match Magic.
+	// ErrInvalidMagic indicates the envelope header does not start with Magic.
 	ErrInvalidMagic = errors.New("envelope: invalid magic")
-	// ErrCRCMismatch indicates the CRC-32 checksum does not match the payload.
+	// ErrCRCMismatch indicates the CRC-32 checksum does not match the content.
 	ErrCRCMismatch = errors.New("envelope: CRC-32 mismatch")
-	// ErrPayloadTooShort indicates the data is shorter than HeaderSize.
+	// ErrPayloadTooShort indicates the data is shorter than the envelope header.
 	ErrPayloadTooShort = errors.New("envelope: payload too short")
+	// ErrDecode indicates the content could not be decoded.
+	ErrDecode = errors.New("envelope: decode error")
 )
 
-// Wrap wraps payload in an envelope with a CRC-32 checksum.
-func Wrap(payload []byte) []byte {
-	out := make([]byte, HeaderSize+len(payload))
-	copy(out[0:4], Magic[:])
-	binary.BigEndian.PutUint32(out[4:8], crc32.ChecksumIEEE(payload))
-	copy(out[8:], payload)
-	return out
+// Wrap encodes content using the provided encoder, computes a CRC-32
+// checksum, encodes the checksum with the same encoder, and returns
+// the envelope string: "PCE1" + encoder(CRC32) + encoder(content).
+func Wrap(content []byte, enc ContentEncoder) string {
+	crc := crc32.ChecksumIEEE(content)
+	crcBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(crcBytes, crc)
+
+	return Magic + enc.EncodeToString(crcBytes) + enc.EncodeToString(content)
 }
 
-// Unwrap validates the envelope and returns the payload.
-func Unwrap(data []byte) ([]byte, error) {
-	if len(data) < HeaderSize {
-		return nil, ErrPayloadTooShort
-	}
-
-	if [4]byte(data[0:4]) != Magic {
+// Unwrap validates the envelope and returns the content.
+// It parses "PCE1" + encodedCRC + encodedContent, decodes both parts,
+// and verifies the CRC-32 checksum.
+func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
+	if !strings.HasPrefix(data, Magic) {
 		return nil, ErrInvalidMagic
 	}
 
-	stored := binary.BigEndian.Uint32(data[4:8])
-	payload := data[HeaderSize:]
+	crcSize := enc.EncodedCRCSize()
+	encoded := data[len(Magic):]
 
-	if crc32.ChecksumIEEE(payload) != stored {
+	if len(encoded) < crcSize {
+		return nil, ErrPayloadTooShort
+	}
+
+	encodedCRC := encoded[:crcSize]
+	encodedContent := encoded[crcSize:]
+
+	crcBytes, err := enc.DecodeString(encodedCRC)
+	if err != nil {
+		return nil, errors.Join(ErrDecode, err)
+	}
+	if len(crcBytes) != 4 {
+		return nil, ErrPayloadTooShort
+	}
+	storedCRC := binary.BigEndian.Uint32(crcBytes)
+
+	content, err := enc.DecodeString(encodedContent)
+	if err != nil {
+		return nil, errors.Join(ErrDecode, err)
+	}
+
+	if crc32.ChecksumIEEE(content) != storedCRC {
 		return nil, ErrCRCMismatch
 	}
 
-	return payload, nil
+	return content, nil
 }

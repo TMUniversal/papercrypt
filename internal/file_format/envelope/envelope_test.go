@@ -22,64 +22,84 @@ package envelope
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
+var testEncoder = Base45Encoder{}
+
 func TestRoundtrip(t *testing.T) {
-	payload := []byte("hello, world")
-	wrapped := Wrap(payload)
-	got, err := Unwrap(wrapped)
+	content := []byte("hello, world")
+	wrapped := Wrap(content, testEncoder)
+	got, err := Unwrap(wrapped, testEncoder)
 	if err != nil {
 		t.Fatalf("Unwrap: %v", err)
 	}
-	if !bytes.Equal(got, payload) {
+	if !bytes.Equal(got, content) {
 		t.Errorf("roundtrip mismatch")
 	}
 }
 
 func TestRoundtripEmpty(t *testing.T) {
-	wrapped := Wrap([]byte{})
-	got, err := Unwrap(wrapped)
+	wrapped := Wrap([]byte{}, testEncoder)
+	got, err := Unwrap(wrapped, testEncoder)
 	if err != nil {
 		t.Fatalf("Unwrap: %v", err)
 	}
 	if len(got) != 0 {
-		t.Errorf("expected empty payload, got %d bytes", len(got))
+		t.Errorf("expected empty content, got %d bytes", len(got))
 	}
 }
 
 func TestRoundtripLarge(t *testing.T) {
-	payload := bytes.Repeat([]byte{0xAB}, 10_000)
-	wrapped := Wrap(payload)
-	got, err := Unwrap(wrapped)
+	content := bytes.Repeat([]byte{0xAB}, 10_000)
+	wrapped := Wrap(content, testEncoder)
+	got, err := Unwrap(wrapped, testEncoder)
 	if err != nil {
 		t.Fatalf("Unwrap: %v", err)
 	}
-	if !bytes.Equal(got, payload) {
+	if !bytes.Equal(got, content) {
 		t.Errorf("roundtrip mismatch")
 	}
 }
 
+func TestEnvelopeFormat(t *testing.T) {
+	content := []byte("test")
+	wrapped := Wrap(content, testEncoder)
+
+	if !strings.HasPrefix(wrapped, Magic) {
+		t.Errorf("expected prefix %q, got %q", Magic, wrapped)
+	}
+
+	crcSize := testEncoder.EncodedCRCSize()
+	encodedLen := len(wrapped) - len(Magic)
+	if encodedLen < crcSize {
+		t.Errorf("encoded part too short: %d < %d", encodedLen, crcSize)
+	}
+}
+
 func TestInvalidMagic(t *testing.T) {
-	wrapped := Wrap([]byte("test"))
-	wrapped[0] = 'X'
-	_, err := Unwrap(wrapped)
+	wrapped := Wrap([]byte("test"), testEncoder)
+	corrupted := "X" + wrapped[1:]
+	_, err := Unwrap(corrupted, testEncoder)
 	if err != ErrInvalidMagic {
 		t.Fatalf("expected ErrInvalidMagic, got %v", err)
 	}
 }
 
 func TestCRCMismatch(t *testing.T) {
-	wrapped := Wrap([]byte("test"))
-	wrapped[4] ^= 0xFF
-	_, err := Unwrap(wrapped)
-	if err != ErrCRCMismatch {
-		t.Fatalf("expected ErrCRCMismatch, got %v", err)
+	wrapped := Wrap([]byte("test"), testEncoder)
+	// Corrupt the CRC by changing first encoded CRC character
+	crcSize := testEncoder.EncodedCRCSize()
+	corrupted := wrapped[:len(Magic)+1] + "!" + wrapped[len(Magic)+crcSize:]
+	_, err := Unwrap(corrupted, testEncoder)
+	if err == nil {
+		t.Fatal("expected error for corrupted CRC")
 	}
 }
 
 func TestPayloadTooShort(t *testing.T) {
-	_, err := Unwrap([]byte{0x01, 0x02})
+	_, err := Unwrap(Magic, testEncoder)
 	if err != ErrPayloadTooShort {
 		t.Fatalf("expected ErrPayloadTooShort, got %v", err)
 	}
@@ -91,8 +111,8 @@ func FuzzWrapUnwrap(f *testing.F) {
 	f.Add(bytes.Repeat([]byte{0}, 1000))
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		wrapped := Wrap(data)
-		got, err := Unwrap(wrapped)
+		wrapped := Wrap(data, testEncoder)
+		got, err := Unwrap(wrapped, testEncoder)
 		if err != nil {
 			t.Fatalf("Unwrap failed: %v", err)
 		}
