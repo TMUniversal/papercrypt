@@ -78,7 +78,7 @@ The resulting data can be read by this command, by supplying the --binary flag.
 
 		if qrCmdFromBinary {
 			data, err := io.ReadAll(inFile)
-			if err != nil && err != io.EOF {
+			if err != nil {
 				return errors.Join(errors.New("error reading input file"), err)
 			}
 			envelopeStr = string(data)
