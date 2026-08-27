@@ -31,7 +31,6 @@ import (
 
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"github.com/dasio/base45"
 	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
@@ -145,8 +144,7 @@ func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
 		return nil, errors.Join(errors.New("error closing gzip writer"), err)
 	}
 
-	encoded := base45.EncodeToString(gzBuf.Bytes())
-	qrData := envelope.Wrap([]byte(encoded), envelope.Base45Encoder{})
+	qrData := envelope.Wrap(gzBuf.Bytes(), envelope.Base45Encoder{})
 
 	pngBytes, err := codematrix.EncodePNG(qrData)
 	if err != nil {

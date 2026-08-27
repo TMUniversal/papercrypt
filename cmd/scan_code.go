@@ -30,7 +30,6 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/dasio/base45"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
@@ -152,13 +151,7 @@ func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
 			return nil, errors.Join(errors.New("error unwrapping envelope"), err)
 		}
 
-		// content is base45-encoded gzipped binary
-		gzipped, err := base45.DecodeString(string(content))
-		if err != nil {
-			return nil, errors.Join(errors.New("error base45 decoding"), err)
-		}
-
-		gz, err := gzip.NewReader(bytes.NewReader(gzipped))
+		gz, err := gzip.NewReader(bytes.NewReader(content))
 		if err != nil {
 			return nil, errors.Join(errors.New("error creating gzip reader"), err)
 		}
