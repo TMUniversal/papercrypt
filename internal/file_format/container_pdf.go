@@ -25,53 +25,15 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"image"
 	"image/png"
 	"strings"
 
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
-	"github.com/jung-kurt/gofpdf/v2"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
 	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
-)
-
-const (
-	// DataLineFontSize sets the font size of data lines in the PDF [pt]
-	DataLineFontSize = 11
-	// PDFHeaderSheetID holds the text label displayed in the PDF header for the sheet ID.
-	PDFHeaderSheetID = "Sheet ID"
-	// PDFHeading holds the title of the PDF document, as shown on the first page.
-	PDFHeading = "PaperCrypt Recovery Sheet"
-	// PDFSectionDescriptionHeading holds the title of the section describing the document.
-	PDFSectionDescriptionHeading = "What is this?"
-	// PDFSectionDescriptionContent holds the content of the section describing the document.
-	PDFSectionDescriptionContent = "This is a PaperCrypt recovery sheet. It stores your data together with its identifier, creation date, purpose, and comment. Keep it safe, so the original data can be recovered if it is ever lost or damaged."
-	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
-	PDFSectionRepresentationHeading = "Binary Data Representation"
-	// PDFSectionRepresentationContentBase holds the content of the section describing the data representation.
-	PDFSectionRepresentationContentBase = "The data is contained in a QR code for programmatic recovery, and in text form for recovery without the original software. Text mode prints data in lines of %d bytes, ending with its CRC-24 checksum; the final line holds the checksum of the whole block (polynomial %#x, initial %#x)."
-	// PDFSectionRepresentationContentPGP is the PGP-specific suffix appended for encrypted data.
-	PDFSectionRepresentationContentPGP = " The data is gzipped and encrypted."
-	// PDFSectionRepresentationContentRaw is the raw-specific suffix appended for unencrypted data.
-	PDFSectionRepresentationContentRaw = " The data is stored as-is, unencrypted and uncompressed, so it can be read directly from the hex digits."
-	// PDFSectionRecoveryHeading holds the title of the section describing how to recover the data.
-	PDFSectionRecoveryHeading = "Recovering the data"
-	// PDFSectionRecoveryContent holds the content of the section describing how to recover the data.
-	PDFSectionRecoveryContent = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. Then decrypt it with the encryption passphrase."
-	// PDFSectionRecoveryContentNo2D holds the content of the section describing how to recover the data, if no 2D code is present.
-	PDFSectionRecoveryContentNo2D = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR, then decrypt it with the encryption passphrase."
-	// PDFSectionRecoveryContentRaw holds the content of the section describing how to recover raw data.
-	PDFSectionRecoveryContentRaw = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. The data is stored as-is, so reassembling the bytes reproduces the original file."
-	// PDFSectionRecoveryContentRawNo2D holds the content of the section describing how to recover raw data, if no 2D code is present.
-	PDFSectionRecoveryContentRawNo2D = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR; the bytes reproduce the original file as-is, with no decryption needed."
-	// PDFSectionDocumentationContent holds the content of the section on the final page pointing to the documentation.
-	PDFSectionDocumentationContent = "This sheet was generated with PaperCrypt. For the documentation, source code, and more guidance on recovering the encoded data, scan the code to visit the project website."
 )
 
 // GetPDF returns the binary representation of the paper crypt
@@ -99,31 +61,39 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		return nil, err
 	}
 
-	doc := pdf.GetPdf()
-	p.renderHeader(doc, dm)
-	p.renderFooter(doc)
-	doc.AddPage()
-
-	p.renderPage1Info(doc, no2D)
-	if !no2D {
-		p.renderQRCode(doc, data2D)
+	var qrImage []byte
+	if data2D != nil {
+		qrImage = data2D.Bytes()
 	}
 
-	doc.AddPage()
-	renderDataLines(doc, parts)
-
-	if err := p.renderDocumentation(doc); err != nil {
-		return nil, err
+	cfg := pdf.Config{
+		HasQR:           !no2D,
+		SheetSerial:     p.SerialNumber,
+		CreatedAt:       p.CreatedAt,
+		Purpose:         p.Purpose,
+		DataQRImage:     qrImage,
+		DataMatrixImage: dm.Bytes(),
+		TextParts:       parts,
+		BytesPerLine:    BytesPerLine,
+		CRC24Polynomial: crc24.CRC24Polynomial,
+		CRC24Initial:    crc24.CRC24Initial,
 	}
 
-	doc.Close()
+	return pdf.New(pdfMode(p, no2D)).Render(cfg)
+}
 
-	var buf bytes.Buffer
-	if err := doc.Output(&buf); err != nil {
-		return nil, errors.Join(errors.New("error generating pdf"), err)
+// pdfMode returns the recovery-sheet mode matching the data format and whether a QR code is printed.
+func pdfMode(p *PaperCrypt, no2D bool) pdf.Mode {
+	switch {
+	case p.DataFormat == PaperCryptDataFormatRaw && no2D:
+		return pdf.ModeRawNoQR
+	case p.DataFormat == PaperCryptDataFormatRaw:
+		return pdf.ModeRawQR
+	case no2D:
+		return pdf.ModePGPNoQR
+	default:
+		return pdf.ModePGPQR
 	}
-
-	return buf.Bytes(), nil
 }
 
 // encodeDataQR produces the main data QR code PNG by marshalling, compressing, and encoding.
@@ -174,219 +144,4 @@ func (p *PaperCrypt) generateDataMatrix() (*bytes.Buffer, error) {
 		return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
 	}
 	return buf, nil
-}
-
-// generateProductLinkQR produces the documentation link QR code PNG.
-func generateProductLinkQR() (*bytes.Buffer, error) {
-	// Uppercase the URL so every character is in the AlphaNumeric charset,
-	// producing a denser, smaller QR code.
-	value := strings.ToUpper(internal.VersionInfo.URL)
-
-	qrSize := 709
-	code, err := qr.Encode(value, qr.M, qr.AlphaNumeric)
-	if err != nil {
-		return nil, errors.Join(errors.New("error generating product link QR code"), err)
-	}
-
-	code, err = barcode.Scale(code, qrSize, qrSize)
-	if err != nil {
-		return nil, errors.Join(errors.New("error scaling product link QR code"), err)
-	}
-
-	converted := image.NewGray(code.Bounds())
-	for y := 0; y < code.Bounds().Dy(); y++ {
-		for x := 0; x < code.Bounds().Dx(); x++ {
-			converted.Set(x, y, code.At(x, y))
-		}
-	}
-
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, converted); err != nil {
-		return nil, errors.Join(errors.New("error encoding product link QR code PNG"), err)
-	}
-	return buf, nil
-}
-
-// renderHeader configures the PDF header: sheet ID line and the data matrix code.
-func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm *bytes.Buffer) {
-	doc.SetHeaderFuncMode(func() {
-		doc.SetY(5)
-		doc.SetFont(pdf.MonoFont, "", 10)
-
-		headerLine := fmt.Sprintf(
-			"%s: %s - %s",
-			PDFHeaderSheetID,
-			p.SerialNumber,
-			p.CreatedAt.Format(internal.TimeStampFormatPDFHeader),
-		)
-		if p.Purpose != "" {
-			headerLine += fmt.Sprintf(" - %s", p.Purpose)
-		}
-		doc.CellFormat(0, 10, headerLine, "", 0, "C", false, 0, "")
-
-		doc.RegisterImageReader("dm.png", "PNG", dm)
-		doc.ImageOptions(
-			"dm.png", 195, 50, 5, 5,
-			false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
-		)
-
-		doc.Ln(10)
-	}, true)
-}
-
-// renderFooter configures the PDF footer: program name + version (left), page number (right).
-func (p *PaperCrypt) renderFooter(doc *gofpdf.Fpdf) {
-	doc.SetFooterFunc(func() {
-		doc.SetY(-15)
-		doc.SetFont(pdf.MonoFont, "", 10)
-		doc.CellFormat(
-			0, 10, fmt.Sprintf("PaperCrypt %s", internal.VersionInfo.GitVersion),
-			"", 0, "L", false, 0, "",
-		)
-		doc.CellFormat(
-			0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()),
-			"", 0, "R", false, 0, "",
-		)
-	})
-}
-
-// renderPage1Info writes the title, description, representation, and recovery sections.
-func (p *PaperCrypt) renderPage1Info(doc *gofpdf.Fpdf, no2D bool) {
-	doc.SetFont(pdf.TextFont, "B", 16)
-	doc.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
-	doc.Ln(10)
-
-	doc.SetFont(pdf.TextFont, "B", 10)
-	doc.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
-	doc.Ln(5)
-
-	doc.SetFont(pdf.TextFont, "", 10)
-	doc.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
-	doc.Ln(5)
-
-	doc.SetFont(pdf.TextFont, "B", 10)
-	doc.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
-	doc.Ln(5)
-
-	doc.SetFont(pdf.TextFont, "", 10)
-	representationText := fmt.Sprintf(
-		PDFSectionRepresentationContentBase,
-		BytesPerLine,
-		crc24.CRC24Polynomial,
-		crc24.CRC24Initial,
-	)
-	switch p.DataFormat {
-	case PaperCryptDataFormatRaw:
-		representationText += PDFSectionRepresentationContentRaw
-	case PaperCryptDataFormatPGP:
-		representationText += PDFSectionRepresentationContentPGP
-	}
-	doc.MultiCell(0, 5, representationText, "", "", false)
-	doc.Ln(5)
-
-	doc.SetFont(pdf.TextFont, "B", 10)
-	doc.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
-	doc.Ln(5)
-
-	doc.SetFont(pdf.TextFont, "", 10)
-	var recoverInstruction string
-	if p.DataFormat == PaperCryptDataFormatRaw {
-		if no2D {
-			recoverInstruction = PDFSectionRecoveryContentRawNo2D
-		} else {
-			recoverInstruction = PDFSectionRecoveryContentRaw
-		}
-	} else if no2D {
-		recoverInstruction = PDFSectionRecoveryContentNo2D
-	} else {
-		recoverInstruction = PDFSectionRecoveryContent
-	}
-	doc.MultiCell(0, 5, recoverInstruction, "", "", false)
-}
-
-// renderQRCode places the main QR code image on the page.
-func (p *PaperCrypt) renderQRCode(doc *gofpdf.Fpdf, data2D *bytes.Buffer) {
-	doc.RegisterImageReader("data2D.png", "PNG", data2D)
-	doc.ImageOptions(
-		"data2D.png", 21, 5, 167, 167,
-		true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
-	)
-
-	doc.Ln(50)
-}
-
-// renderDataLines writes the header lines and hex data lines on page 2.
-func renderDataLines(doc *gofpdf.Fpdf, parts []string) {
-	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
-	for _, line := range strings.Split(parts[0], "\n") {
-		doc.Cell(0, 5, "# "+line)
-		doc.Ln(5)
-	}
-	doc.Ln(10)
-
-	dataLines := strings.Split(parts[1], "\n")
-	filtered := dataLines[:0]
-	for _, line := range dataLines {
-		if line != "" {
-			filtered = append(filtered, line)
-		}
-	}
-
-	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
-	for n, line := range filtered {
-		if n%2 == 0 {
-			doc.SetFillColor(240, 240, 240)
-			doc.Rect(20, doc.GetY(), 166, 5, "F")
-		}
-		doc.Cell(0, 5, line)
-		doc.Ln(5)
-	}
-}
-
-// renderDocumentation writes the documentation note and link QR code at the bottom
-// of the final page. The QR code sits at the left, with the note rendered to its right.
-func (p *PaperCrypt) renderDocumentation(doc *gofpdf.Fpdf) error {
-	productLinkQr, err := generateProductLinkQR()
-	if err != nil {
-		return err
-	}
-
-	const (
-		// A4 width is 210mm and height 297mm
-		pageBottom = 283.5
-		qrSize     = 15.0
-		gap        = 3.5
-		noteLineH  = 3.5
-		leftMargin = 21.0
-	)
-
-	// Width available to the right of the QR code, up to the right margin.
-	noteWidth := 210 - leftMargin - leftMargin - qrSize - gap - gap
-
-	doc.SetFont(pdf.TextFont, "", 8)
-	noteLines := len(doc.SplitLines([]byte(PDFSectionDocumentationContent), noteWidth))
-	noteHeight := float64(noteLines) * noteLineH
-
-	leftColHeight := qrSize + gap
-	sectionHeight := leftColHeight
-	if noteHeight > sectionHeight {
-		sectionHeight = noteHeight
-	}
-
-	startY := pageBottom - sectionHeight
-
-	if doc.GetY()+gap > startY {
-		doc.AddPage()
-	}
-
-	doc.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
-	doc.ImageOptions(
-		"product_link_qr.png", leftMargin, startY, qrSize, qrSize,
-		false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
-	)
-
-	doc.SetXY(leftMargin+qrSize+gap, startY)
-	doc.MultiCell(noteWidth, noteLineH, PDFSectionDocumentationContent, "", "", false)
-
-	return nil
 }
