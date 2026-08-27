@@ -60,7 +60,7 @@ If you have trouble scanning the QR code with this command,
 you may also try a QR code scanner app on your phone or tablet,
 such as "Scandit" (https://apps.apple.com/de/app/scandit-barcode-scanner/id453880584
 or https://play.google.com/store/apps/details?id=com.scandit.demoapp).
-The resulting data can be read by this command, by supplying the --binary flag.
+The resulting data can be read by this command, by supplying the --from-binary flag.
 `,
 	Example: `papercrypt scan ./code.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
