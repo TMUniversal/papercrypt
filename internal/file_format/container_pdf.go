@@ -239,11 +239,15 @@ func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm, productLinkQr *bytes.Buf
 	}, true)
 }
 
-// renderFooter configures the PDF footer with the page number.
+// renderFooter configures the PDF footer: program name + version (left), page number (right).
 func (p *PaperCrypt) renderFooter(doc *gofpdf.Fpdf) {
 	doc.SetFooterFunc(func() {
 		doc.SetY(-15)
 		doc.SetFont(pdf.MonoFont, "", 10)
+		doc.CellFormat(
+			0, 10, fmt.Sprintf("PaperCrypt %s", internal.VersionInfo.GitVersion),
+			"", 0, "L", false, 0, "",
+		)
 		doc.CellFormat(
 			0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()),
 			"", 0, "R", false, 0, "",

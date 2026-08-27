@@ -145,6 +145,10 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 	doc.SetFooterFunc(func() {
 		doc.SetY(-15)
 		doc.SetFont(pdf.MonoFont, "", 10)
+		doc.CellFormat(
+			0, 10, fmt.Sprintf("PaperCrypt %s", internal.VersionInfo.GitVersion),
+			"", 0, "L", false, 0, "",
+		)
 		doc.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()), "", 0, "R", false, 0, "")
 	})
 	doc.AddPage()
