@@ -41,8 +41,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
 )
 
-const printProductQrCode = false
-
 const (
 	// DataLineFontSize sets the font size of data lines in the PDF [pt]
 	DataLineFontSize = 11
@@ -66,6 +64,8 @@ const (
 	PDFSectionRecoveryContent = "Firstly, scan the 2D code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 	// PDFSectionRecoveryContentNo2D holds the content of the section describing how to recover the data, if no 2D code is present.
 	PDFSectionRecoveryContentNo2D = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	// PDFSectionDocumentationContent holds the content of the section on the final page pointing to the documentation.
+	PDFSectionDocumentationContent = "This sheet was generated with PaperCrypt. For the documentation, source code, and details on recovering the encoded data, scan the code below or visit the project website."
 )
 
 // GetPDF returns the binary representation of the paper crypt
@@ -93,13 +93,8 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		return nil, err
 	}
 
-	productLinkQr, err := generateProductLinkQR()
-	if err != nil {
-		return nil, err
-	}
-
 	doc := pdf.GetPdf()
-	p.renderHeader(doc, dm, productLinkQr)
+	p.renderHeader(doc, dm)
 	p.renderFooter(doc)
 	doc.AddPage()
 
@@ -110,6 +105,10 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	doc.AddPage()
 	renderDataLines(doc, parts)
+
+	if err := p.renderDocumentation(doc); err != nil {
+		return nil, err
+	}
 
 	doc.Close()
 
@@ -171,14 +170,14 @@ func (p *PaperCrypt) generateDataMatrix() (*bytes.Buffer, error) {
 	return buf, nil
 }
 
-// generateProductLinkQR produces the product link QR code PNG, or nil if disabled.
+// generateProductLinkQR produces the documentation link QR code PNG.
 func generateProductLinkQR() (*bytes.Buffer, error) {
-	if !printProductQrCode {
-		return nil, nil
-	}
+	// Uppercase the URL so every character is in the AlphaNumeric charset,
+	// producing a denser, smaller QR code.
+	value := strings.ToUpper(internal.VersionInfo.URL)
 
 	qrSize := 709
-	code, err := qr.Encode(internal.VersionInfo.URL, qr.M, qr.Auto)
+	code, err := qr.Encode(value, qr.M, qr.AlphaNumeric)
 	if err != nil {
 		return nil, errors.Join(errors.New("error generating product link QR code"), err)
 	}
@@ -202,8 +201,8 @@ func generateProductLinkQR() (*bytes.Buffer, error) {
 	return buf, nil
 }
 
-// renderHeader configures the PDF header: sheet ID line, data matrix, and optional product QR.
-func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm, productLinkQr *bytes.Buffer) {
+// renderHeader configures the PDF header: sheet ID line and the data matrix code.
+func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm *bytes.Buffer) {
 	doc.SetHeaderFuncMode(func() {
 		doc.SetY(5)
 		doc.SetFont(pdf.MonoFont, "", 10)
@@ -226,14 +225,6 @@ func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm, productLinkQr *bytes.Buf
 		)
 
 		doc.Ln(10)
-
-		if productLinkQr != nil {
-			doc.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
-			doc.ImageOptions(
-				"product_link_qr.png", 186, 11, 15, 15,
-				false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
-			)
-		}
 	}, true)
 }
 
@@ -333,4 +324,54 @@ func renderDataLines(doc *gofpdf.Fpdf, parts []string) {
 		doc.Cell(0, 5, line)
 		doc.Ln(5)
 	}
+}
+
+// renderDocumentation writes the documentation note and link QR code at the bottom
+// of the final page. The QR code sits at the left, with the note rendered to its right.
+func (p *PaperCrypt) renderDocumentation(doc *gofpdf.Fpdf) error {
+	productLinkQr, err := generateProductLinkQR()
+	if err != nil {
+		return err
+	}
+
+	const (
+		// A4 width is 210mm and height 297mm; the auto page break and footer sit
+		// at the bottom 15mm.
+		pageBottom = 275.0
+		qrSize     = 15.0
+		gap        = 5.0
+		captionH   = 4.0
+		noteLineH  = 3.5
+		leftMargin = 20.0
+	)
+
+	// Width available to the right of the QR code, up to the right margin.
+	noteWidth := 210 - 20 - leftMargin - qrSize - gap
+
+	doc.SetFont(pdf.TextFont, "", 8)
+	noteLines := len(doc.SplitLines([]byte(PDFSectionDocumentationContent), noteWidth))
+	noteHeight := float64(noteLines) * noteLineH
+
+	leftColHeight := qrSize + gap + captionH
+	sectionHeight := leftColHeight
+	if noteHeight > sectionHeight {
+		sectionHeight = noteHeight
+	}
+
+	startY := pageBottom - sectionHeight
+
+	if doc.GetY()+gap > startY {
+		doc.AddPage()
+	}
+
+	doc.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
+	doc.ImageOptions(
+		"product_link_qr.png", leftMargin, startY, qrSize, qrSize,
+		false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
+	)
+
+	doc.SetXY(leftMargin+qrSize+gap, startY)
+	doc.MultiCell(noteWidth, noteLineH, PDFSectionDocumentationContent, "", "", false)
+
+	return nil
 }
