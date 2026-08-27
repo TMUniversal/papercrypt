@@ -335,24 +335,22 @@ func (p *PaperCrypt) renderDocumentation(doc *gofpdf.Fpdf) error {
 	}
 
 	const (
-		// A4 width is 210mm and height 297mm; the auto page break and footer sit
-		// at the bottom 15mm.
-		pageBottom = 275.0
+		// A4 width is 210mm and height 297mm
+		pageBottom = 283.5
 		qrSize     = 15.0
-		gap        = 5.0
-		captionH   = 4.0
+		gap        = 3.5
 		noteLineH  = 3.5
-		leftMargin = 20.0
+		leftMargin = 21.0
 	)
 
 	// Width available to the right of the QR code, up to the right margin.
-	noteWidth := 210 - 20 - leftMargin - qrSize - gap
+	noteWidth := 210 - leftMargin - leftMargin - qrSize - gap - gap
 
 	doc.SetFont(pdf.TextFont, "", 8)
 	noteLines := len(doc.SplitLines([]byte(PDFSectionDocumentationContent), noteWidth))
 	noteHeight := float64(noteLines) * noteLineH
 
-	leftColHeight := qrSize + gap + captionH
+	leftColHeight := qrSize + gap
 	sectionHeight := leftColHeight
 	if noteHeight > sectionHeight {
 		sectionHeight = noteHeight
