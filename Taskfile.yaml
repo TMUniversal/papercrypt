@@ -79,6 +79,14 @@ tasks:
         && diff -u test.json test-in.json
         && echo "Successfully reconstructed input document."'
       - >-
+        bash -c 'cat t-1.png
+        | go run . scan --to-binary
+        | { printf "   \t\n"; cat; printf "\n\t  "; }
+        | go run . scan --from-binary
+        | go run . decode -f -o test.json --passphrase "test"
+        && diff -u test.json test-in.json
+        && echo "Successfully reconstructed input document with surrounding whitespace."'
+      - >-
         bash -c 'rm -f test-in.json test.json t-*.png test.pdf'
 
   test:raw:
