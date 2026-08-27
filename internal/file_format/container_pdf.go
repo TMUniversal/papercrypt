@@ -55,11 +55,11 @@ const (
 	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
 	PDFSectionRepresentationHeading = "Binary Data Representation"
 	// PDFSectionRepresentationContentBase holds the content of the section describing the data representation.
-	PDFSectionRepresentationContentBase = "The data is written as base 16 (hexadecimal) digits, each representing half a byte. Bytes appear in lines of %d, separated by spaces. Every line starts with its number and a colon and ends with its CRC-24 checksum; the final line holds the checksum of the whole block, computed with the polynomial mask %#x and initial value %#x."
+	PDFSectionRepresentationContentBase = "The data is contained in a QR code for programmatic recovery, and in text form for recovery without the original software. Text mode prints data in lines of %d bytes, ending with its CRC-24 checksum; the final line holds the checksum of the whole block (polynomial %#x, initial %#x)."
 	// PDFSectionRepresentationContentPGP is the PGP-specific suffix appended for encrypted data.
-	PDFSectionRepresentationContentPGP = " The data on this sheet is gzipped and encrypted with the encryption passphrase, so it cannot be read directly."
+	PDFSectionRepresentationContentPGP = " The data is gzipped and encrypted."
 	// PDFSectionRepresentationContentRaw is the raw-specific suffix appended for unencrypted data.
-	PDFSectionRepresentationContentRaw = " The data on this sheet is stored exactly as-is, without compression or encryption, so it can be read directly from the hex digits."
+	PDFSectionRepresentationContentRaw = " The data is stored as-is, unencrypted and uncompressed, so it can be read directly from the hex digits."
 	// PDFSectionRecoveryHeading holds the title of the section describing how to recover the data.
 	PDFSectionRecoveryHeading = "Recovering the data"
 	// PDFSectionRecoveryContent holds the content of the section describing how to recover the data.
