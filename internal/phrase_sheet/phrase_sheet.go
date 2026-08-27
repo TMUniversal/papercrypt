@@ -164,7 +164,7 @@ func GeneratePassphraseSheetPDF(seed int64, words []string) ([]byte, error) {
 			0,
 			5,
 			`To create a passphrase or password with this sheet, start by choosing words on this sheet, preferably following these guidelines:
-    1. Choose between 6 and 24 words,
+    1. Choose between 6 and 24 distinct words,
     2. Do not choose words in order.`,
 			"",
 			"L",
