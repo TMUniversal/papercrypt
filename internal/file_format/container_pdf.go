@@ -51,19 +51,25 @@ const (
 	// PDFSectionDescriptionHeading holds the title of the section describing the document.
 	PDFSectionDescriptionHeading = "What is this?"
 	// PDFSectionDescriptionContent holds the content of the section describing the document.
-	PDFSectionDescriptionContent = "This is a PaperCrypt recovery sheet. It contains encrypted data, its own creation date, purpose, and a comment, as well as an identifier. This sheet is intended to help recover the original information, in case it is lost or destroyed."
+	PDFSectionDescriptionContent = "This is a PaperCrypt recovery sheet. It stores your data together with its identifier, creation date, purpose, and comment. Keep it safe, so the original data can be recovered if it is ever lost or damaged."
 	// PDFSectionRepresentationHeading holds the title of the section describing the data representation.
 	PDFSectionRepresentationHeading = "Binary Data Representation"
 	// PDFSectionRepresentationContentBase holds the content of the section describing the data representation.
-	PDFSectionRepresentationContentBase = "Data is written as base 16 (hexadecimal) digits, each representing a half-byte. Two half-bytes are grouped together as a byte, which are then grouped together in lines of %d bytes, where bytes are separated by a space. Each line begins with its line number and a colon, denoting its position and the beginning of the data. Each line is then followed by its CRC-24 checksum. The last line holds the checksum of the entire block. For the checksum algorithm, the polynomial mask %#x and initial value %#x are used."
-	// PDFSectionRepresentationContentGzip is the gzip-specific suffix appended for PGP-format data.
-	PDFSectionRepresentationContentGzip = " Data is compressed using the gzip algorithm."
+	PDFSectionRepresentationContentBase = "The data is written as base 16 (hexadecimal) digits, each representing half a byte. Bytes appear in lines of %d, separated by spaces. Every line starts with its number and a colon and ends with its CRC-24 checksum; the final line holds the checksum of the whole block, computed with the polynomial mask %#x and initial value %#x."
+	// PDFSectionRepresentationContentPGP is the PGP-specific suffix appended for encrypted data.
+	PDFSectionRepresentationContentPGP = " The data on this sheet is gzipped and encrypted with the encryption passphrase, so it cannot be read directly."
+	// PDFSectionRepresentationContentRaw is the raw-specific suffix appended for unencrypted data.
+	PDFSectionRepresentationContentRaw = " The data on this sheet is stored exactly as-is, without compression or encryption, so it can be read directly from the hex digits."
 	// PDFSectionRecoveryHeading holds the title of the section describing how to recover the data.
 	PDFSectionRecoveryHeading = "Recovering the data"
 	// PDFSectionRecoveryContent holds the content of the section describing how to recover the data.
-	PDFSectionRecoveryContent = "Firstly, scan the 2D code, or copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContent = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. Then decrypt it with the encryption passphrase."
 	// PDFSectionRecoveryContentNo2D holds the content of the section describing how to recover the data, if no 2D code is present.
-	PDFSectionRecoveryContentNo2D = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
+	PDFSectionRecoveryContentNo2D = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR, then decrypt it with the encryption passphrase."
+	// PDFSectionRecoveryContentRaw holds the content of the section describing how to recover raw data.
+	PDFSectionRecoveryContentRaw = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. The data is stored as-is, so reassembling the bytes reproduces the original file."
+	// PDFSectionRecoveryContentRawNo2D holds the content of the section describing how to recover raw data, if no 2D code is present.
+	PDFSectionRecoveryContentRawNo2D = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR; the bytes reproduce the original file as-is, with no decryption needed."
 	// PDFSectionDocumentationContent holds the content of the section on the final page pointing to the documentation.
 	PDFSectionDocumentationContent = "This sheet was generated with PaperCrypt. For the documentation, source code, and more guidance on recovering the encoded data, scan the code to visit the project website."
 )
@@ -269,8 +275,11 @@ func (p *PaperCrypt) renderPage1Info(doc *gofpdf.Fpdf, no2D bool) {
 		crc24.CRC24Polynomial,
 		crc24.CRC24Initial,
 	)
-	if p.DataFormat == PaperCryptDataFormatPGP {
-		representationText += PDFSectionRepresentationContentGzip
+	switch p.DataFormat {
+	case PaperCryptDataFormatRaw:
+		representationText += PDFSectionRepresentationContentRaw
+	case PaperCryptDataFormatPGP:
+		representationText += PDFSectionRepresentationContentPGP
 	}
 	doc.MultiCell(0, 5, representationText, "", "", false)
 	doc.Ln(5)
@@ -280,9 +289,17 @@ func (p *PaperCrypt) renderPage1Info(doc *gofpdf.Fpdf, no2D bool) {
 	doc.Ln(5)
 
 	doc.SetFont(pdf.TextFont, "", 10)
-	recoverInstruction := PDFSectionRecoveryContent
-	if no2D {
+	var recoverInstruction string
+	if p.DataFormat == PaperCryptDataFormatRaw {
+		if no2D {
+			recoverInstruction = PDFSectionRecoveryContentRawNo2D
+		} else {
+			recoverInstruction = PDFSectionRecoveryContentRaw
+		}
+	} else if no2D {
 		recoverInstruction = PDFSectionRecoveryContentNo2D
+	} else {
+		recoverInstruction = PDFSectionRecoveryContent
 	}
 	doc.MultiCell(0, 5, recoverInstruction, "", "", false)
 }
