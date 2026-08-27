@@ -65,7 +65,7 @@ const (
 	// PDFSectionRecoveryContentNo2D holds the content of the section describing how to recover the data, if no 2D code is present.
 	PDFSectionRecoveryContentNo2D = "Firstly, copy (i.e. type in, or use OCR on) the encrypted data into a computer. Then decrypt it, either using the PaperCrypt CLI, or manually construct the data into a binary file, and decrypt it using OpenPGP-compatible software."
 	// PDFSectionDocumentationContent holds the content of the section on the final page pointing to the documentation.
-	PDFSectionDocumentationContent = "This sheet was generated with PaperCrypt. For the documentation, source code, and details on recovering the encoded data, scan the code below or visit the project website."
+	PDFSectionDocumentationContent = "This sheet was generated with PaperCrypt. For the documentation, source code, and more guidance on recovering the encoded data, scan the code to visit the project website."
 )
 
 // GetPDF returns the binary representation of the paper crypt
