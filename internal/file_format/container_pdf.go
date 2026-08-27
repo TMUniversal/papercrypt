@@ -72,18 +72,6 @@ const (
 // GetPDF returns the binary representation of the paper crypt
 // The PDF will be generated to include some basic information about papercrypt,
 // some metadata, optionally a 2D-Code, and the encrypted data.
-//
-// The data will be formatted as
-//
-//	a) ASCII armored OpenPGP data, if --armor is specified
-//	b) Base16 (hex) encoded binary data, if --armor is not specified
-//
-// The PDF Document will have a header row, containing the following information:
-//   - Serial Number
-//   - Creation Date
-//   - Purpose
-//
-// and, next to the markdown information, a 2D code containing the encrypted data.
 func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	text, err := p.GetText(lowerCaseEncoding)
 	if err != nil {
@@ -96,82 +84,132 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		return nil, fmt.Errorf("error splitting text content into header and data")
 	}
 
-	productLinkQr := new(bytes.Buffer)
-	if printProductQrCode {
-		qrSize := 709
-
-		code, err := qr.Encode(internal.VersionInfo.URL, qr.M, qr.Auto)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating 2D code"), err)
-		}
-
-		code, err = barcode.Scale(code, qrSize, qrSize)
-		if err != nil {
-			return nil, errors.Join(errors.New("error scaling 2D code"), err)
-		}
-
-		converted := image.NewGray(code.Bounds())
-		for y := 0; y < code.Bounds().Dy(); y++ {
-			for x := 0; x < code.Bounds().Dx(); x++ {
-				converted.Set(x, y, code.At(x, y))
-			}
-		}
-
-		err = png.Encode(productLinkQr, converted)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating 2D code PNG"), err)
-		}
+	data2D, err := p.encodeDataQR(no2D)
+	if err != nil {
+		return nil, err
 	}
 
-	data2D := new(bytes.Buffer)
-	dm := new(bytes.Buffer)
-
-	if !no2D {
-		qrBin, err := MarshalBinary(p)
-		if err != nil {
-			return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
-		}
-
-		var gzBuf bytes.Buffer
-		gz, err := gzip.NewWriterLevel(&gzBuf, gzip.BestCompression)
-		if err != nil {
-			return nil, errors.Join(errors.New("error creating gzip writer"), err)
-		}
-		if _, err := gz.Write(qrBin); err != nil {
-			return nil, errors.Join(errors.New("error writing gzip data"), err)
-		}
-		if err := gz.Close(); err != nil {
-			return nil, errors.Join(errors.New("error closing gzip writer"), err)
-		}
-
-		encoded := base45.EncodeToString(gzBuf.Bytes())
-		qrData := envelope.Wrap([]byte(encoded), envelope.Base45Encoder{})
-
-		pngBytes, err := codematrix.EncodePNG(qrData)
-		if err != nil {
-			return nil, err
-		}
-		data2D.Write(pngBytes)
+	dm, err := p.generateDataMatrix()
+	if err != nil {
+		return nil, err
 	}
 
-	{
-		// generate a data matrix with the sheet id
-		enc := datamatrix.NewDataMatrixWriter()
-		code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
-		}
-
-		err = png.Encode(dm, code)
-		if err != nil {
-			return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
-		}
+	productLinkQr, err := generateProductLinkQR()
+	if err != nil {
+		return nil, err
 	}
 
 	doc := pdf.GetPdf()
+	p.renderHeader(doc, dm, productLinkQr)
+	p.renderFooter(doc)
+	doc.AddPage()
+
+	p.renderPage1Info(doc, no2D)
+	if !no2D {
+		p.renderQRCode(doc, data2D)
+	}
+
+	doc.AddPage()
+	renderDataLines(doc, parts)
+
+	doc.Close()
+
+	var buf bytes.Buffer
+	if err := doc.Output(&buf); err != nil {
+		return nil, errors.Join(errors.New("error generating pdf"), err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+// encodeDataQR produces the main data QR code PNG by marshalling, compressing, and encoding.
+func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
+	if no2D {
+		return nil, nil
+	}
+
+	qrBin, err := MarshalBinary(p)
+	if err != nil {
+		return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
+	}
+
+	var gzBuf bytes.Buffer
+	gz, err := gzip.NewWriterLevel(&gzBuf, gzip.BestCompression)
+	if err != nil {
+		return nil, errors.Join(errors.New("error creating gzip writer"), err)
+	}
+	if _, err := gz.Write(qrBin); err != nil {
+		return nil, errors.Join(errors.New("error writing gzip data"), err)
+	}
+	if err := gz.Close(); err != nil {
+		return nil, errors.Join(errors.New("error closing gzip writer"), err)
+	}
+
+	encoded := base45.EncodeToString(gzBuf.Bytes())
+	qrData := envelope.Wrap([]byte(encoded), envelope.Base45Encoder{})
+
+	pngBytes, err := codematrix.EncodePNG(qrData)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := new(bytes.Buffer)
+	buf.Write(pngBytes)
+	return buf, nil
+}
+
+// generateDataMatrix produces a Data Matrix code PNG encoding the sheet serial number.
+func (p *PaperCrypt) generateDataMatrix() (*bytes.Buffer, error) {
+	enc := datamatrix.NewDataMatrixWriter()
+	code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
+	if err != nil {
+		return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, code); err != nil {
+		return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
+	}
+	return buf, nil
+}
+
+// generateProductLinkQR produces the product link QR code PNG, or nil if disabled.
+func generateProductLinkQR() (*bytes.Buffer, error) {
+	if !printProductQrCode {
+		return nil, nil
+	}
+
+	qrSize := 709
+	code, err := qr.Encode(internal.VersionInfo.URL, qr.M, qr.Auto)
+	if err != nil {
+		return nil, errors.Join(errors.New("error generating product link QR code"), err)
+	}
+
+	code, err = barcode.Scale(code, qrSize, qrSize)
+	if err != nil {
+		return nil, errors.Join(errors.New("error scaling product link QR code"), err)
+	}
+
+	converted := image.NewGray(code.Bounds())
+	for y := 0; y < code.Bounds().Dy(); y++ {
+		for x := 0; x < code.Bounds().Dx(); x++ {
+			converted.Set(x, y, code.At(x, y))
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, converted); err != nil {
+		return nil, errors.Join(errors.New("error encoding product link QR code PNG"), err)
+	}
+	return buf, nil
+}
+
+// renderHeader configures the PDF header: sheet ID line, data matrix, and optional product QR.
+func (p *PaperCrypt) renderHeader(doc *gofpdf.Fpdf, dm, productLinkQr *bytes.Buffer) {
 	doc.SetHeaderFuncMode(func() {
 		doc.SetY(5)
 		doc.SetFont(pdf.MonoFont, "", 10)
+
 		headerLine := fmt.Sprintf(
 			"%s: %s - %s",
 			PDFHeaderSheetID,
@@ -181,122 +219,94 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		if p.Purpose != "" {
 			headerLine += fmt.Sprintf(" - %s", p.Purpose)
 		}
-		doc.CellFormat(0, 10, headerLine,
-			"", 0, "C", false, 0, "")
+		doc.CellFormat(0, 10, headerLine, "", 0, "C", false, 0, "")
 
-		{
-			// add the data matrix code
-			doc.RegisterImageReader("dm.png", "PNG", dm)
-			imageSize := 5.0
-			doc.ImageOptions(
-				"dm.png",
-				195,
-				50,
-				imageSize,
-				imageSize,
-				false,
-				gofpdf.ImageOptions{ImageType: "PNG"},
-				0,
-				"",
-			)
-		}
+		doc.RegisterImageReader("dm.png", "PNG", dm)
+		doc.ImageOptions(
+			"dm.png", 195, 50, 5, 5,
+			false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
+		)
 
 		doc.Ln(10)
 
-		if printProductQrCode {
-			// add product qr code in upper left corner
+		if productLinkQr != nil {
 			doc.RegisterImageReader("product_link_qr.png", "PNG", productLinkQr)
-			imageSize := 15.0
 			doc.ImageOptions(
-				"product_link_qr.png",
-				186,
-				11,
-				imageSize,
-				imageSize,
-				false,
-				gofpdf.ImageOptions{ImageType: "PNG"},
-				0,
-				"",
+				"product_link_qr.png", 186, 11, 15, 15,
+				false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
 			)
 		}
 	}, true)
+}
+
+// renderFooter configures the PDF footer with the page number.
+func (p *PaperCrypt) renderFooter(doc *gofpdf.Fpdf) {
 	doc.SetFooterFunc(func() {
 		doc.SetY(-15)
 		doc.SetFont(pdf.MonoFont, "", 10)
-		doc.CellFormat(0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()), "", 0, "R", false, 0, "")
+		doc.CellFormat(
+			0, 10, fmt.Sprintf("Page %d/{nb}", doc.PageNo()),
+			"", 0, "R", false, 0, "",
+		)
 	})
-	doc.AddPage()
+}
 
-	{
-		// Info text
-		doc.SetFont(pdf.TextFont, "B", 16)
-		doc.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
-		doc.Ln(10)
+// renderPage1Info writes the title, description, representation, and recovery sections.
+func (p *PaperCrypt) renderPage1Info(doc *gofpdf.Fpdf, no2D bool) {
+	doc.SetFont(pdf.TextFont, "B", 16)
+	doc.CellFormat(0, 10, PDFHeading, "", 0, "C", false, 0, "")
+	doc.Ln(10)
 
-		doc.SetFont(pdf.TextFont, "B", 10)
-		doc.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
-		doc.Ln(5)
+	doc.SetFont(pdf.TextFont, "B", 10)
+	doc.CellFormat(0, 5, PDFSectionDescriptionHeading, "", 0, "L", false, 0, "")
+	doc.Ln(5)
 
-		doc.SetFont(pdf.TextFont, "", 10)
-		doc.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
-		doc.Ln(5)
+	doc.SetFont(pdf.TextFont, "", 10)
+	doc.MultiCell(0, 5, PDFSectionDescriptionContent, "", "", false)
+	doc.Ln(5)
 
-		doc.SetFont(pdf.TextFont, "B", 10)
-		doc.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
-		doc.Ln(5)
+	doc.SetFont(pdf.TextFont, "B", 10)
+	doc.CellFormat(0, 5, PDFSectionRepresentationHeading, "", 0, "L", false, 0, "")
+	doc.Ln(5)
 
-		doc.SetFont(pdf.TextFont, "", 10)
-		representationText := fmt.Sprintf(
-			PDFSectionRepresentationContentBase,
-			BytesPerLine,
-			crc24.CRC24Polynomial,
-			crc24.CRC24Initial,
-		)
-		if p.DataFormat == PaperCryptDataFormatPGP {
-			representationText += PDFSectionRepresentationContentGzip
-		}
-		doc.MultiCell(
-			0,
-			5,
-			representationText,
-			"",
-			"",
-			false,
-		)
-		doc.Ln(5)
-
-		doc.SetFont(pdf.TextFont, "B", 10)
-		doc.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
-		doc.Ln(5)
-
-		doc.SetFont(pdf.TextFont, "", 10)
-		recoverInstruction := PDFSectionRecoveryContent
-		if no2D {
-			recoverInstruction = PDFSectionRecoveryContentNo2D
-		}
-		doc.MultiCell(0, 5, recoverInstruction, "", "", false)
+	doc.SetFont(pdf.TextFont, "", 10)
+	representationText := fmt.Sprintf(
+		PDFSectionRepresentationContentBase,
+		BytesPerLine,
+		crc24.CRC24Polynomial,
+		crc24.CRC24Initial,
+	)
+	if p.DataFormat == PaperCryptDataFormatPGP {
+		representationText += PDFSectionRepresentationContentGzip
 	}
+	doc.MultiCell(0, 5, representationText, "", "", false)
+	doc.Ln(5)
 
-	// add the qr code
-	if !no2D {
-		doc.RegisterImageReader("data2D.png", "PNG", data2D)
-		imageSize := 167.0
-		doc.ImageOptions(
-			"data2D.png",
-			21,
-			5,
-			imageSize,
-			imageSize,
-			true,
-			gofpdf.ImageOptions{ImageType: "PNG"},
-			0,
-			"",
-		)
-		doc.Ln(50)
+	doc.SetFont(pdf.TextFont, "B", 10)
+	doc.CellFormat(0, 5, PDFSectionRecoveryHeading, "", 0, "L", false, 0, "")
+	doc.Ln(5)
+
+	doc.SetFont(pdf.TextFont, "", 10)
+	recoverInstruction := PDFSectionRecoveryContent
+	if no2D {
+		recoverInstruction = PDFSectionRecoveryContentNo2D
 	}
+	doc.MultiCell(0, 5, recoverInstruction, "", "", false)
+}
 
-	doc.AddPage()
-	// print header lines
+// renderQRCode places the main QR code image on the page.
+func (p *PaperCrypt) renderQRCode(doc *gofpdf.Fpdf, data2D *bytes.Buffer) {
+	doc.RegisterImageReader("data2D.png", "PNG", data2D)
+	doc.ImageOptions(
+		"data2D.png", 21, 5, 167, 167,
+		true, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "",
+	)
+
+	doc.Ln(50)
+}
+
+// renderDataLines writes the header lines and hex data lines on page 2.
+func renderDataLines(doc *gofpdf.Fpdf, parts []string) {
 	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
 	for _, line := range strings.Split(parts[0], "\n") {
 		doc.Cell(0, 5, "# "+line)
@@ -304,10 +314,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	}
 	doc.Ln(10)
 
-	// print data lines
 	dataLines := strings.Split(parts[1], "\n")
-
-	// cut empty lines (should be one at the end)
 	filtered := dataLines[:0]
 	for _, line := range dataLines {
 		if line != "" {
@@ -317,23 +324,11 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 
 	doc.SetFont(pdf.MonoFont, "B", DataLineFontSize)
 	for n, line := range filtered {
-		// mark every second line with a grey background
 		if n%2 == 0 {
 			doc.SetFillColor(240, 240, 240)
 			doc.Rect(20, doc.GetY(), 166, 5, "F")
 		}
-
 		doc.Cell(0, 5, line)
 		doc.Ln(5)
 	}
-
-	doc.Close()
-
-	var buf bytes.Buffer
-	err = doc.Output(&buf)
-	if err != nil {
-		return nil, errors.Join(errors.New("error generating pdf"), err)
-	}
-
-	return buf.Bytes(), nil
 }
