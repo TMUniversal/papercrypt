@@ -81,7 +81,7 @@ The resulting data can be read by this command, by supplying the --binary flag.
 			if err != nil {
 				return errors.Join(errors.New("error reading input file"), err)
 			}
-			envelopeStr = string(data)
+			envelopeStr = strings.TrimSpace(string(data))
 		} else {
 			img, _, err := image.Decode(inFile)
 			if err != nil {
