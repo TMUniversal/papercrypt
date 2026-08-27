@@ -26,14 +26,18 @@ import (
 	"image/color"
 	"strings"
 	"testing"
+
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 )
 
 func TestRoundtrip(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	data := `{"v":"3.0.0-dev","f":"PGP","sn":"test","d":"` +
-		strings.Repeat("hello world ", 100) + `"}`
+	data := envelope.Wrap(
+		[]byte(strings.Repeat("hello world ", 100)),
+		envelope.Base45Encoder{},
+	)
 
 	img, err := Encode(data)
 	if err != nil {
@@ -87,7 +91,7 @@ func TestEncodePNG(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping slow QR encode/decode test")
 	}
-	data := "hello"
+	data := envelope.Wrap([]byte("hello"), envelope.Base45Encoder{})
 	pngBytes, err := EncodePNG(data)
 	if err != nil {
 		t.Fatalf("EncodePNG: %v", err)
