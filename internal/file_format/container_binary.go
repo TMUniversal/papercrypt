@@ -150,9 +150,15 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	p.Version = formatVersion(r[0], r[1], r[2])
 	r = r[3:]
 
+	if len(r) < 1 {
+		return nil, ErrBinaryTruncated
+	}
 	p.DataFormat = PaperCryptDataFormat(r[0])
 	r = r[1:]
 
+	if len(r) < 1 {
+		return nil, ErrBinaryTruncated
+	}
 	serialLen := int(r[0])
 	r = r[1:]
 	if len(r) < serialLen {
@@ -161,6 +167,9 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	p.SerialNumber = string(r[:serialLen])
 	r = r[serialLen:]
 
+	if len(r) < 1 {
+		return nil, ErrBinaryTruncated
+	}
 	purposeLen := int(r[0])
 	r = r[1:]
 	if len(r) < purposeLen {
@@ -169,6 +178,9 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	p.Purpose = string(r[:purposeLen])
 	r = r[purposeLen:]
 
+	if len(r) < 1 {
+		return nil, ErrBinaryTruncated
+	}
 	commentLen := int(r[0])
 	r = r[1:]
 	if len(r) < commentLen {

@@ -167,9 +167,43 @@ func TestBinaryInvalidMagic(t *testing.T) {
 }
 
 func TestBinaryTruncated(t *testing.T) {
-	_, err := UnmarshalBinary([]byte{0x01, 0x02})
-	if err != ErrBinaryTruncated {
-		t.Fatalf("expected ErrBinaryTruncated, got %v", err)
+	pc := &PaperCrypt{
+		Version:      "v3.0.0",
+		DataFormat:   PaperCryptDataFormatRaw,
+		SerialNumber: "SERIAL",
+		Purpose:      "PURPOSE",
+		Comment:      "COMMENT",
+		CreatedAt:    time.Now(),
+		Data:         []byte("data"),
+	}
+	pc.DataSHA256 = sha256.Sum256(pc.Data)
+
+	full, err := MarshalBinary(pc)
+	if err != nil {
+		t.Fatalf("MarshalBinary: %v", err)
+	}
+
+	// Cut points truncate the payload right before each r[0] access
+	// (DataFormat, serialLen, purposeLen, commentLen), which must return
+	// ErrBinaryTruncated instead of panicking on an out-of-range index.
+	cases := []struct {
+		name string
+		data []byte
+	}{
+		{"shorter than magic", []byte{0x01, 0x02}},
+		{"before DataFormat", full[:4+3]},
+		{"before serial length", full[:4+3+1]},
+		{"before purpose length", full[:4+3+1+1+len(pc.SerialNumber)]},
+		{"before comment length", full[:4+3+1+1+len(pc.SerialNumber)+1+len(pc.Purpose)]},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := UnmarshalBinary(tt.data)
+			if err != ErrBinaryTruncated {
+				t.Fatalf("expected ErrBinaryTruncated, got %v", err)
+			}
+		})
 	}
 }
 
