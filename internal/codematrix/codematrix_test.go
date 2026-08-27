@@ -114,11 +114,15 @@ func TestEncodePNG(t *testing.T) {
 
 func FuzzRoundtrip(f *testing.F) {
 	f.Add("")
-	f.Add("hello")
+	f.Add(envelope.Wrap([]byte("HELLO WORLD $%*+-./:"), envelope.Base45Encoder{}))
 	f.Add(strings.Repeat("A", 500))
 	f.Add(strings.Repeat("Z", 500))
 
 	f.Fuzz(func(t *testing.T, data string) {
+		if testing.Short() {
+			t.Skip("skipping slow QR encode/decode in short mode")
+		}
+
 		img, err := Encode(data)
 		if err != nil {
 			t.Skipf("Encode failed: %v", err)
