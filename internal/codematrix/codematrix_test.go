@@ -115,6 +115,7 @@ func TestEncodePNG(t *testing.T) {
 func FuzzRoundtrip(f *testing.F) {
 	f.Add("")
 	f.Add(envelope.Wrap([]byte("HELLO WORLD $%*+-./:"), envelope.Base45Encoder{}))
+	f.Add("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:")
 	f.Add(strings.Repeat("A", 500))
 	f.Add(strings.Repeat("Z", 500))
 
