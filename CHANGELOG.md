@@ -1,3 +1,22 @@
+# [3.2.0](https://github.com/TMUniversal/papercrypt/compare/v3.1.2...v3.2.0) (2026-08-28)
+
+
+### Bug Fixes
+
+* remove double base45 encoding in QR payload ([f45a3b2](https://github.com/TMUniversal/papercrypt/commit/f45a3b2f3c94306cbaef0e9e516f749870aa46bd))
+* return ErrBinaryTruncated instead of panicking on truncated binary ([4deffa5](https://github.com/TMUniversal/papercrypt/commit/4deffa58f025e118874de95e11741762c32d673e))
+* trim whitespace from envelope input in scan --from-binary ([0a45d89](https://github.com/TMUniversal/papercrypt/commit/0a45d89260f8c3bcf9468a5c9a401afc11bac373))
+* update docs comment positioning ([86ac7c1](https://github.com/TMUniversal/papercrypt/commit/86ac7c1944c35a34ff98c713e61c58d82510ffa4))
+
+
+### Features
+
+* add docs at page bottom ([f7f0e7a](https://github.com/TMUniversal/papercrypt/commit/f7f0e7a4a135a4ca076aa778d616ba2e2cde0f9d))
+* **binary:** add 3-byte version field and fix timestamp precision ([19ec21f](https://github.com/TMUniversal/papercrypt/commit/19ec21fda082373104922991d488f3f88d636f31))
+* **pdf:** add program name and version to footer ([cad7ffe](https://github.com/TMUniversal/papercrypt/commit/cad7ffe9b59d090e6b01aafd84d9a4a9abe4af15))
+* replace JSON QR container with compact binary format ([f75cf79](https://github.com/TMUniversal/papercrypt/commit/f75cf79b2f4ebbdb89aee57f394ca8fbbb7d332c))
+* switch to qr-code with base45 encoding ([cb613a7](https://github.com/TMUniversal/papercrypt/commit/cb613a7cf42db53c9e7681f0926252dd3c6e5ee5))
+
 ## [3.1.2](https://github.com/TMUniversal/papercrypt/compare/v3.1.1...v3.1.2) (2026-08-26)
 
 
