@@ -23,10 +23,14 @@
 //
 // Wire format:
 //
-//	"PCE" + version + encoder(CRC32) + encoder(content)
+//	"PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content)
 //
-// The envelope version is the decimal representation of EnvelopeVersion.
-// The CRC-32 is IEEE checksum of the content, encoded using the same
+// The header is a 4-character prefix: the magic "PC", followed by the
+// envelope info and the envelope version, each encoded as a single
+// base32 character (0-9A-Z, alphabet "0123456789ABCDEFGHIJKLMNOPQRSTUV").
+// The info character encodes the envelope type in its least significant
+// bit (1 = envelope) and the content encoding type in the next two bits.
+// The CRC-32 is the IEEE checksum of the content, encoded using the same
 // ContentEncoder as the payload. The content encoder (e.g. base45) is
 // injected via the ContentEncoder interface, making it replaceable.
 package envelope
@@ -36,21 +40,9 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
-	"strconv"
-	"strings"
 )
 
-// Magic is the string identifier for the envelope format, without the envelope version suffix.
-const Magic = "PCE"
-
-// EnvelopeVersion is the current version of the envelope format, appended to Magic as a decimal string.
-const EnvelopeVersion = 1
-
 var (
-	// ErrInvalidMagic indicates the envelope header does not start with Magic.
-	ErrInvalidMagic = errors.New("envelope: invalid magic")
-	// ErrInvalidVersion indicates the envelope version does not match EnvelopeVersion.
-	ErrInvalidVersion = errors.New("envelope: unsupported envelope version")
 	// ErrCRCMismatch indicates the CRC-32 checksum does not match the content.
 	ErrCRCMismatch = errors.New("envelope: CRC-32 mismatch")
 	// ErrPayloadTooShort indicates the data is shorter than the envelope header.
@@ -59,42 +51,25 @@ var (
 	ErrDecode = errors.New("envelope: decode error")
 )
 
-// versionString is the fixed-width decimal representation of EnvelopeVersion,
-// which follows the Magic in the wire format.
-func versionString() string {
-	return strconv.Itoa(EnvelopeVersion)
-}
-
 // Wrap encodes content using the provided encoder, computes a CRC-32
 // checksum, encodes the checksum with the same encoder, and returns
-// the envelope string: "PCE" + version + encoder(CRC32) + encoder(content).
+// the envelope string: "PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content).
 func Wrap(content []byte, enc ContentEncoder) string {
 	crc := crc32.ChecksumIEEE(content)
 	crcBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(crcBytes, crc)
 
-	return Magic + versionString() + enc.EncodeToString(crcBytes) + enc.EncodeToString(content)
+	return headerString(TypeEnvelope, enc) + enc.EncodeToString(crcBytes) + enc.EncodeToString(content)
 }
 
 // Unwrap validates the envelope and returns the content.
-// It parses "PCE" + version + encodedCRC + encodedContent, decodes both parts,
-// and verifies the CRC-32 checksum.
+// It parses "PC" + base32(info) + base32(version) + encodedCRC + encodedContent,
+// decodes both parts, and verifies the CRC-32 checksum.
 func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
-	if !strings.HasPrefix(data, Magic) {
-		return nil, ErrInvalidMagic
+	encoded, err := parseHeader(data, enc, TypeEnvelope)
+	if err != nil {
+		return nil, err
 	}
-
-	rest := data[len(Magic):]
-
-	versionLen := len(versionString())
-	if len(rest) < versionLen {
-		return nil, ErrPayloadTooShort
-	}
-	if rest[:versionLen] != versionString() {
-		return nil, fmt.Errorf("%w: %q", ErrInvalidVersion, rest[:versionLen])
-	}
-
-	encoded := rest[versionLen:]
 
 	crcSize := enc.EncodedCRCSize()
 

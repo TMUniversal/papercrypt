@@ -144,7 +144,7 @@ The resulting data can be read by this command, by supplying the --from-binary f
 
 // deserializePaperCrypt unwraps an envelope string and returns a PaperCrypt.
 func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
-	// Try envelope-wrapped binary (format: PCE1 + base45(CRC32) + base45(content))
+	// Try envelope-wrapped binary (format: PC + base32(info) + base32(version) + base45(CRC32) + base45(content))
 	if strings.HasPrefix(data, envelope.Magic) {
 		content, err := envelope.Unwrap(data, envelope.Base45Encoder{})
 		if err != nil {
@@ -167,7 +167,7 @@ func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
 		return pc, nil
 	}
 
-	return nil, errors.New("unsupported format: expected PCE1 envelope")
+	return nil, errors.New("unsupported format: expected PC envelope")
 }
 
 func init() {

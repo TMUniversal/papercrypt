@@ -275,13 +275,16 @@ This format is not designed to be human-readable.
 **Encoding pipeline:**
 
 ```
-MarshalBinary → gzip (best compression) → Base45 → PCE envelope → QR code
+MarshalBinary → gzip (best compression) → Base45 → PC envelope → QR code
 ```
 
 The envelope wraps the Base45-encoded payload with a CRC-32 integrity check.
-The envelope header is the magic `PCE` followed by the decimal envelope version `1`:
+The envelope header is the magic `PC` followed by the info field and the
+envelope version, each encoded as a single base32 character (`0-9A-Z`).
+The info character carries the envelope type in the least significant bit
+and the content encoding type in the next two bits (base45 = `1`):
 ```
-PCE + "1" + base45(CRC-32 of payload) + base45(payload)
+PC + base32(info) + base32(version) + base45(CRC-32 of payload) + base45(payload)
 ```
 
 **Binary container wire format** (produced by `MarshalBinary`):
@@ -302,7 +305,7 @@ PCE + "1" + base45(CRC-32 of payload) + base45(payload)
 **Decoding pipeline** (reverses encoding):
 
 ```
-QR code → PCE envelope unwrap → Base45 decode → gzip decompress → UnmarshalBinary
+QR code → PC envelope unwrap → Base45 decode → gzip decompress → UnmarshalBinary
 ```
 
 </details>
