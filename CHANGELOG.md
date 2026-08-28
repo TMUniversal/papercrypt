@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/TMUniversal/papercrypt/compare/v3.4.0...v3.4.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* **binary:** do not prepend `v` prefix in version ([5c80cd7](https://github.com/TMUniversal/papercrypt/commit/5c80cd713ebb04cc496576e12d16eb8e8485ab54))
+
 # [3.4.0](https://github.com/TMUniversal/papercrypt/compare/v3.3.0...v3.4.0) (2026-08-28)
 
 
