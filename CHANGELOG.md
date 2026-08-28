@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/TMUniversal/papercrypt/compare/v3.3.0...v3.4.0) (2026-08-28)
+
+
+### Features
+
+* add project url to doc comment ([cb26f66](https://github.com/TMUniversal/papercrypt/commit/cb26f66f27d53917623ce2b7381e111f5d4f9966))
+
 # [3.3.0](https://github.com/TMUniversal/papercrypt/compare/v3.2.0...v3.3.0) (2026-08-28)
 
 
