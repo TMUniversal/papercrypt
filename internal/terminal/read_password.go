@@ -25,7 +25,6 @@ import (
 	"os"
 )
 
-// SensitivePrompt reads a password from the tty (if available) or stdin (if not).
 func SensitivePrompt() ([]byte, error) {
 	_, _ = fmt.Fprint(os.Stderr, "Passphrase: ")
 

@@ -38,7 +38,6 @@ var verbosity int
 
 const repo = "https://github.com/TMUniversal/papercrypt"
 
-// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:          "papercrypt",
 	SilenceUsage: true,
@@ -67,8 +66,7 @@ and then prepare a printable document that is optimized for being able to restor
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// Execute is called by main; it only needs to happen once.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {

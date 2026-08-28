@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package pdf provides PDF generation utilities for PaperCrypt documents.
 package pdf
 
 import (
@@ -27,31 +26,22 @@ import (
 )
 
 const (
-	// TextFont gives the typeface as it is named in the PDF
 	TextFont = "Text"
-	// MonoFont gives the typeface for monospace passages as it is named in the PDF
 	MonoFont = "Mono"
 )
 
 var (
-	// TextFontRegularBytes holds the font data for the text typeface, as embedded at compile time. For regular text.
 	TextFontRegularBytes []byte
-	// TextFontBoldBytes holds the font data for the text typeface, as embedded at compile time. For bold text.
-	TextFontBoldBytes []byte
-	// TextFontItalicBytes holds the font data for the text typeface, as embedded at compile time. For italic text.
-	TextFontItalicBytes []byte
+	TextFontBoldBytes    []byte
+	TextFontItalicBytes  []byte
 )
 
 var (
-	// MonoFontRegularBytes holds the font data for the monospace typeface, as embedded at compile time. For regular text.
 	MonoFontRegularBytes []byte
-	// MonoFontBoldBytes holds the font data for the monospace typeface, as embedded at compile time. For bold text.
-	MonoFontBoldBytes []byte
-	// MonoFontItalicBytes holds the font data for the monospace typeface, as embedded at compile time. For italic text.
-	MonoFontItalicBytes []byte
+	MonoFontBoldBytes    []byte
+	MonoFontItalicBytes  []byte
 )
 
-// GetPdf returns a new PDF instance configured with PaperCrypt fonts and layout settings.
 func GetPdf() *gofpdf.Fpdf {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetCreator("PaperCrypt/"+internal.VersionInfo.GitVersion, true)

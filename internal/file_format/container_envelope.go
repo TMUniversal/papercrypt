@@ -27,10 +27,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 )
 
-// UnmarshalEnvelope unwraps an envelope string and deserializes the
-// contained binary container into a PaperCrypt. The envelope encoding is
-// determined from the envelope header, and the payload is decompressed
-// transparently if the header marks it as gzipped.
 func UnmarshalEnvelope(data string) (*PaperCrypt, error) {
 	if !strings.HasPrefix(data, envelope.Magic) {
 		return nil, errors.New("unsupported format: expected PC envelope")

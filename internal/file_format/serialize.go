@@ -99,7 +99,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})
 	lines := make([][]byte, 0)
 
-	// filter out empty lines
 	for _, line := range rawLines {
 		if len(line) > 0 {
 			lines = append(lines, line)
@@ -110,7 +109,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 
 	blockCrc := uint32(0)
 
-	// 1. Parse lines, validate line checksums
 	for _, line := range lines {
 		parts := bytes.SplitN(line, []byte(": "), 2)
 		if len(parts) != 2 {
@@ -138,9 +136,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 			return nil, fmt.Errorf("unexpected line length: line %s: %s", lineNumber, parts[1])
 		}
 
-		// lineParts[0] - lineParts[last-1] contain the data
 		bytesHex := bytes.Join(lineParts[0:len(lineParts)-1], []byte(""))
-		// while the last part contains the checksum
 		checksumHex := lineParts[len(lineParts)-1]
 
 		bytesData, err := hex.DecodeString(string(bytesHex))
@@ -177,9 +173,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		}
 	}
 
-	// 2. Assemble data
-
-	// 2.1. Sort lines
 	for i := 0; i < len(result); i++ {
 		for j := i + 1; j < len(result); j++ {
 			if result[i].LineNumber > result[j].LineNumber {
@@ -190,9 +183,8 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		}
 	}
 
-	// 2.2. Ensure that lines are consecutive, starting at 1
-	// as we sorted the lines, we can just check the first and last line
-
+	// Ensure that lines are consecutive, starting at 1: as we sorted the
+	// lines, we can just check the first and last line.
 	if len(result) == 0 {
 		return nil, errors.New("no lines found")
 	}
@@ -218,7 +210,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		resultData = append(resultData, line.Data...)
 	}
 
-	// 3. Validate data checksum
 	if !crc24.ValidateCRC24(resultData, blockCrc) {
 		return nil, fmt.Errorf(
 			"invalid block checksum: expected %06X, found %06X (%d bytes)",

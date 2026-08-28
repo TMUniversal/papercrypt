@@ -25,18 +25,14 @@ import (
 )
 
 const (
-	// CRC24Polynomial is the CRC-24 polynomial used by PaperCrypt.
 	CRC24Polynomial = polynomial
-	// CRC24Initial is the initial value for CRC-24 computation.
-	CRC24Initial = initial
+	CRC24Initial    = initial
 )
 
-// ValidateCRC24 validates the CRC-24 checksum of the given data against the provided checksum.
 func ValidateCRC24(data []byte, checksum uint32) bool {
 	return Validate(data, checksum)
 }
 
-// ValidateCRC32 validates the CRC-32 checksum of the given data against the provided checksum.
 func ValidateCRC32(data []byte, checksum uint32) bool {
 	return crc32.ChecksumIEEE(data) == checksum
 }

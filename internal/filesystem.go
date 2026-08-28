@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package internal contains shared utilities for PaperCrypt.
 package internal
 
 import (
@@ -31,9 +30,6 @@ import (
 	"github.com/caarlos0/log"
 )
 
-// GetFileHandleCarefully returns a file handle for the given path.
-// will warn if the file already exists, and error if override is false.
-// if path is empty, returns os.Stdout.
 func GetFileHandleCarefully(path string, override bool) (*os.File, error) {
 	if path == "" || path == "-" {
 		return os.Stdout, nil
@@ -55,9 +51,8 @@ func GetFileHandleCarefully(path string, override bool) (*os.File, error) {
 	return out, nil
 }
 
-// PrintInputAndGetReader prints the input source and returns the reader.
-// if path is empty, returns os.Stdin.
-// must be closed by the caller.
+// PrintInputAndGetReader returns os.Stdin when inFileName is empty; the
+// caller must close the returned file.
 func PrintInputAndGetReader(inFileName string) (*os.File, error) {
 	var err error
 	var inFile *os.File
@@ -75,8 +70,6 @@ func PrintInputAndGetReader(inFileName string) (*os.File, error) {
 	return inFile, nil
 }
 
-// PrintInputAndRead prints the input source and returns the contents of the file.
-// if path is empty, returns os.Stdin.
 func PrintInputAndRead(inFileName string) ([]byte, error) {
 	inFile, err := PrintInputAndGetReader(inFileName)
 	if err != nil {
@@ -95,8 +88,8 @@ func PrintInputAndRead(inFileName string) ([]byte, error) {
 	return contents, nil
 }
 
-// CloseFileIfNotStd closes a file handle, if it is not an os Std file descriptor.
-// This is done to properly close only those files this program opened.
+// CloseFileIfNotStd never closes the standard streams, only files that this
+// program opened itself.
 func CloseFileIfNotStd(file *os.File) error {
 	if file == os.Stderr || file == os.Stdout || file == os.Stdin {
 		return nil
@@ -109,8 +102,6 @@ func CloseFileIfNotStd(file *os.File) error {
 	return nil
 }
 
-// NormalizeLineEndings cuts all "\r" from given input, normalizing to unix standard.
-// This is used when reading papercrypt files.
 func NormalizeLineEndings(data []byte) []byte {
 	return bytes.ReplaceAll(
 		bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")),

@@ -30,10 +30,9 @@ import (
 	"github.com/boombuler/barcode/qr"
 )
 
-// outputSize is the barcode output size in pixels (165mm at 1200dpi).
+// outputSize is a 165mm square at 1200dpi.
 const outputSize = 7795
 
-// Encode encodes a string into a single QR code image using alphanumeric mode.
 func Encode(data string) (image.Image, error) {
 	code, err := qr.Encode(data, qr.H, qr.AlphaNumeric)
 	if err != nil {
@@ -55,7 +54,6 @@ func Encode(data string) (image.Image, error) {
 	return converted, nil
 }
 
-// EncodePNG encodes a string into a single QR code and returns the PNG-encoded bytes.
 func EncodePNG(data string) ([]byte, error) {
 	img, err := Encode(data)
 	if err != nil {

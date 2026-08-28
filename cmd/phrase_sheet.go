@@ -40,7 +40,6 @@ const (
 	passphraseSheetWordCount = 135
 )
 
-// phraseSheetCmd represents the phraseSheet command.
 var phraseSheetCmd = &cobra.Command{
 	Aliases:      []string{"ps", "p"},
 	Args:         cobra.MaximumNArgs(1),
@@ -49,7 +48,6 @@ var phraseSheetCmd = &cobra.Command{
 	Short:        "Generate a passphrase sheet.",
 	Example:      "papercrypt phraseSheet -o phrase-sheet.pdf",
 	RunE: func(_ *cobra.Command, args []string) error {
-		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err
@@ -65,7 +63,6 @@ var phraseSheetCmd = &cobra.Command{
 			generateWordList()
 		}
 
-		// 2. Generate seed (if not provided)
 		var seed int64
 		if len(args) == 0 {
 			random, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
@@ -84,19 +81,16 @@ var phraseSheetCmd = &cobra.Command{
 			}
 		}
 
-		// 3. Get words
 		words, err := phrase_sheet.GenerateFromSeed(seed, passphraseSheetWordCount, &wordList)
 		if err != nil {
 			return errors.Join(errors.New("error generating words"), err)
 		}
 
-		// 4. Generate PDF
 		data, err := phrase_sheet.GeneratePassphraseSheetPDF(seed, words)
 		if err != nil {
 			return errors.Join(errors.New("error generating PDF"), err)
 		}
 
-		// 5. Write PDF
 		n, err := outFile.Write(data)
 		if err != nil {
 			return errors.Join(errors.New("error writing PDF"), err)

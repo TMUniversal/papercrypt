@@ -36,58 +36,36 @@ import (
 )
 
 const (
-	// dataLineFontSize sets the font size of data lines in the PDF [pt]
-	dataLineFontSize = 11
-	// pdfSectionRepresentationContentBaseQR describes the data representation for
-	// sheets that carry a QR code. The data is contained in the QR code, and also
-	// printed in text form for manual recovery.
-	pdfSectionRepresentationContentBaseQR = "The data is contained in a QR code for programmatic recovery, and in text form for recovery without the original software. Text mode prints data in lines of %d bytes, ending with its CRC-24 checksum; the final line holds the checksum of the whole block (polynomial %#x, initial %#x)."
-	// pdfSectionRepresentationContentBaseNoQR describes the data representation for
-	// sheets without a QR code: the data is only available in printed text form.
+	dataLineFontSize                        = 11
+	pdfSectionRepresentationContentBaseQR   = "The data is contained in a QR code for programmatic recovery, and in text form for recovery without the original software. Text mode prints data in lines of %d bytes, ending with its CRC-24 checksum; the final line holds the checksum of the whole block (polynomial %#x, initial %#x)."
 	pdfSectionRepresentationContentBaseNoQR = "The data is printed in text form for manual recovery. Text mode prints data in lines of %d bytes, ending with its CRC-24 checksum; the final line holds the checksum of the whole block (polynomial %#x, initial %#x)."
 )
 
-// Mode identifies the kind of recovery sheet a Generator produces.
 type Mode int
 
 const (
-	// ModePGPQR produces a recovery sheet for encrypted (PGP) data with a QR code.
 	ModePGPQR Mode = iota
-	// ModePGPNoQR produces a recovery sheet for encrypted (PGP) data without a QR code.
 	ModePGPNoQR
-	// ModeRawQR produces a recovery sheet for raw, unencrypted data with a QR code.
 	ModeRawQR
-	// ModeRawNoQR produces a recovery sheet for raw, unencrypted data without a QR code.
 	ModeRawNoQR
 )
 
-// Config carries the sheet content that is independent of the generator mode.
 type Config struct {
-	// HasQR reports whether a data QR code should be rendered on the first page.
-	HasQR bool
-	// SheetSerial is the identifier printed in the header.
-	SheetSerial string
-	// CreatedAt is the creation timestamp printed in the header.
-	CreatedAt time.Time
-	// Purpose is an optional short description printed in the header.
-	Purpose string
-
-	// DataQRImage is the PNG of the data QR code; only used when HasQR is set.
-	DataQRImage []byte
-	// DataMatrixImage is the PNG of the header Data Matrix code.
+	HasQR           bool
+	SheetSerial     string
+	CreatedAt       time.Time
+	Purpose         string
+	DataQRImage     []byte
 	DataMatrixImage []byte
+	TextParts       []string
 
-	// TextParts holds the header and data text lines, as split from the text representation.
-	TextParts []string
-
-	// BytesPerLine, CRC24Polynomial and CRC24Initial describe the printed text layout
-	// and are used when rendering the representation section.
+	// BytesPerLine, CRC24Polynomial and CRC24Initial describe the printed text
+	// layout and are used when rendering the representation section.
 	BytesPerLine    int
 	CRC24Polynomial uint32
 	CRC24Initial    uint32
 }
 
-// lineSet holds all text lines that vary between recovery-sheet modes.
 type lineSet struct {
 	headerSheetID         string
 	heading               string
@@ -101,7 +79,6 @@ type lineSet struct {
 	documentationContent  string
 }
 
-// defaultLines returns the text lines that are shared by all recovery-sheet modes.
 func defaultLines() lineSet {
 	return lineSet{
 		headerSheetID:         "Sheet ID",
@@ -114,12 +91,10 @@ func defaultLines() lineSet {
 	}
 }
 
-// Generator renders a PaperCrypt recovery sheet PDF using mode-specific text lines.
 type Generator struct {
 	lines lineSet
 }
 
-// New returns a Generator for the requested recovery-sheet mode.
 func New(mode Mode) *Generator {
 	g := &Generator{}
 	switch mode {
@@ -135,7 +110,6 @@ func New(mode Mode) *Generator {
 	return g
 }
 
-// Render produces the PDF bytes for the configured sheet.
 func (g *Generator) Render(cfg Config) ([]byte, error) {
 	if len(cfg.TextParts) != 2 {
 		return nil, errors.New("error splitting text content into header and data")
@@ -168,7 +142,6 @@ func (g *Generator) Render(cfg Config) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// renderHeader configures the PDF header: sheet ID line and the data matrix code.
 func (g *Generator) renderHeader(doc *gofpdf.Fpdf, cfg Config) {
 	doc.SetHeaderFuncMode(func() {
 		doc.SetY(5)
@@ -196,7 +169,6 @@ func (g *Generator) renderHeader(doc *gofpdf.Fpdf, cfg Config) {
 	}, true)
 }
 
-// renderFooter configures the PDF footer: program name + version (left), page number (right).
 func (g *Generator) renderFooter(doc *gofpdf.Fpdf) {
 	doc.SetFooterFunc(func() {
 		doc.SetY(-15)
@@ -212,7 +184,6 @@ func (g *Generator) renderFooter(doc *gofpdf.Fpdf) {
 	})
 }
 
-// renderPage1Info writes the title, description, representation, and recovery sections.
 func (g *Generator) renderPage1Info(doc *gofpdf.Fpdf, cfg Config) {
 	doc.SetFont(TextFont, "B", 16)
 	doc.CellFormat(0, 10, g.lines.heading, "", 0, "C", false, 0, "")
@@ -249,7 +220,6 @@ func (g *Generator) renderPage1Info(doc *gofpdf.Fpdf, cfg Config) {
 	doc.MultiCell(0, 5, g.lines.recoveryContent, "", "", false)
 }
 
-// renderQRCode places the main QR code image on the page.
 func (g *Generator) renderQRCode(doc *gofpdf.Fpdf, cfg Config) {
 	doc.RegisterImageReader("data2D.png", "PNG", bytes.NewReader(cfg.DataQRImage))
 	doc.ImageOptions(
@@ -260,7 +230,6 @@ func (g *Generator) renderQRCode(doc *gofpdf.Fpdf, cfg Config) {
 	doc.Ln(50)
 }
 
-// renderDataLines writes the header lines and hex data lines on page 2.
 func renderDataLines(doc *gofpdf.Fpdf, cfg Config) {
 	doc.SetFont(MonoFont, "B", dataLineFontSize)
 	for _, line := range strings.Split(cfg.TextParts[0], "\n") {
@@ -288,8 +257,6 @@ func renderDataLines(doc *gofpdf.Fpdf, cfg Config) {
 	}
 }
 
-// renderDocumentation writes the documentation note and link QR code at the bottom
-// of the final page. The QR code sits at the left, with the note rendered to its right.
 func (g *Generator) renderDocumentation(doc *gofpdf.Fpdf) error {
 	productLinkQr, err := generateProductLinkQR()
 	if err != nil {
@@ -305,7 +272,6 @@ func (g *Generator) renderDocumentation(doc *gofpdf.Fpdf) error {
 		leftMargin = 21.0
 	)
 
-	// Width available to the right of the QR code, up to the right margin.
 	noteWidth := 210 - leftMargin - leftMargin - qrSize - gap - gap
 
 	doc.SetFont(TextFont, "", 8)
@@ -339,7 +305,6 @@ func (g *Generator) renderDocumentation(doc *gofpdf.Fpdf) error {
 	return nil
 }
 
-// generateProductLinkQR produces the documentation link QR code PNG.
 func generateProductLinkQR() (*bytes.Buffer, error) {
 	// Uppercase the URL so every character is in the AlphaNumeric charset,
 	// producing a denser, smaller QR code.

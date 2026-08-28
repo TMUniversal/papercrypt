@@ -23,12 +23,7 @@ package terminal
 import "charm.land/lipgloss/v2"
 
 var (
-	// URL is used to style URLs.
-	URL = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Render
-
-	// Warning is used to style warnings for the user.
+	URL     = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Render
 	Warning = lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true).Render
-
-	// Bold is used to display the words from key generation more bold than other output
-	Bold = lipgloss.NewStyle().Bold(true).Render
+	Bold    = lipgloss.NewStyle().Bold(true).Render
 )

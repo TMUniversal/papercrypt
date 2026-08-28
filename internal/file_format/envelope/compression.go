@@ -7,13 +7,10 @@ import (
 	"io"
 )
 
-// CompressionType identifies the compression applied to an envelope's content.
 type CompressionType uint8
 
 const (
-	// CompressionRaw marks content stored without compression.
 	CompressionRaw CompressionType = iota
-	// CompressionGzip marks content compressed with gzip.
 	CompressionGzip
 )
 
@@ -28,19 +25,13 @@ func (c CompressionType) String() string {
 	}
 }
 
-// Compressor compresses and decompresses content for the envelope.
 // Implementations are selected by CompressionType via NewCompressor.
 type Compressor interface {
-	// Compress compresses the given data.
 	Compress(data []byte) ([]byte, error)
-	// Decompress decompresses the given data.
 	Decompress(data []byte) ([]byte, error)
-	// CompressionType identifies this compressor, stored in the header.
 	CompressionType() CompressionType
 }
 
-// NewCompressor returns the Compressor registered for the given compression
-// type, or an error if the type is not supported.
 func NewCompressor(t CompressionType) (Compressor, error) {
 	switch t {
 	case CompressionRaw:
@@ -52,28 +43,22 @@ func NewCompressor(t CompressionType) (Compressor, error) {
 	}
 }
 
-// RawCompressor implements Compressor without transforming the data.
 type RawCompressor struct{}
 
-// Compress returns the data unchanged.
 func (RawCompressor) Compress(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-// Decompress returns the data unchanged.
 func (RawCompressor) Decompress(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-// CompressionType returns CompressionRaw.
 func (RawCompressor) CompressionType() CompressionType {
 	return CompressionRaw
 }
 
-// GzipCompressor implements Compressor using gzip.
 type GzipCompressor struct{}
 
-// Compress compresses data using gzip at BestCompression level.
 func (GzipCompressor) Compress(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -89,7 +74,6 @@ func (GzipCompressor) Compress(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// Decompress expands a gzip-compressed payload.
 func (GzipCompressor) Decompress(data []byte) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
@@ -106,14 +90,11 @@ func (GzipCompressor) Decompress(data []byte) ([]byte, error) {
 	return out, nil
 }
 
-// CompressionType returns CompressionGzip.
 func (GzipCompressor) CompressionType() CompressionType {
 	return CompressionGzip
 }
 
-// selectCompression returns the content to store, gzip-compressing it when
-// that makes it strictly smaller than the original, together with the
-// compression type recorded in the envelope header.
+// selectCompression stores content raw unless gzip makes it strictly smaller.
 func selectCompression(content []byte) ([]byte, CompressionType) {
 	stored, err := GzipCompressor{}.Compress(content)
 	if err != nil || len(stored) >= len(content) {

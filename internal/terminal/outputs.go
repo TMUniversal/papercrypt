@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package terminal provides terminal output utilities for PaperCrypt.
 package terminal
 
 import (
@@ -28,8 +27,6 @@ import (
 	"github.com/caarlos0/log"
 )
 
-// PrintWrittenSizeToDebug logs the amount of data written in human-readable notation.
-// A warning is issues when the size is 0.
 func PrintWrittenSizeToDebug(size int, file *os.File) {
 	if size == 0 {
 		log.Warn(Warning(fmt.Sprintf("No data written to %s", file.Name())))
@@ -56,7 +53,6 @@ func sprintBinarySize64(size int64) string {
 	return fmt.Sprintf("%.2f TiB", float64(size)/(1024*1024*1024*1024))
 }
 
-// SprintBinarySize returns human-readable number in binary notation (KiB, MiB, GiB, TiB) for the given size in bytes.
 func SprintBinarySize(size int) string {
 	return sprintBinarySize64(int64(size))
 }

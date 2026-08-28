@@ -28,13 +28,10 @@ import (
 )
 
 var (
-	// LicenseText pointer to compile-time included text
-	LicenseText *string
-	// ThirdPartyText pointer to third party license information, included at compile time
+	LicenseText    *string
 	ThirdPartyText *string
 )
 
-// urlCmd represents the url command.
 var showCmd = &cobra.Command{
 	Aliases:      []string{"s"},
 	Args:         cobra.NoArgs,

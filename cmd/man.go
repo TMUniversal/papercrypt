@@ -29,7 +29,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// manCmd represents the man command.
 var manCmd = &cobra.Command{
 	Aliases:               []string{"man", "m"},
 	Args:                  cobra.NoArgs,

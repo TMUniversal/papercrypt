@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package file_format implements PaperCrypt document container formats.
 package file_format
 
 import (
@@ -29,29 +28,19 @@ import (
 )
 
 const (
-	// BytesPerLine denominates the amount of bytes to be encoded per line of the serialized output
 	BytesPerLine = 24
 )
 
 const (
-	// HeaderFieldVersion holds the name of the header field Version. Constant to avoid parsing issues.
-	HeaderFieldVersion = "PaperCrypt Version"
-	// HeaderFieldSerial holds the name of the header field for the serial number. Constant to avoid parsing issues.
-	HeaderFieldSerial = "Content Serial"
-	// HeaderFieldPurpose holds the name of the header field Purpose. Constant to avoid parsing issues.
-	HeaderFieldPurpose = "Purpose"
-	// HeaderFieldComment holds the name of the header field Comment. Constant to avoid parsing issues.
-	HeaderFieldComment = "Comment"
-	// HeaderFieldDate holds the name of the header field Date. Constant to avoid parsing issues.
-	HeaderFieldDate = "Date"
-	// HeaderFieldDataFormat holds the name of the header field Data Format. Constant to avoid parsing issues.
-	HeaderFieldDataFormat = "Data Format"
-	// HeaderFieldContentLength holds the name of the header field Content Length. Constant to avoid parsing issues.
+	HeaderFieldVersion       = "PaperCrypt Version"
+	HeaderFieldSerial        = "Content Serial"
+	HeaderFieldPurpose       = "Purpose"
+	HeaderFieldComment       = "Comment"
+	HeaderFieldDate          = "Date"
+	HeaderFieldDataFormat    = "Data Format"
 	HeaderFieldContentLength = "Content Length"
-	// HeaderFieldSHA256 holds the name of the header field for the SHA-256 checksum. Constant to avoid parsing issues.
-	HeaderFieldSHA256 = "Content SHA-256"
-	// HeaderFieldHeaderCRC32 holds the name of the header field for the CRC-32 checksum of the header. Constant to avoid parsing issues.
-	HeaderFieldHeaderCRC32 = "Header CRC-32"
+	HeaderFieldSHA256        = "Content SHA-256"
+	HeaderFieldHeaderCRC32   = "Header CRC-32"
 )
 
 var (
@@ -60,40 +49,21 @@ var (
 	errorValidationFailure = errors.New("validation failure")
 )
 
-// PaperCrypt represents a PaperCrypt document.
-// It contains metadata about the document, such as its version, serial number, purpose, comment, creation date, and the data itself.
 type PaperCrypt struct {
-	// Version is the version of papercrypt used to generate the document.
-	Version string `json:"v"`
+	Version      string               `json:"v"`
+	DataFormat   PaperCryptDataFormat `json:"f"`
+	SerialNumber string               `json:"sn"`
+	Purpose      string               `json:"p"`
+	Comment      string               `json:"cm"`
+	CreatedAt    time.Time            `json:"ct"`
+	DataSHA256   [32]byte             `json:"-"`
 
-	// DataFormat determines whether the data is raw (uncompressed, unencrypted), or follows the PGP message format (encrypted and gzipped).
-	DataFormat PaperCryptDataFormat `json:"f"`
-
-	// SerialNumber is the serial number of document, used to identify it. It is generated randomly if not provided.
-	SerialNumber string `json:"sn"`
-
-	// Purpose is the purpose of document
-	Purpose string `json:"p"`
-
-	// Comment is the comment on document
-	Comment string `json:"cm"`
-
-	// CreatedAt is the creation timestamp
-	CreatedAt time.Time `json:"ct"`
-
-	// DataSHA256 is the SHA-256 checksum of the encrypted data
-	DataSHA256 [32]byte `json:"-"`
-
-	// Data is the contents of the document
-	// it can be either of two formats:
-	//   a) ASCII armored OpenPGP data, if DataFormat is PGP
-	//      the contained message is gzipped before encryption
-	//   b) Raw data of any kind, if DataFormat is Raw
-	// either way, data is always gzipped after processing
+	// Data is either ASCII armored OpenPGP data (DataFormat PGP, gzipped
+	// before encryption) or raw bytes (DataFormat Raw). Either way, the
+	// payload is gzipped after processing.
 	Data []byte `json:"d"`
 }
 
-// NewPaperCrypt creates a new paper crypt.
 func NewPaperCrypt(
 	version string,
 	data []byte,
@@ -117,7 +87,6 @@ func NewPaperCrypt(
 	}
 }
 
-// GetBinarySerialized returns the binary serialized representation of the PaperCrypt document as a string.
 func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 	if p.Data == nil {
 		return "", errors.New("no data to serialize")
@@ -130,7 +99,6 @@ func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 	return SerializeBinary(&p.Data, BytesPerLine), nil
 }
 
-// GetDataLength returns the length of the data in bytes as an integer.
 func (p *PaperCrypt) GetDataLength() int {
 	return len(p.Data)
 }
