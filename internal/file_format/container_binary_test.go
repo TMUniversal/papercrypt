@@ -31,7 +31,7 @@ import (
 
 func TestBinaryRoundtrip(t *testing.T) {
 	pc := &PaperCrypt{
-		Version:      "v3.0.0",
+		Version:      "3.0.0",
 		DataFormat:   PaperCryptDataFormatPGP,
 		SerialNumber: "ABC123",
 		Purpose:      "Backup",
@@ -79,7 +79,7 @@ func TestBinaryRoundtrip(t *testing.T) {
 
 func TestBinaryRoundtripEmptyFields(t *testing.T) {
 	pc := &PaperCrypt{
-		Version:    "v3.0.0",
+		Version:    "3.0.0",
 		DataFormat: PaperCryptDataFormatRaw,
 		CreatedAt:  time.Now(),
 		Data:       []byte{0x01, 0x02, 0x03},
@@ -115,7 +115,7 @@ func TestBinaryRoundtripEmptyFields(t *testing.T) {
 
 func TestBinaryWithEnvelope(t *testing.T) {
 	pc := &PaperCrypt{
-		Version:      "v3.0.0",
+		Version:      "3.0.0",
 		DataFormat:   PaperCryptDataFormatPGP,
 		SerialNumber: "TEST01",
 		Purpose:      "Testing",
@@ -148,7 +148,7 @@ func TestBinaryWithEnvelope(t *testing.T) {
 
 func TestBinaryInvalidMagic(t *testing.T) {
 	pc := &PaperCrypt{
-		Version:    "v3.0.0",
+		Version:    "3.0.0",
 		DataFormat: PaperCryptDataFormatRaw,
 		CreatedAt:  time.Now(),
 		Data:       []byte("test"),
@@ -168,7 +168,7 @@ func TestBinaryInvalidMagic(t *testing.T) {
 
 func TestBinaryTruncated(t *testing.T) {
 	pc := &PaperCrypt{
-		Version:      "v3.0.0",
+		Version:      "3.0.0",
 		DataFormat:   PaperCryptDataFormatRaw,
 		SerialNumber: "SERIAL",
 		Purpose:      "PURPOSE",
@@ -218,7 +218,7 @@ func FuzzBinaryRoundtrip(f *testing.F) {
 		}
 
 		pc := &PaperCrypt{
-			Version:      "v3.0.0",
+			Version:      "3.0.0",
 			DataFormat:   PaperCryptDataFormatRaw,
 			SerialNumber: serial,
 			Purpose:      purpose,
@@ -277,13 +277,13 @@ func TestParseVersion(t *testing.T) {
 
 func TestFormatVersion(t *testing.T) {
 	got := formatVersion(3, 1, 2)
-	if got != "v3.1.2" {
-		t.Errorf("formatVersion(3,1,2) = %q, want %q", got, "v3.1.2")
+	if got != "3.1.2" {
+		t.Errorf("formatVersion(3,1,2) = %q, want %q", got, "3.1.2")
 	}
 }
 
 func TestParseFormatRoundtrip(t *testing.T) {
-	for _, v := range []string{"v1.0.0", "v3.1.2", "v0.0.0", "v255.255.255"} {
+	for _, v := range []string{"1.0.0", "3.1.2", "0.0.0", "255.255.255"} {
 		maj, mi, pat := parseVersion(v)
 		got := formatVersion(maj, mi, pat)
 		if got != v {

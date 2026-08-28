@@ -54,9 +54,9 @@ func parseVersion(v string) (major, minor, patch uint8) {
 	return uint8(maj), uint8(mi), uint8(pat) //nolint:gosec // version components fit in uint8
 }
 
-// formatVersion returns "vM.m.p" from three uint8 components.
+// formatVersion returns "M.m.p" from three uint8 components.
 func formatVersion(major, minor, patch uint8) string {
-	return fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+	return fmt.Sprintf("%d.%d.%d", major, minor, patch)
 }
 
 // MarshalBinary serializes the PaperCrypt struct to the compact binary format.
