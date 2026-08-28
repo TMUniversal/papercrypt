@@ -64,11 +64,21 @@ func Wrap(content []byte, enc ContentEncoder) string {
 
 // Unwrap validates the envelope and returns the content.
 // It parses "PC" + base32(info) + base32(version) + encodedCRC + encodedContent,
-// decodes both parts, and verifies the CRC-32 checksum.
+// decodes both parts, and verifies the CRC-32 checksum. The encoding used
+// to decode is supplied by the caller and must match the header.
 func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
-	encoded, err := parseHeader(data, enc, TypeEnvelope)
+	hdr, encoded, err := ParseHeader(data)
 	if err != nil {
 		return nil, err
+	}
+	if hdr.Type != TypeEnvelope {
+		return nil, fmt.Errorf("%w: not an envelope", ErrInvalidVersion)
+	}
+	if hdr.Encoding != enc.EncodingType() {
+		return nil, ErrEncodingType
+	}
+	if hdr.Version != EnvelopeVersion {
+		return nil, fmt.Errorf("%w: %d", ErrInvalidVersion, hdr.Version)
 	}
 
 	crcSize := enc.EncodedCRCSize()

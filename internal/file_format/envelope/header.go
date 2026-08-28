@@ -39,6 +39,18 @@ const headerAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 // headerChars is the fixed number of header characters following Magic.
 const headerChars = 2
 
+// Header contains the fields parsed from an envelope header.
+type Header struct {
+	// Type is the payload type stored in the least significant
+	// bit of the info header field.
+	Type HeaderType
+	// Encoding is the content encoding stored in the next two
+	// bits of the info header field.
+	Encoding EncodingType
+	// Version is the envelope format version.
+	Version uint8
+}
+
 // headerString returns the full header prefix for typ and enc:
 // Magic + base32(info) + base32(version). The info character encodes the
 // header type in its least significant bit and the content encoding type
@@ -48,38 +60,36 @@ func headerString(typ HeaderType, enc ContentEncoder) string {
 	return Magic + string(headerAlphabet[info]) + string(headerAlphabet[EnvelopeVersion])
 }
 
-// parseHeader validates the header prefix of data against typ and enc,
-// and returns the remaining payload section after the header.
-func parseHeader(data string, enc ContentEncoder, typ HeaderType) (string, error) {
+// ParseHeader validates that data starts with a well-formed envelope
+// header and returns the parsed fields together with the payload section
+// following the header. It does not validate against a ContentEncoder;
+// callers inspect Header.Encoding to choose the encoder to pass to Unwrap.
+func ParseHeader(data string) (Header, string, error) {
+	var hdr Header
+
 	if !strings.HasPrefix(data, Magic) {
-		return "", ErrInvalidMagic
+		return hdr, "", ErrInvalidMagic
 	}
 
 	rest := data[len(Magic):]
 
 	if len(rest) < headerChars {
-		return "", ErrPayloadTooShort
+		return hdr, "", ErrPayloadTooShort
 	}
 
 	infoIdx := strings.IndexByte(headerAlphabet, rest[0])
 	if infoIdx == -1 {
-		return "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[0])
+		return hdr, "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[0])
 	}
 	info := uint8(infoIdx)
-	if HeaderType(info&1) != typ {
-		return "", fmt.Errorf("%w: not an envelope", ErrInvalidVersion)
-	}
-	if EncodingType(info>>1) != enc.EncodingType() {
-		return "", ErrEncodingType
-	}
+	hdr.Type = HeaderType(info & 1)
+	hdr.Encoding = EncodingType(info >> 1)
 
 	versionIdx := strings.IndexByte(headerAlphabet, rest[1])
 	if versionIdx == -1 {
-		return "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[1])
+		return hdr, "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[1])
 	}
-	if uint8(versionIdx) != EnvelopeVersion {
-		return "", fmt.Errorf("%w: %q", ErrInvalidVersion, rest[1])
-	}
+	hdr.Version = uint8(versionIdx)
 
-	return rest[headerChars:], nil
+	return hdr, rest[headerChars:], nil
 }
