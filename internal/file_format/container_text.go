@@ -38,7 +38,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
-// GetText returns the text representation of the paper crypt.
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 	header := fmt.Sprintf(
 		`%s: %s
@@ -58,8 +57,6 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		HeaderFieldComment,
 		p.Comment,
 		HeaderFieldDate,
-		// format time with nanosecond precision
-		// Sat, 12 Aug 2023 17:33:20.123456789
 		p.CreatedAt.Format(internal.TimeStampFormatLong),
 		HeaderFieldDataFormat,
 		p.DataFormat,
@@ -90,10 +87,7 @@ func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
 		serializedData), nil
 }
 
-// TextToHeaderMap converts a byte slice containing text headers into a map of header fields.
-// Each header line should be in the format "Key: Value", with the key being the header field name
-// and the value being the header field value.
-// The function trims the "# " prefix from header lines, which is present in the serialized text format.
+// TextToHeaderMap expects "Key: Value" header lines; the "# " prefix is stripped from keys.
 func TextToHeaderMap(text []byte) (map[string]string, error) {
 	headers := make(map[string]string)
 
@@ -116,7 +110,6 @@ func TextToHeaderMap(text []byte) (map[string]string, error) {
 	return headers, nil
 }
 
-// SplitTextHeaderAndBody splits the given byte slice, which should be a PaperCrypt document, into a header and body section.
 func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	dataSplit := bytes.SplitN(data, []byte("\n\n\n"), 2)
 	if len(dataSplit) != 2 {
@@ -127,8 +120,6 @@ func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	return dataSplit[0], dataSplit[1], nil
 }
 
-// DeserializeText deserializes a PaperCrypt document from a byte slice containing text.
-// It expects the text to be in the format defined by PaperCrypt version 2. (PaperCryptContainerVersionMajor2).
 func DeserializeText(
 	data []byte,
 	ignoreVersionMismatch bool,
@@ -146,10 +137,8 @@ func DeserializeText(
 		return nil, errors.Join(errorParsingHeader, err)
 	}
 
-	// Debug: print headers
 	log.WithField("headers", headers).Debug("Read headers")
 
-	// 4. Run Header Validation
 	versionLine, ok := headers[HeaderFieldVersion]
 	if !ok {
 		if !ignoreVersionMismatch {
@@ -168,7 +157,6 @@ func DeserializeText(
 		)
 	}
 
-	// Validate Header checksum
 	{
 		headerCrc, ok := headers[HeaderFieldHeaderCRC32]
 		if !ok {
@@ -247,9 +235,6 @@ func DeserializeText(
 		return nil, errors.Join(errorParsingBody, errors.New("unsupported data format"))
 	}
 
-	// 5. Verify Body Hashes
-
-	// 5.1 Verify Content Length
 	bodyLength, ok := headers[HeaderFieldContentLength]
 	if !ok {
 		return nil, errors.Join(errorParsingBody, newFieldNotPresentError(HeaderFieldContentLength))
@@ -267,7 +252,6 @@ func DeserializeText(
 		)
 	}
 
-	// 5.2 Verify SHA-256
 	bodySha256, ok := headers[HeaderFieldSHA256]
 	if !ok {
 		return nil, errors.Join(errorParsingBody, newFieldNotPresentError(HeaderFieldSHA256))
@@ -296,7 +280,6 @@ func DeserializeText(
 		log.Warn(terminal.Warning("Content SHA-256 mismatch!"))
 	}
 
-	// 6. Construct PaperCrypt object
 	headerDate, ok := headers[HeaderFieldDate]
 	if !ok {
 		log.Warn(terminal.Warning("Date not present in header!"))
@@ -319,7 +302,6 @@ func DeserializeText(
 		dataFormat,
 	)
 
-	// 7. Serialize PaperCrypt object
 	_, err = json.MarshalIndent(paperCrypt, "", "  ")
 	if err != nil {
 		return nil, errors.Join(errors.New("error encoding JSON"), err)

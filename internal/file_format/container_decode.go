@@ -33,7 +33,6 @@ import (
 func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 	data := p.Data
 	if p.DataFormat == PaperCryptDataFormatPGP {
-		// 1. Decompress ciphertext
 		gzipReader, err := gzip.NewReader(bytes.NewReader(p.Data))
 		if err != nil {
 			return nil, errors.Join(errors.New("error creating gzip reader"), err)
@@ -49,7 +48,6 @@ func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 
 		pgpMessage := crypto.NewPGPMessage(decompressed.Bytes())
 
-		// 2. Decrypt
 		pgp := crypto.PGP()
 		decHandle, err := pgp.Decryption().Password(passphrase).New()
 		if err != nil {
@@ -64,6 +62,5 @@ func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
 		return decrypted.Bytes(), nil
 	}
 
-	// Raw mode: data is stored as-is
 	return data, nil
 }

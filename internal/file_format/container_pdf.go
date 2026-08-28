@@ -95,8 +95,6 @@ func pdfMode(p *PaperCrypt, no2D bool) pdf.Mode {
 	}
 }
 
-// encodeDataQR produces the main data QR code PNG by marshalling, encoding,
-// and wrapping the result in an envelope.
 func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
 	if no2D {
 		return nil, nil
@@ -119,7 +117,6 @@ func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
 	return buf, nil
 }
 
-// generateDataMatrix produces a Data Matrix code PNG encoding the sheet serial number.
 func (p *PaperCrypt) generateDataMatrix() (*bytes.Buffer, error) {
 	enc := datamatrix.NewDataMatrixWriter()
 	code, err := enc.Encode(p.SerialNumber, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)

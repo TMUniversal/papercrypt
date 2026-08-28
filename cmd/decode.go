@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package cmd implements CLI commands and basic functionality around executing them
 package cmd
 
 import (
@@ -37,7 +36,6 @@ var (
 	ignoreChecksumMismatch bool
 )
 
-// decodeCmd represents the decode command.
 var decodeCmd = &cobra.Command{
 	Aliases:      []string{"dec", "d"},
 	Args:         cobra.NoArgs,
@@ -48,7 +46,6 @@ var decodeCmd = &cobra.Command{
 The data should be read from a file or stdin, you will be required to provide a passphrase.`,
 	Example: `papercrypt decode -i <file>.txt -o <file>.txt`,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err
@@ -60,7 +57,6 @@ The data should be read from a file or stdin, you will be required to provide a 
 			}
 		}(outFile)
 
-		// 2. Read inFile
 		paperCryptFileContents, err := internal.PrintInputAndRead(inFileName)
 		if err != nil {
 			return err
@@ -95,7 +91,6 @@ The data should be read from a file or stdin, you will be required to provide a 
 			headers[file_format.HeaderFieldDataFormat],
 		)
 
-		// 8. Read passphrase from stdin (skip for raw mode)
 		var passphraseBytes []byte
 		if dataFormat == file_format.PaperCryptDataFormatRaw {
 			passphraseBytes = nil
@@ -110,7 +105,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 		} else {
 			passphraseBytes = []byte(passphrase)
 		}
-		passphrase = "" // clear passphrase
+		passphrase = ""
 
 		var decoded []byte
 		switch paperCryptMajorVersion {
@@ -133,7 +128,6 @@ The data should be read from a file or stdin, you will be required to provide a 
 			return errors.New("unknown version")
 		}
 
-		// 11. Write decompressed to outFile
 		n, err := outFile.Write(decoded)
 		if err != nil {
 			return errors.Join(errors.New("error writing to file"), err)

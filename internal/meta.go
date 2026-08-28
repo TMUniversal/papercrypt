@@ -24,5 +24,4 @@ import (
 	goversion "github.com/caarlos0/go-version"
 )
 
-// VersionInfo holds information about the version of this software, such as the version number and version control metadata.
 var VersionInfo goversion.Info

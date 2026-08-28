@@ -21,15 +21,11 @@
 package pdf
 
 const (
-	// pdfSectionRepresentationContentPGP is the suffix appended for encrypted data.
 	pdfSectionRepresentationContentPGP = " The data is gzipped and encrypted."
-	// pdfSectionRecoveryContentPGP is the recovery instruction for encrypted data with a QR code.
-	pdfSectionRecoveryContentPGP = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. Then decrypt it with the encryption passphrase."
-	// pdfSectionRecoveryContentPGPNoQR is the recovery instruction for encrypted data without a QR code.
-	pdfSectionRecoveryContentPGPNoQR = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR, then decrypt it with the encryption passphrase."
+	pdfSectionRecoveryContentPGP       = "Scan the QR code, or copy the data into a computer by typing it in or using OCR. Then decrypt it with the encryption passphrase."
+	pdfSectionRecoveryContentPGPNoQR   = "No QR code is printed on this sheet. Copy the data into a computer by typing it in or using OCR, then decrypt it with the encryption passphrase."
 )
 
-// pgpQRLines returns the text lines for the PGP recovery sheet with a QR code.
 func pgpQRLines() lineSet {
 	lines := defaultLines()
 	lines.representationBase = pdfSectionRepresentationContentBaseQR
@@ -38,7 +34,6 @@ func pgpQRLines() lineSet {
 	return lines
 }
 
-// pgpNoQRLines returns the text lines for the PGP recovery sheet without a QR code.
 func pgpNoQRLines() lineSet {
 	lines := defaultLines()
 	lines.representationBase = pdfSectionRepresentationContentBaseNoQR

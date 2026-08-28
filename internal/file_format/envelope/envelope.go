@@ -44,19 +44,12 @@ import (
 )
 
 var (
-	// ErrCRCMismatch indicates the CRC-32 checksum does not match the content.
-	ErrCRCMismatch = errors.New("envelope: CRC-32 mismatch")
-	// ErrPayloadTooShort indicates the data is shorter than the envelope header.
+	ErrCRCMismatch     = errors.New("envelope: CRC-32 mismatch")
 	ErrPayloadTooShort = errors.New("envelope: payload too short")
-	// ErrDecode indicates the content could not be decoded.
-	ErrDecode = errors.New("envelope: decode error")
+	ErrDecode          = errors.New("envelope: decode error")
 )
 
-// Wrap encodes content using the provided encoder, optionally compressing
-// the payload with gzip first when that makes it smaller, computes a CRC-32
-// checksum over the stored payload, encodes the checksum with the same
-// encoder, and returns the envelope string:
-// "PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content).
+// Wrap compresses with gzip only when it makes the payload strictly smaller.
 func Wrap(content []byte, enc ContentEncoder) string {
 	stored, comp := selectCompression(content)
 	crc := crc32.ChecksumIEEE(stored)
@@ -67,11 +60,8 @@ func Wrap(content []byte, enc ContentEncoder) string {
 	return header + enc.EncodeToString(crcBytes) + enc.EncodeToString(stored)
 }
 
-// Unwrap validates the envelope and returns the original content.
-// It parses "PC" + base32(info) + base32(version) + encodedCRC + encodedContent,
-// decodes both parts, verifies the CRC-32 checksum, and decompresses the
-// content using the compressor named in the header. The encoding used to
-// decode is supplied by the caller and must match the header.
+// Unwrap decompresses using the compressor named in the header; the
+// ContentEncoder used to decode must match the header's encoding type.
 func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 	hdr, encoded, err := ParseHeader(data)
 	if err != nil {

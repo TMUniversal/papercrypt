@@ -50,7 +50,6 @@ var (
 
 var passphrase string
 
-// generateCmd represents the generate command.
 var generateCmd = &cobra.Command{
 	Aliases:      []string{"gen", "g"},
 	Args:         cobra.NoArgs,
@@ -65,7 +64,6 @@ encryption process. Treat this passphrase with care; loss of the passphrase coul
 encrypted data.`,
 	Example: "papercrypt generate -i <file>.json -o <file>.pdf --purpose \"My secret data\" --comment \"This is a comment\" --date \"2021-01-01 12:00:00\"",
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		// 1. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err
@@ -77,7 +75,6 @@ encrypted data.`,
 			}
 		}(outFile)
 
-		// 2. generate serial number if not provided
 		if serialNumber == "" {
 			var err error
 			serialNumber, err = file_format.GenerateSerial(6)
@@ -86,7 +83,6 @@ encrypted data.`,
 			}
 		}
 
-		// 3. parse date if provided
 		var timestamp time.Time
 		if date == "" {
 			timestamp = time.Now()
@@ -105,7 +101,6 @@ encrypted data.`,
 			}
 		}
 
-		// 4. Read input file as bytes
 		secretContentsFile, err := internal.PrintInputAndRead(inFileName)
 		if err != nil {
 			return err
@@ -117,7 +112,6 @@ encrypted data.`,
 			// Raw mode: do not compress, place data directly
 			data = secretContentsFile
 		} else {
-			// 5. Read passphrase from stdin
 			var passphraseBytes []byte
 			if !cmd.Flags().Lookup("passphrase").Changed {
 				log.Info("Enter your encryption passphrase")
@@ -138,13 +132,11 @@ encrypted data.`,
 				passphraseBytes = []byte(passphrase)
 			}
 
-			// 6. Encrypt with passphrase
 			encryptedSecretContents, err := encrypt(passphraseBytes, secretContentsFile)
 			if err != nil {
 				return errors.Join(errors.New("error encrypting secret contents"), err)
 			}
 
-			// 7. Compress ciphertext
 			compressedData := new(bytes.Buffer)
 			gzipWriter, err := gzip.NewWriterLevel(compressedData, gzip.BestCompression)
 			if err != nil {
@@ -162,7 +154,6 @@ encrypted data.`,
 			data = compressedData.Bytes()
 		}
 
-		// 8. Write encryptedSecretContents to outFile
 		format := file_format.PaperCryptDataFormatPGP
 		if rawData {
 			format = file_format.PaperCryptDataFormatRaw

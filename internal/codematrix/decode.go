@@ -28,7 +28,6 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
-// Decode reads a single QR code image and returns the encoded string.
 func Decode(img image.Image) (string, error) {
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {

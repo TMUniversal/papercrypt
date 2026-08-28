@@ -40,7 +40,6 @@ var (
 	qrCmdToBinary   = false
 )
 
-// scanCmd represents the data command.
 var scanCmd = &cobra.Command{
 	Aliases:      []string{"q", "qr", "scan"},
 	Args:         cobra.MaximumNArgs(1),
@@ -61,7 +60,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 `,
 	Example: `papercrypt scan ./code.png | papercrypt decode -o ./out.json -P passphrase`,
 	RunE: func(_ *cobra.Command, args []string) error {
-		// 1. get data from either argument or inFileName
 		if len(args) != 0 {
 			inFileName = args[0]
 		}
@@ -95,7 +93,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			return errors.Join(errors.New("error closing input file"), err)
 		}
 
-		// 2. Open output file
 		outFile, err := internal.GetFileHandleCarefully(outFileName, overrideOutFile)
 		if err != nil {
 			return err
@@ -107,7 +104,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			}
 		}(outFile)
 
-		// 3. Write raw envelope string (passthrough mode)
 		if qrCmdToBinary {
 			n, err := outFile.WriteString(envelopeStr)
 			if err != nil {
@@ -117,7 +113,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			return nil
 		}
 
-		// 4. Deserialize to text format
 		pc, err := file_format.UnmarshalEnvelope(envelopeStr)
 		if err != nil {
 			return err
@@ -128,7 +123,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			return errors.Join(errors.New("error reserializing data as PaperCrypt text"), err)
 		}
 
-		// 5. Write to file
 		n, err := outFile.Write(output)
 		if err != nil {
 			return errors.Join(errors.New("error writing output"), err)
