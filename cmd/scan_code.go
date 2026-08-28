@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"os"
@@ -144,9 +145,22 @@ The resulting data can be read by this command, by supplying the --from-binary f
 
 // deserializePaperCrypt unwraps an envelope string and returns a PaperCrypt.
 func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
-	// Try envelope-wrapped binary (format: PC + base32(info) + base32(version) + base45(CRC32) + base45(content))
+	// Try envelope-wrapped binary (format: PC + base32(info) + base32(version) + encoder(CRC32) + encoder(content))
 	if strings.HasPrefix(data, envelope.Magic) {
-		content, err := envelope.Unwrap(data, envelope.Base45Encoder{})
+		hdr, _, err := envelope.ParseHeader(data)
+		if err != nil {
+			return nil, errors.Join(errors.New("error parsing envelope header"), err)
+		}
+
+		var enc envelope.ContentEncoder
+		switch hdr.Encoding {
+		case envelope.EncodingTypeBase45:
+			enc = envelope.Base45Encoder{}
+		default:
+			return nil, fmt.Errorf("unsupported envelope encoding type %d", hdr.Encoding)
+		}
+
+		content, err := envelope.Unwrap(data, enc)
 		if err != nil {
 			return nil, errors.Join(errors.New("error unwrapping envelope"), err)
 		}

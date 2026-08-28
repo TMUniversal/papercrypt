@@ -132,6 +132,34 @@ func TestCRCMismatch(t *testing.T) {
 	}
 }
 
+func TestParseHeader(t *testing.T) {
+	wrapped := Wrap([]byte("test"), testEncoder)
+
+	hdr, rest, err := ParseHeader(wrapped)
+	if err != nil {
+		t.Fatalf("ParseHeader: %v", err)
+	}
+	if hdr.Type != TypeEnvelope {
+		t.Errorf("expected TypeEnvelope, got %v", hdr.Type)
+	}
+	if hdr.Encoding != EncodingTypeBase45 {
+		t.Errorf("expected EncodingTypeBase45, got %v", hdr.Encoding)
+	}
+	if hdr.Version != EnvelopeVersion {
+		t.Errorf("expected version %d, got %d", EnvelopeVersion, hdr.Version)
+	}
+
+	if len(rest) == 0 {
+		t.Errorf("expected payload section after header, got empty rest")
+	}
+
+	// The remaining section must decode with the encoder chosen from the header.
+	enc := Base45Encoder{}
+	if _, err := enc.DecodeString(rest); err != nil {
+		t.Errorf("payload section does not decode as base45: %v", err)
+	}
+}
+
 func TestPayloadTooShort(t *testing.T) {
 	_, err := Unwrap(Magic, testEncoder)
 	if err != ErrPayloadTooShort {
