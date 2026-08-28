@@ -33,6 +33,7 @@ package envelope
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"hash/crc32"
 	"strings"
 )
@@ -95,7 +96,13 @@ func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 	}
 
 	if crc32.ChecksumIEEE(content) != storedCRC {
-		return nil, ErrCRCMismatch
+		return nil, fmt.Errorf(
+			"%w: expected %08X, found %08X (content length %d)",
+			ErrCRCMismatch,
+			storedCRC,
+			crc32.ChecksumIEEE(content),
+			len(content),
+		)
 	}
 
 	return content, nil

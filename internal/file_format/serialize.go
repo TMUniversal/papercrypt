@@ -220,7 +220,12 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 
 	// 3. Validate data checksum
 	if !crc24.ValidateCRC24(resultData, blockCrc) {
-		return nil, errors.New("invalid block checksum")
+		return nil, fmt.Errorf(
+			"invalid block checksum: expected %06X, found %06X (%d bytes)",
+			blockCrc,
+			crc24.Checksum(resultData),
+			len(resultData),
+		)
 	}
 
 	return resultData, nil

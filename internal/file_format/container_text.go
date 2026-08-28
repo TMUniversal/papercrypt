@@ -283,7 +283,13 @@ func DeserializeText(
 		if !ignoreChecksumMismatch {
 			return nil, errors.Join(
 				errorValidationFailure,
-				fmt.Errorf("`%s` mismatch", HeaderFieldSHA256),
+				fmt.Errorf(
+					"`%s` mismatch: expected %s, found %s (content length %d)",
+					HeaderFieldSHA256,
+					bodySha256,
+					base64.StdEncoding.EncodeToString(actualSha256[:]),
+					len(body),
+				),
 			)
 		}
 
