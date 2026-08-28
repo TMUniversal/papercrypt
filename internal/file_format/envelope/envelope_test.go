@@ -68,9 +68,12 @@ func TestEnvelopeFormat(t *testing.T) {
 	content := []byte("test")
 	wrapped := Wrap(content, testEncoder)
 
-	header := Magic + versionString()
+	header := headerString(TypeEnvelope, testEncoder)
 	if !strings.HasPrefix(wrapped, header) {
 		t.Errorf("expected prefix %q, got %q", header, wrapped)
+	}
+	if header != "PC31" {
+		t.Errorf("expected header %q, got %q", "PC31", header)
 	}
 
 	crcSize := testEncoder.EncodedCRCSize()
@@ -91,12 +94,12 @@ func TestInvalidMagic(t *testing.T) {
 
 func TestInvalidVersion(t *testing.T) {
 	wrapped := Wrap([]byte("test"), testEncoder)
-	headerLen := len(Magic) + len(versionString())
+	headerLen := len(Magic) + 2
 
 	tests := []string{
 		// wrong numeric version
 		wrapped[:headerLen-1] + "2" + wrapped[headerLen:],
-		// non-numeric version
+		// non-header version character
 		wrapped[:headerLen-1] + "x" + wrapped[headerLen:],
 	}
 
@@ -108,10 +111,20 @@ func TestInvalidVersion(t *testing.T) {
 	}
 }
 
+func TestEncodingTypeMismatch(t *testing.T) {
+	wrapped := Wrap([]byte("test"), testEncoder)
+	// The info char encodes (type<<1)|envelope; corrupt the encoding type bits.
+	corrupted := wrapped[:2] + "1" + wrapped[3:]
+	_, err := Unwrap(corrupted, testEncoder)
+	if !errors.Is(err, ErrEncodingType) {
+		t.Fatalf("expected ErrEncodingType, got %v", err)
+	}
+}
+
 func TestCRCMismatch(t *testing.T) {
 	wrapped := Wrap([]byte("test"), testEncoder)
 	// Corrupt the CRC by replacing its first encoded character, keeping the length intact.
-	headerLen := len(Magic) + len(versionString())
+	headerLen := len(Magic) + 2
 	corrupted := wrapped[:headerLen] + "!" + wrapped[headerLen+1:]
 	_, err := Unwrap(corrupted, testEncoder)
 	if err == nil {
