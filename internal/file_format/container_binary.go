@@ -30,15 +30,23 @@ import (
 	"time"
 )
 
-// BinaryMagic is the 4-byte identifier for the binary container format.
-var BinaryMagic = [4]byte{'P', 'C', 0x03, 0x00}
+// BinaryMagic is the 2-byte identifier for the binary container format.
+var BinaryMagic = [2]byte{'P', 'C'}
 
-// BinaryHeaderSize is the fixed magic prefix of the binary container.
-const BinaryHeaderSize = 4
+// CurrentBinaryFormatVersion is the container format version of the binary
+// container recorded in the byte following BinaryMagic. Bumped whenever the
+// binary wire format changes; readers reject any other value.
+const CurrentBinaryFormatVersion = 5
+
+// BinaryHeaderSize is the fixed magic prefix of the binary container,
+// comprising the 2-byte BinaryMagic and the single container format version byte.
+const BinaryHeaderSize = 3
 
 var (
 	// ErrBinaryInvalidMagic indicates the binary container header does not match BinaryMagic.
 	ErrBinaryInvalidMagic = errors.New("binary: invalid magic")
+	// ErrBinaryUnsupportedVersion indicates the binary container uses an unsupported container format version.
+	ErrBinaryUnsupportedVersion = errors.New("binary: unsupported container format version")
 	// ErrBinaryTruncated indicates the binary data is shorter than the declared format.
 	ErrBinaryTruncated = errors.New("binary: truncated data")
 )
@@ -63,7 +71,8 @@ func formatVersion(major, minor, patch uint8) string {
 //
 // Wire format:
 //
-//	[4]byte  magic     — "PC\x03\x00"
+//	[2]byte  magic     — "PC"
+//	[1]byte  format    — container format version
 //	[3]byte  version   — major, minor, patch (uint8 each)
 //	[1]byte  format    — 0=PGP, 1=Raw
 //	var      serial    — 1-byte length prefix + UTF-8
@@ -94,8 +103,8 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 	major, minor, patch := parseVersion(p.Version)
 
 	size := BinaryHeaderSize +
-		1 + // format
 		3 + // version
+		1 + // format
 		1 + len(serialBytes) +
 		1 + len(purposeBytes) +
 		1 + len(commentBytes) +
@@ -106,6 +115,7 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 	out := make([]byte, 0, size)
 
 	out = append(out, BinaryMagic[:]...)
+	out = append(out, CurrentBinaryFormatVersion)
 	out = append(out, major, minor, patch)
 	out = append(out, byte(p.DataFormat))
 
@@ -137,8 +147,12 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 		return nil, ErrBinaryTruncated
 	}
 
-	if [4]byte(data[0:4]) != BinaryMagic {
+	if [2]byte(data[0:2]) != BinaryMagic {
 		return nil, ErrBinaryInvalidMagic
+	}
+
+	if data[2] != CurrentBinaryFormatVersion {
+		return nil, fmt.Errorf("%w: %d", ErrBinaryUnsupportedVersion, data[2])
 	}
 
 	r := data[BinaryHeaderSize:]

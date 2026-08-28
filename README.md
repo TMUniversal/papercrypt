@@ -275,23 +275,24 @@ This format is not designed to be human-readable.
 **Encoding pipeline:**
 
 ```
-MarshalBinary → gzip (best compression) → Base45 → PCE1 envelope → QR code
+MarshalBinary → gzip (best compression) → Base45 → PCE envelope → QR code
 ```
 
-The `PCE1` envelope wraps the Base45-encoded payload with a CRC-32 integrity check:
-
+The envelope wraps the Base45-encoded payload with a CRC-32 integrity check.
+The envelope header is the magic `PCE` followed by the decimal envelope version `1`:
 ```
-PCE1 + base45(CRC-32 of payload) + base45(payload)
+PCE + "1" + base45(CRC-32 of payload) + base45(payload)
 ```
 
 **Binary container wire format** (produced by `MarshalBinary`):
 
 | Offset | Size | Field                                          |
 | ------ | ---- | ---------------------------------------------- |
-| 0      | 4    | Magic: `PC\x03\x00`                            |
-| 4      | 3    | Program Version (major, minor, patch as uint8) |
-| 7      | 1    | Format (data format byte)                      |
-| 8      | var  | Serial number (length-prefixed)                |
+| 0      | 2    | Magic: `PC`                                    |
+| 2      | 1    | Container format version (`05`)                |
+| 3      | 3    | Program Version (major, minor, patch as uint8) |
+| 6      | 1    | Format (data format byte)                      |
+| 7      | var  | Serial number (length-prefixed)                |
 | var    | var  | Purpose (length-prefixed)                      |
 | var    | var  | Comment (length-prefixed)                      |
 | var    | 8    | Created at (Unix nanoseconds, int64)           |
@@ -301,7 +302,7 @@ PCE1 + base45(CRC-32 of payload) + base45(payload)
 **Decoding pipeline** (reverses encoding):
 
 ```
-QR code → PCE1 envelope unwrap → Base45 decode → gzip decompress → UnmarshalBinary
+QR code → PCE envelope unwrap → Base45 decode → gzip decompress → UnmarshalBinary
 ```
 
 </details>

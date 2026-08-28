@@ -22,6 +22,7 @@ package envelope
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 )
@@ -67,12 +68,13 @@ func TestEnvelopeFormat(t *testing.T) {
 	content := []byte("test")
 	wrapped := Wrap(content, testEncoder)
 
-	if !strings.HasPrefix(wrapped, Magic) {
-		t.Errorf("expected prefix %q, got %q", Magic, wrapped)
+	header := Magic + versionString()
+	if !strings.HasPrefix(wrapped, header) {
+		t.Errorf("expected prefix %q, got %q", header, wrapped)
 	}
 
 	crcSize := testEncoder.EncodedCRCSize()
-	encodedLen := len(wrapped) - len(Magic)
+	encodedLen := len(wrapped) - len(header)
 	if encodedLen < crcSize {
 		t.Errorf("encoded part too short: %d < %d", encodedLen, crcSize)
 	}
@@ -87,11 +89,30 @@ func TestInvalidMagic(t *testing.T) {
 	}
 }
 
+func TestInvalidVersion(t *testing.T) {
+	wrapped := Wrap([]byte("test"), testEncoder)
+	headerLen := len(Magic) + len(versionString())
+
+	tests := []string{
+		// wrong numeric version
+		wrapped[:headerLen-1] + "2" + wrapped[headerLen:],
+		// non-numeric version
+		wrapped[:headerLen-1] + "x" + wrapped[headerLen:],
+	}
+
+	for _, tc := range tests {
+		_, err := Unwrap(tc, testEncoder)
+		if !errors.Is(err, ErrInvalidVersion) {
+			t.Fatalf("expected ErrInvalidVersion, got %v", err)
+		}
+	}
+}
+
 func TestCRCMismatch(t *testing.T) {
 	wrapped := Wrap([]byte("test"), testEncoder)
-	// Corrupt the CRC by changing first encoded CRC character
-	crcSize := testEncoder.EncodedCRCSize()
-	corrupted := wrapped[:len(Magic)+1] + "!" + wrapped[len(Magic)+crcSize:]
+	// Corrupt the CRC by replacing its first encoded character, keeping the length intact.
+	headerLen := len(Magic) + len(versionString())
+	corrupted := wrapped[:headerLen] + "!" + wrapped[headerLen+1:]
 	_, err := Unwrap(corrupted, testEncoder)
 	if err == nil {
 		t.Fatal("expected error for corrupted CRC")
