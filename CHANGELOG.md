@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/TMUniversal/papercrypt/compare/v3.2.0...v3.3.0) (2026-08-28)
+
+
+### Features
+
+* make checksum errors more informative ([bdff797](https://github.com/TMUniversal/papercrypt/commit/bdff7979e566410c928d2e6a5e1804abe724288d))
+
 # [3.2.0](https://github.com/TMUniversal/papercrypt/compare/v3.1.2...v3.2.0) (2026-08-28)
 
 
