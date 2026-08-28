@@ -333,6 +333,9 @@ func (g *Generator) renderDocumentation(doc *gofpdf.Fpdf) error {
 	doc.SetXY(leftMargin+qrSize+gap, startY)
 	doc.MultiCell(noteWidth, noteLineH, g.lines.documentationContent, "", "", false)
 
+	doc.SetXY(leftMargin+qrSize+gap, startY+noteHeight+5.0)
+	doc.MultiCell(noteWidth, noteLineH, internal.VersionInfo.URL, "", "", false)
+
 	return nil
 }
 
