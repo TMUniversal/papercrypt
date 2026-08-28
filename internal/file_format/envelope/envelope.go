@@ -58,19 +58,20 @@ var (
 // encoder, and returns the envelope string:
 // "PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content).
 func Wrap(content []byte, enc ContentEncoder) string {
-	stored, comp := compress(content)
+	stored, comp := selectCompression(content)
 	crc := crc32.ChecksumIEEE(stored)
 	crcBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(crcBytes, crc)
 
-	return headerString(TypeEnvelope, enc, comp) + enc.EncodeToString(crcBytes) + enc.EncodeToString(stored)
+	header := headerString(TypeEnvelope, enc, comp)
+	return header + enc.EncodeToString(crcBytes) + enc.EncodeToString(stored)
 }
 
 // Unwrap validates the envelope and returns the original content.
 // It parses "PC" + base32(info) + base32(version) + encodedCRC + encodedContent,
 // decodes both parts, verifies the CRC-32 checksum, and decompresses the
-// content if the header marks it as gzipped. The encoding used to decode is
-// supplied by the caller and must match the header.
+// content using the compressor named in the header. The encoding used to
+// decode is supplied by the caller and must match the header.
 func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 	hdr, encoded, err := ParseHeader(data)
 	if err != nil {
@@ -119,9 +120,9 @@ func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 		)
 	}
 
-	if hdr.Compression == CompressionGzip {
-		return decompress(content)
+	comp, err := NewCompressor(hdr.Compression)
+	if err != nil {
+		return nil, err
 	}
-
-	return content, nil
+	return comp.Decompress(content)
 }

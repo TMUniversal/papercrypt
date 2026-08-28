@@ -212,6 +212,82 @@ func TestPayloadTooShort(t *testing.T) {
 	}
 }
 
+func TestRawCompressorIdentity(t *testing.T) {
+	input := []byte("abc123")
+	comp := RawCompressor{}
+	if comp.CompressionType() != CompressionRaw {
+		t.Errorf("expected CompressionRaw, got %v", comp.CompressionType())
+	}
+
+	out, err := comp.Compress(input)
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+	if !bytes.Equal(out, input) {
+		t.Errorf("Compress mutated data")
+	}
+
+	out, err = comp.Decompress(input)
+	if err != nil {
+		t.Fatalf("Decompress: %v", err)
+	}
+	if !bytes.Equal(out, input) {
+		t.Errorf("Decompress mutated data")
+	}
+}
+
+func TestGzipCompressorRoundtrip(t *testing.T) {
+	input := bytes.Repeat([]byte{0xAB}, 10_000)
+	comp := GzipCompressor{}
+	if comp.CompressionType() != CompressionGzip {
+		t.Errorf("expected CompressionGzip, got %v", comp.CompressionType())
+	}
+
+	compressed, err := comp.Compress(input)
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+	if len(compressed) >= len(input) {
+		t.Errorf("expected compressed output to be smaller")
+	}
+	if len(compressed) < 2 || compressed[0] != 0x1f || compressed[1] != 0x8b {
+		t.Errorf("output does not carry the gzip magic header")
+	}
+
+	out, err := comp.Decompress(compressed)
+	if err != nil {
+		t.Fatalf("Decompress: %v", err)
+	}
+	if !bytes.Equal(out, input) {
+		t.Errorf("roundtrip mismatch after gzip decompression")
+	}
+}
+
+func TestGzipCompressorRejectsInvalidData(t *testing.T) {
+	_, err := GzipCompressor{}.Decompress([]byte("not gzip"))
+	if err == nil {
+		t.Fatal("expected error decompressing invalid gzip data")
+	}
+}
+
+func TestNewCompressor(t *testing.T) {
+	if c, err := NewCompressor(CompressionRaw); err != nil {
+		t.Fatalf("NewCompressor(CompressionRaw): %v", err)
+	} else if _, ok := c.(RawCompressor); !ok {
+		t.Errorf("expected RawCompressor, got %T", c)
+	}
+
+	if c, err := NewCompressor(CompressionGzip); err != nil {
+		t.Fatalf("NewCompressor(CompressionGzip): %v", err)
+	} else if _, ok := c.(GzipCompressor); !ok {
+		t.Errorf("expected GzipCompressor, got %T", c)
+	}
+
+	if _, err := NewCompressor(CompressionType(9)); err == nil {
+		t.Fatal("expected error for unsupported compression type")
+	}
+}
+
 func FuzzWrapUnwrap(f *testing.F) {
 	f.Add([]byte(""))
 	f.Add([]byte("hello"))
