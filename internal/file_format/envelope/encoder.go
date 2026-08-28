@@ -1,6 +1,10 @@
 package envelope
 
-import "github.com/dasio/base45"
+import (
+	"fmt"
+
+	"github.com/dasio/base45"
+)
 
 // EncodingType identifies the encoding applied to an envelope's content.
 type EncodingType uint8
@@ -48,4 +52,15 @@ func (Base45Encoder) EncodedCRCSize() int {
 // EncodingType returns EncodingTypeBase45.
 func (Base45Encoder) EncodingType() EncodingType {
 	return EncodingTypeBase45
+}
+
+// NewEncoder returns the ContentEncoder registered for the given encoding
+// type, or an error if the type is not supported.
+func NewEncoder(t EncodingType) (ContentEncoder, error) {
+	switch t {
+	case EncodingTypeBase45:
+		return Base45Encoder{}, nil
+	default:
+		return nil, fmt.Errorf("unsupported envelope encoding type %d", t)
+	}
 }

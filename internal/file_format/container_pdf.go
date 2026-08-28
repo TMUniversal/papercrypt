@@ -22,7 +22,6 @@ package file_format
 
 import (
 	"bytes"
-	"compress/gzip"
 	"errors"
 	"fmt"
 	"image/png"
@@ -96,7 +95,8 @@ func pdfMode(p *PaperCrypt, no2D bool) pdf.Mode {
 	}
 }
 
-// encodeDataQR produces the main data QR code PNG by marshalling, compressing, and encoding.
+// encodeDataQR produces the main data QR code PNG by marshalling, encoding,
+// and wrapping the result in an envelope.
 func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
 	if no2D {
 		return nil, nil
@@ -107,19 +107,7 @@ func (p *PaperCrypt) encodeDataQR(no2D bool) (*bytes.Buffer, error) {
 		return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
 	}
 
-	var gzBuf bytes.Buffer
-	gz, err := gzip.NewWriterLevel(&gzBuf, gzip.BestCompression)
-	if err != nil {
-		return nil, errors.Join(errors.New("error creating gzip writer"), err)
-	}
-	if _, err := gz.Write(qrBin); err != nil {
-		return nil, errors.Join(errors.New("error writing gzip data"), err)
-	}
-	if err := gz.Close(); err != nil {
-		return nil, errors.Join(errors.New("error closing gzip writer"), err)
-	}
-
-	qrData := envelope.Wrap(gzBuf.Bytes(), envelope.Base45Encoder{})
+	qrData := envelope.Wrap(qrBin, envelope.Base45Encoder{})
 
 	pngBytes, err := codematrix.EncodePNG(qrData)
 	if err != nil {

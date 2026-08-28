@@ -68,7 +68,7 @@ func TestEnvelopeFormat(t *testing.T) {
 	content := []byte("test")
 	wrapped := Wrap(content, testEncoder)
 
-	header := headerString(TypeEnvelope, testEncoder)
+	header := headerString(TypeEnvelope, testEncoder, CompressionRaw)
 	if !strings.HasPrefix(wrapped, header) {
 		t.Errorf("expected prefix %q, got %q", header, wrapped)
 	}
@@ -80,6 +80,48 @@ func TestEnvelopeFormat(t *testing.T) {
 	encodedLen := len(wrapped) - len(header)
 	if encodedLen < crcSize {
 		t.Errorf("encoded part too short: %d < %d", encodedLen, crcSize)
+	}
+}
+
+func TestEnvelopeGzipCompression(t *testing.T) {
+	// Highly compressible content: gzip makes it smaller, so the envelope
+	// must store it compressed and set the gzip header bit.
+	content := bytes.Repeat([]byte{0xAB}, 10_000)
+	wrapped := Wrap(content, testEncoder)
+
+	header := headerString(TypeEnvelope, testEncoder, CompressionGzip)
+	if !strings.HasPrefix(wrapped, header) {
+		t.Errorf("expected gzip header %q, got %q", header, wrapped)
+	}
+
+	hdr, _, err := ParseHeader(wrapped)
+	if err != nil {
+		t.Fatalf("ParseHeader: %v", err)
+	}
+	if hdr.Compression != CompressionGzip {
+		t.Errorf("expected CompressionGzip, got %v", hdr.Compression)
+	}
+
+	got, err := Unwrap(wrapped, testEncoder)
+	if err != nil {
+		t.Fatalf("Unwrap: %v", err)
+	}
+	if !bytes.Equal(got, content) {
+		t.Errorf("roundtrip mismatch after decompression")
+	}
+}
+
+func TestEnvelopeRawKeptWhenGzipLarger(t *testing.T) {
+	// Small content: gzip makes it larger, so it must stay raw.
+	content := []byte("test")
+	wrapped := Wrap(content, testEncoder)
+
+	hdr, _, err := ParseHeader(wrapped)
+	if err != nil {
+		t.Fatalf("ParseHeader: %v", err)
+	}
+	if hdr.Compression != CompressionRaw {
+		t.Errorf("expected CompressionRaw, got %v", hdr.Compression)
 	}
 }
 
@@ -147,6 +189,9 @@ func TestParseHeader(t *testing.T) {
 	}
 	if hdr.Version != EnvelopeVersion {
 		t.Errorf("expected version %d, got %d", EnvelopeVersion, hdr.Version)
+	}
+	if hdr.Compression != CompressionRaw {
+		t.Errorf("expected CompressionRaw, got %v", hdr.Compression)
 	}
 
 	if len(rest) == 0 {
