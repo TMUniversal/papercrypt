@@ -23,6 +23,7 @@ package file_format
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"testing"
 	"time"
 
@@ -166,6 +167,26 @@ func TestBinaryInvalidMagic(t *testing.T) {
 	}
 }
 
+func TestBinaryUnsupportedFormatVersion(t *testing.T) {
+	pc := &PaperCrypt{
+		Version:    "3.0.0",
+		DataFormat: PaperCryptDataFormatRaw,
+		CreatedAt:  time.Now(),
+		Data:       []byte("test"),
+	}
+
+	data, err := MarshalBinary(pc)
+	if err != nil {
+		t.Fatalf("MarshalBinary: %v", err)
+	}
+
+	data[2] = CurrentBinaryFormatVersion + 1
+	_, err = UnmarshalBinary(data)
+	if !errors.Is(err, ErrBinaryUnsupportedVersion) {
+		t.Fatalf("expected ErrBinaryUnsupportedVersion, got %v", err)
+	}
+}
+
 func TestBinaryTruncated(t *testing.T) {
 	pc := &PaperCrypt{
 		Version:      "3.0.0",
@@ -191,10 +212,13 @@ func TestBinaryTruncated(t *testing.T) {
 		data []byte
 	}{
 		{"shorter than magic", []byte{0x01, 0x02}},
-		{"before DataFormat", full[:4+3]},
-		{"before serial length", full[:4+3+1]},
-		{"before purpose length", full[:4+3+1+1+len(pc.SerialNumber)]},
-		{"before comment length", full[:4+3+1+1+len(pc.SerialNumber)+1+len(pc.Purpose)]},
+		{"before DataFormat", full[:BinaryHeaderSize+3]},
+		{"before serial length", full[:BinaryHeaderSize+3+1]},
+		{"before purpose length", full[:BinaryHeaderSize+3+1+1+len(pc.SerialNumber)]},
+		{
+			"before comment length",
+			full[:BinaryHeaderSize+3+1+1+len(pc.SerialNumber)+1+len(pc.Purpose)],
+		},
 	}
 
 	for _, tt := range cases {
