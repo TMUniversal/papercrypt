@@ -47,16 +47,19 @@ type Header struct {
 	// Encoding is the content encoding stored in the next two
 	// bits of the info header field.
 	Encoding EncodingType
+	// Compression is the content compression stored in the fourth
+	// bit of the info header field.
+	Compression CompressionType
 	// Version is the envelope format version.
 	Version uint8
 }
 
-// headerString returns the full header prefix for typ and enc:
+// headerString returns the full header prefix for typ, enc and comp:
 // Magic + base32(info) + base32(version). The info character encodes the
-// header type in its least significant bit and the content encoding type
-// in the next two bits.
-func headerString(typ HeaderType, enc ContentEncoder) string {
-	info := uint8(typ) | uint8(enc.EncodingType())<<1
+// header type in its least significant bit, the content encoding type in
+// the next two bits, and the content compression type in the fourth bit.
+func headerString(typ HeaderType, enc ContentEncoder, comp CompressionType) string {
+	info := uint8(typ) | uint8(enc.EncodingType())<<1 | uint8(comp)<<3
 	return Magic + string(headerAlphabet[info]) + string(headerAlphabet[EnvelopeVersion])
 }
 
@@ -83,7 +86,8 @@ func ParseHeader(data string) (Header, string, error) {
 	}
 	info := uint8(infoIdx)
 	hdr.Type = HeaderType(info & 1)
-	hdr.Encoding = EncodingType(info >> 1)
+	hdr.Encoding = EncodingType((info >> 1) & 0b11)
+	hdr.Compression = CompressionType((info >> 3) & 1)
 
 	versionIdx := strings.IndexByte(headerAlphabet, rest[1])
 	if versionIdx == -1 {

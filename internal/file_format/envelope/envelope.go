@@ -29,7 +29,8 @@
 // envelope info and the envelope version, each encoded as a single
 // base32 character (0-9A-Z, alphabet "0123456789ABCDEFGHIJKLMNOPQRSTUV").
 // The info character encodes the envelope type in its least significant
-// bit (1 = envelope) and the content encoding type in the next two bits.
+// bit (1 = envelope), the content encoding type in the next two bits,
+// and the content compression type in the fourth bit (1 = gzip).
 // The CRC-32 is the IEEE checksum of the content, encoded using the same
 // ContentEncoder as the payload. The content encoder (e.g. base45) is
 // injected via the ContentEncoder interface, making it replaceable.
@@ -51,21 +52,25 @@ var (
 	ErrDecode = errors.New("envelope: decode error")
 )
 
-// Wrap encodes content using the provided encoder, computes a CRC-32
-// checksum, encodes the checksum with the same encoder, and returns
-// the envelope string: "PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content).
+// Wrap encodes content using the provided encoder, optionally compressing
+// the payload with gzip first when that makes it smaller, computes a CRC-32
+// checksum over the stored payload, encodes the checksum with the same
+// encoder, and returns the envelope string:
+// "PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content).
 func Wrap(content []byte, enc ContentEncoder) string {
-	crc := crc32.ChecksumIEEE(content)
+	stored, comp := compress(content)
+	crc := crc32.ChecksumIEEE(stored)
 	crcBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(crcBytes, crc)
 
-	return headerString(TypeEnvelope, enc) + enc.EncodeToString(crcBytes) + enc.EncodeToString(content)
+	return headerString(TypeEnvelope, enc, comp) + enc.EncodeToString(crcBytes) + enc.EncodeToString(stored)
 }
 
-// Unwrap validates the envelope and returns the content.
+// Unwrap validates the envelope and returns the original content.
 // It parses "PC" + base32(info) + base32(version) + encodedCRC + encodedContent,
-// decodes both parts, and verifies the CRC-32 checksum. The encoding used
-// to decode is supplied by the caller and must match the header.
+// decodes both parts, verifies the CRC-32 checksum, and decompresses the
+// content if the header marks it as gzipped. The encoding used to decode is
+// supplied by the caller and must match the header.
 func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 	hdr, encoded, err := ParseHeader(data)
 	if err != nil {
@@ -112,6 +117,10 @@ func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 			crc32.ChecksumIEEE(content),
 			len(content),
 		)
+	}
+
+	if hdr.Compression == CompressionGzip {
+		return decompress(content)
 	}
 
 	return content, nil

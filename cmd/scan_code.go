@@ -21,10 +21,7 @@
 package cmd
 
 import (
-	"bytes"
-	"compress/gzip"
 	"errors"
-	"fmt"
 	"image"
 	"io"
 	"os"
@@ -35,7 +32,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
-	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
@@ -122,7 +118,7 @@ The resulting data can be read by this command, by supplying the --from-binary f
 		}
 
 		// 4. Deserialize to text format
-		pc, err := deserializePaperCrypt(envelopeStr)
+		pc, err := file_format.UnmarshalEnvelope(envelopeStr)
 		if err != nil {
 			return err
 		}
@@ -141,47 +137,6 @@ The resulting data can be read by this command, by supplying the --from-binary f
 		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
-}
-
-// deserializePaperCrypt unwraps an envelope string and returns a PaperCrypt.
-func deserializePaperCrypt(data string) (*file_format.PaperCrypt, error) {
-	// Try envelope-wrapped binary (format: PC + base32(info) + base32(version) + encoder(CRC32) + encoder(content))
-	if strings.HasPrefix(data, envelope.Magic) {
-		hdr, _, err := envelope.ParseHeader(data)
-		if err != nil {
-			return nil, errors.Join(errors.New("error parsing envelope header"), err)
-		}
-
-		var enc envelope.ContentEncoder
-		switch hdr.Encoding {
-		case envelope.EncodingTypeBase45:
-			enc = envelope.Base45Encoder{}
-		default:
-			return nil, fmt.Errorf("unsupported envelope encoding type %d", hdr.Encoding)
-		}
-
-		content, err := envelope.Unwrap(data, enc)
-		if err != nil {
-			return nil, errors.Join(errors.New("error unwrapping envelope"), err)
-		}
-
-		gz, err := gzip.NewReader(bytes.NewReader(content))
-		if err != nil {
-			return nil, errors.Join(errors.New("error creating gzip reader"), err)
-		}
-		binary, err := io.ReadAll(gz)
-		if err != nil {
-			return nil, errors.Join(errors.New("error reading gzip data"), err)
-		}
-
-		pc, err := file_format.UnmarshalBinary(binary)
-		if err != nil {
-			return nil, errors.Join(errors.New("error deserializing binary container"), err)
-		}
-		return pc, nil
-	}
-
-	return nil, errors.New("unsupported format: expected PC envelope")
 }
 
 func init() {
