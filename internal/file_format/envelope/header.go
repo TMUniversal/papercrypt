@@ -84,7 +84,7 @@ func ParseHeader(data string) (Header, string, error) {
 	if infoIdx == -1 {
 		return hdr, "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[0])
 	}
-	info := uint8(infoIdx)
+	info := uint8(infoIdx) //nolint:gosec // index is valid alphabet position
 	hdr.Type = HeaderType(info & 1)
 	hdr.Encoding = EncodingType((info >> 1) & 0b11)
 	hdr.Compression = CompressionType((info >> 3) & 1)
@@ -93,7 +93,7 @@ func ParseHeader(data string) (Header, string, error) {
 	if versionIdx == -1 {
 		return hdr, "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[1])
 	}
-	hdr.Version = uint8(versionIdx)
+	hdr.Version = uint8(versionIdx) //nolint:gosec // index is valid alphabet position
 
 	return hdr, rest[headerChars:], nil
 }
