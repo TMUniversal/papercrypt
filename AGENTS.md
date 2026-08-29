@@ -33,7 +33,7 @@ Pre-commit hook: `task dev` installs `.git/hooks/pre-commit` (runs `gofumpt` + `
 ## Architecture
 
 - Entrypoint `papercrypt.go` sets go-embedded assets (fonts, LICENSE, EFF word list, THIRD_PARTY.md) onto `cmd` package pointers, then calls `cmd.Execute()`.
-- `internal/file_format`: v3 container wire format (magic `PC`, table in README). `container_envelope.go` bridges the QR envelope to the container; `container_decode.go` reverses the pipeline.
+- `internal/file_format`: binary container wire format v5 — magic `PC`, format version byte `05` (`CurrentBinaryFormatVersion`; decode rejects any other byte). Table in README. `container_envelope.go` bridges the QR envelope to the container; `container_decode.go` reverses the pipeline.
 - `internal/file_format/envelope`: `Wrap`/`Unwrap` with an injectable `ContentEncoder` (currently Base45), gzip only when it shrinks the payload. Header = `PC` + base36(info) + base36(version) + base45(CRC-32) + base45(payload) — documented in README; keep in sync.
 - Decompression capped at 1 GiB (`maxDecompressedSize`); `scan --unlimited` disables it. On a cap hit, `envelope.ErrDecompressedSizeExceeded` fires and scan appends a `use --unlimited` hint.
 - `internal/codematrix` = QR encode (boombuler/barcode) / decode (gozxing); `internal/pdf` = gofpdf with embedded Noto Sans/Inconsolata.
@@ -45,4 +45,4 @@ Pre-commit hook: `task dev` installs `.git/hooks/pre-commit` (runs `gofumpt` + `
 
 ## Compatibility
 
-- v3 decodes only v3 containers (README). Keep envelope/container wire formats backward compatible within the branch; the base36 header alphabet and the 1 GiB cap are recent changes.
+- Software major v3 decodes only v3 documents (README); distinct from the container wire format byte above (`05`). Keep envelope/container wire formats backward compatible within the branch; the base36 header alphabet and the 1 GiB cap are recent changes.
