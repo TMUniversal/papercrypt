@@ -62,7 +62,7 @@ func Wrap(content []byte, enc ContentEncoder) string {
 
 // Unwrap decompresses using the compressor named in the header; the
 // ContentEncoder used to decode must match the header's encoding type.
-func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
+func Unwrap(data string, enc ContentEncoder, opts ...CompressorOption) ([]byte, error) {
 	hdr, encoded, err := ParseHeader(data)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func Unwrap(data string, enc ContentEncoder) ([]byte, error) {
 		)
 	}
 
-	comp, err := NewCompressor(hdr.Compression)
+	comp, err := NewCompressor(hdr.Compression, opts...)
 	if err != nil {
 		return nil, err
 	}

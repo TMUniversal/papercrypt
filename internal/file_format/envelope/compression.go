@@ -32,12 +32,35 @@ type Compressor interface {
 	CompressionType() CompressionType
 }
 
-func NewCompressor(t CompressionType) (Compressor, error) {
+// CompressorOption configures a Compressor created by NewCompressor.
+type CompressorOption func(*compressorConfig)
+
+type compressorConfig struct {
+	maxDecompressedSize int
+}
+
+// WithMaxDecompressedSize overrides the gzip decompressed-size cap.
+// A negative value disables the cap; zero keeps the package default.
+func WithMaxDecompressedSize(maxBytes int) CompressorOption {
+	return func(c *compressorConfig) { c.maxDecompressedSize = maxBytes }
+}
+
+// WithNoDecompressionLimit disables the decompressed-size cap entirely.
+func WithNoDecompressionLimit() CompressorOption {
+	return WithMaxDecompressedSize(-1)
+}
+
+func NewCompressor(t CompressionType, opts ...CompressorOption) (Compressor, error) {
+	var cfg compressorConfig
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
 	switch t {
 	case CompressionRaw:
 		return RawCompressor{}, nil
 	case CompressionGzip:
-		return GzipCompressor{}, nil
+		return GzipCompressor(cfg), nil
 	default:
 		return nil, fmt.Errorf("unsupported envelope compression type %d", t)
 	}
@@ -57,7 +80,9 @@ func (RawCompressor) CompressionType() CompressionType {
 	return CompressionRaw
 }
 
-type GzipCompressor struct{}
+type GzipCompressor struct {
+	maxDecompressedSize int
+}
 
 // maxDecompressedSize caps GzipCompressor.Decompress output, guarding
 // against decompression bombs.
@@ -78,23 +103,33 @@ func (GzipCompressor) Compress(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (GzipCompressor) Decompress(data []byte) ([]byte, error) {
+func (c GzipCompressor) Decompress(data []byte) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("envelope: creating gzip reader: %w", err)
 	}
 
-	out, err := io.ReadAll(io.LimitReader(gz, maxDecompressedSize+1))
+	limit := c.maxDecompressedSize
+	if limit == 0 {
+		limit = maxDecompressedSize
+	}
+
+	in := io.Reader(gz)
+	if limit >= 0 {
+		in = io.LimitReader(gz, int64(limit)+1)
+	}
+
+	out, err := io.ReadAll(in)
 	if err != nil {
 		return nil, fmt.Errorf("envelope: reading gzip data: %w", err)
 	}
 	if err := gz.Close(); err != nil {
 		return nil, fmt.Errorf("envelope: closing gzip reader: %w", err)
 	}
-	if len(out) > maxDecompressedSize {
+	if limit >= 0 && len(out) > limit {
 		return nil, fmt.Errorf(
 			"envelope: decompressed content exceeds %d bytes",
-			maxDecompressedSize,
+			limit,
 		)
 	}
 	return out, nil

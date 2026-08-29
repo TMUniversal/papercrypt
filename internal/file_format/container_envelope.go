@@ -27,7 +27,7 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 )
 
-func UnmarshalEnvelope(data string) (*PaperCrypt, error) {
+func UnmarshalEnvelope(data string, opts ...envelope.CompressorOption) (*PaperCrypt, error) {
 	if !strings.HasPrefix(data, envelope.Magic) {
 		return nil, errors.New("unsupported format: expected PC envelope")
 	}
@@ -42,7 +42,7 @@ func UnmarshalEnvelope(data string) (*PaperCrypt, error) {
 		return nil, err
 	}
 
-	content, err := envelope.Unwrap(data, enc)
+	content, err := envelope.Unwrap(data, enc, opts...)
 	if err != nil {
 		return nil, errors.Join(errors.New("error unwrapping envelope"), err)
 	}

@@ -32,12 +32,14 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal"
 	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
 	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
+	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
 	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
 )
 
 var (
 	qrCmdFromBinary = false
 	qrCmdToBinary   = false
+	qrCmdUnlimited  = false
 )
 
 var scanCmd = &cobra.Command{
@@ -113,7 +115,12 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			return nil
 		}
 
-		pc, err := file_format.UnmarshalEnvelope(envelopeStr)
+		var unwrapOpts []envelope.CompressorOption
+		if qrCmdUnlimited {
+			unwrapOpts = append(unwrapOpts, envelope.WithNoDecompressionLimit())
+		}
+
+		pc, err := file_format.UnmarshalEnvelope(envelopeStr, unwrapOpts...)
 		if err != nil {
 			return err
 		}
@@ -140,4 +147,6 @@ func init() {
 		BoolVarP(&qrCmdFromBinary, "from-binary", "B", false, "Read input as envelope string instead of an image")
 	scanCmd.Flags().
 		BoolVarP(&qrCmdToBinary, "to-binary", "b", false, "Write envelope string output instead of plaintext")
+	scanCmd.Flags().
+		BoolVar(&qrCmdUnlimited, "unlimited", false, "Ignore the decompressed size limit when unwrapping the envelope")
 }
