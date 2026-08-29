@@ -19,31 +19,14 @@ linters:
     - depguard
   settings:
     revive:
-      # The default revive rule set, minus the rules that force doc comments
-      # (exported, package-comments), so "what" comments can be removed.
+      enable-default-rules: true
       rules:
-        - name: blank-imports
-        - name: context-as-argument
-        - name: context-keys-type
-        - name: dot-imports
-        - name: error-return
-        - name: error-strings
-        - name: error-naming
         - name: if-return
-        - name: increment-decrement
-        - name: var-naming
-        - name: var-declaration
-        - name: range
-        - name: receiver-naming
         - name: time-equal
-        - name: unexported-return
-        - name: indent-error-flow
-        - name: errorf
-        - name: empty-block
-        - name: superfluous-else
-        - name: unused-parameter
-        - name: unreachable-code
-        - name: redefines-builtin-id
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
     forbidigo:
       forbid:
         - pattern: 'ioutil\.*'
