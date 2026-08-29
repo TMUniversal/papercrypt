@@ -12,11 +12,9 @@
 ---
 
 PaperCrypt is a Go-based command-line tool designed to enhance the security of your sensitive data through the
-generation of printable backup documents.
-These documents, referred to as "PaperCrypt" Documents, combine the robust
+generation of printable backup documents. These documents, referred to as "PaperCrypt" Documents, combine the robust
 encryption capabilities of the [OpenPGP](https://gopenpgp.org/)
-with the resilience and simplicity of a physical hardcopy.
-This ensures the confidentiality and integrity of your data,
+with the resilience and simplicity of a physical hardcopy. This ensures the confidentiality and integrity of your data,
 while also providing a physical backup that 's not susceptible to digital threats.
 
 > Please note that to decrypt the data from a PaperCrypt Document, you will need the original passphrase used during the
@@ -34,10 +32,10 @@ while also providing a physical backup that 's not susceptible to digital threat
 - **Data Integrity**: To verify the integrity of the data, PaperCrypt embeds checksums within the encrypted data section
   of its documents. This ensures that the data remains unaltered during backup and restoration processes.
 
-- **Offline Security**: By generating printable backup documents, PaperCrypt offers an offline solution to
-  safeguard your sensitive data against online threats, as well as an option to store your data in an off-site
-  location. This provides a layer of security, as it ensures that your data remains safe and accessible even in the
-  event of a catastrophic failure, malicious attack, or natural disaster.
+- **Offline Security**: By generating printable backup documents, PaperCrypt offers an offline solution to safeguard
+  your sensitive data against online threats, as well as an option to store your data in an off-site location. This
+  provides a layer of security, as it ensures that your data remains safe and accessible even in the event of a
+  catastrophic failure, malicious attack, or natural disaster.
 
 ## Version Compatibility
 
@@ -46,7 +44,8 @@ PaperCrypt v3 introduces a new container format (version 3). Note the following 
 - PaperCrypt v3 only decodes v3 documents.
 - v1 and v2 can be decoded by PaperCrypt v2.
 
-It is recommended to use the exact same version of PaperCrypt to decode a document that was used to encode it. That version is indicated on the document itself.
+It is recommended to use the exact same version of PaperCrypt to decode a document that was used to encode it. That
+version is indicated on the document itself.
 
 ## Installation
 
@@ -67,8 +66,8 @@ brew install --cask papercrypt
 
 #### Scoop (Windows)
 
-Make sure you have [scoop](https://scoop.sh/) installed,
-alongside `git` (`scoop install git`) to be able to add the bucket.
+Make sure you have [scoop](https://scoop.sh/) installed, alongside `git` (`scoop install git`) to be able to add the
+bucket.
 
 ```bash
 scoop bucket add tmuniversal https://github.com/tmuniversal/scoop-bucket.git
@@ -124,8 +123,8 @@ You can also run PaperCrypt using Docker, with the following command:
 docker run --rm -it -v $(pwd):/data ghcr.io/tmuniversal/papercrypt:latest
 ```
 
-With `-v $(pwd):/data` mounting the current working directory as `/data` in the container,
-allowing the container to read and write to host storage.
+With `-v $(pwd):/data` mounting the current working directory as `/data` in the container, allowing the container to
+read and write to host storage.
 
 On Windows, the command is slightly different:
 
@@ -138,8 +137,8 @@ Note that `-t` is required so that the program can prompt for a passphrase.
 ### Verifying artifacts
 
 First, you'll need to download the archive and signature file (`.sig`) for your version from
-the [releases page](https://github.com/TMUniversal/papercrypt/releases), pay attention to the
-version (`papercrypt version`), your OS and architecture. You will also need the public key ([`cosign.pub`]).
+the [releases page](https://github.com/TMUniversal/papercrypt/releases), pay attention to the version
+(`papercrypt version`), your OS and architecture. You will also need the public key ([`cosign.pub`]).
 
 The pre-built binaries are signed through [`cosign`](https://github.com/sigstore/cosign#installation).
 
@@ -166,20 +165,18 @@ cosign verify-blob \
 General notes:
 
 - `--in` and `--out` can be omitted, in which case `stdin` and `stdout` are used.
-- This means `papercrypt decode --in - --out - < qr.txt > data.json` is equivalent
-  to `papercrypt decode < qr.txt > data.json`
+- This means `papercrypt decode --in - --out - < qr.txt > data.json` is equivalent to
+  `papercrypt decode < qr.txt > data.json`
 - Commands, as well as their flags, can be abbreviated to their shortest unique prefix:
-  - `papercrypt generate` can be abbreviated to `papercrypt g`
-- that is `papercrypt generate --in data.json --out output.pdf` can be abbreviated
-  to `papercrypt g -i data.json -o output.pdf`
+    - `papercrypt generate` can be abbreviated to `papercrypt g`
+- that is `papercrypt generate --in data.json --out output.pdf` can be abbreviated to
+  `papercrypt g -i data.json -o output.pdf`
 
 ### Generating a key phrase
 
-A 24 word mnemonic phrase is suitable for real-world use,
-but you can use any string of words or characters.
+A 24 word mnemonic phrase is suitable for real-world use, but you can use any string of words or characters.
 
-Generate one with your tool of choice,
-you can run:
+Generate one with your tool of choice, you can run:
 
 ```bash
 papercrypt generate-key --words 24 --out mnemonic.txt
@@ -191,9 +188,8 @@ to generate a 24 word mnemonic phrase.
 
 #### The passphrase sheet
 
-PaperCrypt is able to generate a printable _Phrase Sheet_,
-which is a two-page document containing 135 words from the EFF large word list,
-chosen with a seeded random number generator.
+PaperCrypt is able to generate a printable _Phrase Sheet_, which is a two-page document containing 135 words from the
+EFF large word list, chosen with a seeded random number generator.
 
 If no seed is passed to the command, one will be generated using the system's entropy source.
 
@@ -203,9 +199,9 @@ If no seed is passed to the command, one will be generated using the system's en
 papercrypt phrase-sheet --out phrase-sheet.pdf ExampleAbcA=
 ```
 
-Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list.
-The seed will is also present on the generated PDF document,
-so you can regenerate the same word list later, even if you allowed the seed to be chosen at random.
+Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will is also present
+on the generated PDF document, so you can regenerate the same word list later, even if you allowed the seed to be chosen
+at random.
 
 Using the phrase sheet, you can select a number of words from to form your mnemonic phrase.
 
@@ -234,8 +230,7 @@ papercrypt generate --in data.json --out output.pdf
 
 to generate the file containing your data, and the decryption instructions.
 
-The program then asks you for an encryption key,
-for which you can use your mnemonic phrase from earlier.
+The program then asks you for an encryption key, for which you can use your mnemonic phrase from earlier.
 
 > You can also pass the data through `stdin`, simply omit the `--in` flag.
 > The caveat is that, when on Windows, you can't be prompted for your passphrase,
@@ -249,11 +244,10 @@ Please see the [examples](examples) directory for the generated PDF files.
 
 ### Restoring a PaperCrypt document
 
-To restore your data from a PaperCrypt document,
-you must first re-construct the document from the printed copy.
-This can be done either by saving the QR code as an image file,
-and [passing it to the command-line](#using-the-qr-code),
-or by copy-pasting the text from the printed document (would have to run [OCR](https://www.adobe.com/acrobat/guides/what-is-ocr.html "optical character recognition")).
+To restore your data from a PaperCrypt document, you must first re-construct the document from the printed copy. This
+can be done either by saving the QR code as an image file, and [passing it to the command-line](#using-the-qr-code), or
+by copy-pasting the text from the printed document (would have to
+run [OCR](https://www.adobe.com/acrobat/guides/what-is-ocr.html "optical character recognition")).
 
 #### Using the QR code
 
@@ -268,9 +262,8 @@ papercrypt scan --in 2d.png --out data.txt
 <details>
 <summary>QR-Code Data Format (Click to expand)</summary>
 
-The QR code uses a custom data format to fit as much information as possible into the QR code,
-while keeping the metadata intact.
-This format is not designed to be human-readable.
+The QR code uses a custom data format to fit as much information as possible into the QR code, while keeping the
+metadata intact. This format is not designed to be human-readable.
 
 **Encoding pipeline:**
 
@@ -278,14 +271,11 @@ This format is not designed to be human-readable.
 MarshalBinary → PC envelope (Base45, gzip if smaller) → QR code
 ```
 
-The envelope wraps the Base45-encoded payload with a CRC-32 integrity check.
-The envelope header is the magic `PC` followed by the info field and the
-envelope version, each encoded as a single base36 character (`0-9A-Z`,
-alphabet `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ`). The info character
-carries the envelope type in its least significant bit, the content
-encoding type in the next two bits (base45 = `1`), and the content
-compression type in the fourth bit (`1` = gzip). The payload is
-gzip-compressed only when that makes it smaller:
+The envelope wraps the Base45-encoded payload with a CRC-32 integrity check. The envelope header is the magic `PC`
+followed by the info field and the envelope version, each encoded as a single base36 character (`0-9A-Z`, alphabet
+`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ`). The info character carries the envelope type in its least significant bit, the
+content encoding type in the next two bits (base45 = `1`), and the content compression type in the fourth bit (`1` =
+gzip). The payload is gzip-compressed only when that makes it smaller:
 
 ```text
 PC + base36(info) + base36(version) + base45(CRC-32 of payload) + base45(payload)
@@ -294,7 +284,7 @@ PC + base36(info) + base36(version) + base45(CRC-32 of payload) + base45(payload
 **Binary container wire format** (produced by `MarshalBinary`):
 
 | Offset | Size | Field                                          |
-| ------ | ---- | ---------------------------------------------- |
+|--------|------|------------------------------------------------|
 | 0      | 2    | Magic: `PC`                                    |
 | 2      | 1    | Container format version (`05`)                |
 | 3      | 3    | Program Version (major, minor, patch as uint8) |
@@ -379,21 +369,20 @@ papercrypt decode -i data.txt -o data.json -P "super-secret-key"
 ## Contributing
 
 Contributions to PaperCrypt are welcomed and encouraged! If you have suggestions for improvements, bug fixes, or new
-features, please feel free to submit a pull request.
-Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+features, please feel free to submit a pull request. Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
 ## License
 
-PaperCrypt is licensed under the terms of the GNU Affero General Public License, version 3.0 or
-later ([GNU AGPL-3.0-or-later](LICENSE)).
+PaperCrypt is licensed under the terms of the GNU Affero General Public License, version 3.0 or later
+([GNU AGPL-3.0-or-later](LICENSE)).
 
 [![License Logo](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
 ## Acknowledgments
 
-PaperCrypt is developed leveraging the power of Go and a suite of dependable open source libraries.
-We extend our gratitude to the developers behind
-[GopenPGP](https://github.com/ProtonMail/gopenpgp), [GoFPDF](https://github.com/jung-kurt/gofpdf),
-and other foundational components.
+PaperCrypt is developed leveraging the power of Go and a suite of dependable open source libraries. We extend our
+gratitude to the developers behind
+[GopenPGP](https://github.com/ProtonMail/gopenpgp), [GoFPDF](https://github.com/jung-kurt/gofpdf), and other
+foundational components.
 
 [`cosign.pub`]: https://github.com/TMUniversal/papercrypt/blob/main/cosign.pub
