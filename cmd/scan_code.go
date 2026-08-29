@@ -131,7 +131,7 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			return err
 		}
 
-		output, err := pc.GetText(false)
+		output, err := file_format.GetText(pc, false)
 		if err != nil {
 			return errors.Join(errors.New("error reserializing data as PaperCrypt text"), err)
 		}

@@ -26,11 +26,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"hash/crc32"
 	"math"
 	"strings"
 
 	"github.com/ccoveille/go-safecast/v2"
 	"github.com/tmuniversal/papercrypt/v3/crc24"
+	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
 type lineData struct {
@@ -222,29 +224,68 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	return resultData, nil
 }
 
-// ParseHexUint32 parses a uint32 number from a string of hexadecimal characters
-func ParseHexUint32(hex string) (uint32, error) {
-	h := strings.ToLower(hex)
-	h = strings.ReplaceAll(h, "0x", "")
-	h = strings.ReplaceAll(h, " ", "")
+// MarshalBinaryForText returns the binary data formatted for restoration,
+// hex lines with line numbers and a per-line CRC-24.
+func MarshalBinaryForText(p *PaperCrypt) (string, error) {
+	if p.Data == nil {
+		return "", errors.New("no data to serialize")
+	}
 
-	var n uint32
-	_, err := fmt.Sscanf(h, "%x", &n)
+	if len(p.Data) == 0 {
+		return "", errors.New("no data to serialize")
+	}
+
+	return SerializeBinary(&p.Data, DefaultBytesPerLine), nil
+}
+
+// GetText renders the human-readable text container for p.
+func GetText(p *PaperCrypt, lowerCaseEncoding bool) ([]byte, error) {
+	header := fmt.Sprintf(
+		`%s: %s
+%s: %s
+%s: %s
+%s: %s
+%s: %s
+%s: %s
+%s: %d
+%s: %s`,
+		HeaderFieldVersion,
+		p.Version,
+		HeaderFieldSerial,
+		p.SerialNumber,
+		HeaderFieldPurpose,
+		p.Purpose,
+		HeaderFieldComment,
+		p.Comment,
+		HeaderFieldDate,
+		p.CreatedAt.Format(internal.TimeStampFormatLong),
+		HeaderFieldDataFormat,
+		p.DataFormat,
+		HeaderFieldContentLength,
+		len(p.Data),
+		HeaderFieldSHA256,
+		base64.StdEncoding.EncodeToString(p.DataSHA256[:]))
+
+	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
+
+	serializedData, err := MarshalBinaryForText(p)
 	if err != nil {
-		return 0, errors.Join(errors.New("error parsing hexadecimal value"), err)
+		return nil, errors.Join(errors.New("failed to get serialized data"), err)
+	}
+	if lowerCaseEncoding {
+		serializedData = strings.ToLower(serializedData)
 	}
 
-	// check input against output serialization, taking care to avoid leading zeros
-	nStr := fmt.Sprintf("%x", n)
-	hNoLeadingZeros := strings.TrimLeft(h, "0")
-	if hNoLeadingZeros == "" {
-		hNoLeadingZeros = "0"
-	}
-	if nStr != hNoLeadingZeros {
-		return n, fmt.Errorf("invalid hexadecimal value: %s", hex)
-	}
+	return fmt.Appendf(nil, `%s
+%s: %08x
 
-	return n, nil
+
+%s
+`,
+		header,
+		HeaderFieldHeaderCRC32,
+		headerCRC32,
+		serializedData), nil
 }
 
 // BytesFromBase64 decodes a base64 string using base64.StdEncoding to a byte slice

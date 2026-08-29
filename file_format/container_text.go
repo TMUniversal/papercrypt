@@ -38,86 +38,9 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
+// Deprecated: use the package-level GetText function instead.
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {
-	header := fmt.Sprintf(
-		`%s: %s
-%s: %s
-%s: %s
-%s: %s
-%s: %s
-%s: %s
-%s: %d
-%s: %s`,
-		HeaderFieldVersion,
-		p.Version,
-		HeaderFieldSerial,
-		p.SerialNumber,
-		HeaderFieldPurpose,
-		p.Purpose,
-		HeaderFieldComment,
-		p.Comment,
-		HeaderFieldDate,
-		p.CreatedAt.Format(internal.TimeStampFormatLong),
-		HeaderFieldDataFormat,
-		p.DataFormat,
-		HeaderFieldContentLength,
-		p.GetDataLength(),
-		HeaderFieldSHA256,
-		base64.StdEncoding.EncodeToString(p.DataSHA256[:]))
-
-	headerCRC32 := crc32.ChecksumIEEE([]byte(header))
-
-	serializedData, err := p.GetBinarySerialized()
-	if err != nil {
-		return nil, errors.Join(errors.New("failed to get serialized data"), err)
-	}
-	if lowerCaseEncoding {
-		serializedData = strings.ToLower(serializedData)
-	}
-
-	return fmt.Appendf(nil, `%s
-%s: %08x
-
-
-%s
-`,
-		header,
-		HeaderFieldHeaderCRC32,
-		headerCRC32,
-		serializedData), nil
-}
-
-// TextToHeaderMap expects "Key: Value" header lines; the "# " prefix is stripped from keys.
-func TextToHeaderMap(text []byte) (map[string]string, error) {
-	headers := make(map[string]string)
-
-	headerLines := bytes.Split(text, []byte("\n"))
-	for _, headerLine := range headerLines {
-		headerLineSplit := bytes.SplitN(headerLine, []byte(": "), 2)
-		if len(headerLineSplit) != 2 {
-			return nil, errors.Join(
-				errorParsingHeader,
-				fmt.Errorf("error parsing header line: %s", headerLine),
-			)
-		}
-
-		key := string(headerLineSplit[0])
-		key = strings.TrimPrefix(key, "# ")
-
-		headers[key] = string(headerLineSplit[1])
-	}
-
-	return headers, nil
-}
-
-func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
-	dataSplit := bytes.SplitN(data, []byte("\n\n\n"), 2)
-	if len(dataSplit) != 2 {
-		return nil, nil, errors.New(
-			"header not discernible, header and content should be separated by two empty lines",
-		)
-	}
-	return dataSplit[0], dataSplit[1], nil
+	return GetText(p, lowerCaseEncoding)
 }
 
 func DeserializeText(
