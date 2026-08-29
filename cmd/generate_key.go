@@ -31,8 +31,8 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/internal/phrase_sheet"
-	terminal2 "github.com/tmuniversal/papercrypt/v3/internal/terminal"
+	"github.com/tmuniversal/papercrypt/v3/phrase_sheet"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var words int
@@ -45,7 +45,7 @@ var (
 
 const wordListURL = "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt"
 
-var wordListURLFormatted = terminal2.URL(wordListURL)
+var wordListURLFormatted = terminal.URL(wordListURL)
 
 var generateKeyCmd = &cobra.Command{
 	Aliases:      []string{"key", "gen", "k"},
@@ -79,7 +79,7 @@ which can be found here: %s.`,
 
 		wordString := strings.Join(keyPhrase, " ")
 		if outFile == os.Stdout {
-			wordString = terminal2.Bold(wordString)
+			wordString = terminal.Bold(wordString)
 		}
 
 		n, err := outFile.WriteString(wordString)
@@ -91,7 +91,7 @@ which can be found here: %s.`,
 			_, _ = fmt.Fprintln(outFile)
 		}
 
-		terminal2.PrintWrittenSizeToDebug(n, outFile)
+		terminal.PrintWrittenSizeToDebug(n, outFile)
 		return nil
 	},
 }

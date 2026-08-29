@@ -29,10 +29,10 @@ import (
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
-	"github.com/tmuniversal/papercrypt/v3/internal/codematrix"
-	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
-	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
-	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
+	"github.com/tmuniversal/papercrypt/v3/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/crc24"
+	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
+	"github.com/tmuniversal/papercrypt/v3/pdf"
 )
 
 // GetPDF returns the binary representation of the paper crypt
@@ -73,7 +73,7 @@ func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 		DataQRImage:     qrImage,
 		DataMatrixImage: dm.Bytes(),
 		TextParts:       parts,
-		BytesPerLine:    BytesPerLine,
+		BytesPerLine:    DefaultBytesPerLine,
 		CRC24Polynomial: crc24.CRC24Polynomial,
 		CRC24Initial:    crc24.CRC24Initial,
 	}

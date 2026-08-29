@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	BytesPerLine = 24
+	DefaultBytesPerLine = 24
 )
 
 const (
@@ -96,7 +96,7 @@ func (p *PaperCrypt) GetBinarySerialized() (string, error) {
 		return "", errors.New("no data to serialize")
 	}
 
-	return SerializeBinary(&p.Data, BytesPerLine), nil
+	return SerializeBinary(&p.Data, DefaultBytesPerLine), nil
 }
 
 func (p *PaperCrypt) GetDataLength() int {

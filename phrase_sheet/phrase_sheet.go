@@ -36,7 +36,7 @@ import (
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/datamatrix"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
+	"github.com/tmuniversal/papercrypt/v3/pdf"
 )
 
 // GenerateFromSeed uses a seeded, non-cryptographic PRNG so the sheet is
