@@ -20,21 +20,11 @@
 
 package file_format
 
-import "errors"
-
 // Deprecated: method adapters kept until external callers move to the
 // package-level functions.
 
 func (p *PaperCrypt) GetBinarySerialized() (string, error) {
-	if p.Data == nil {
-		return "", errors.New("no data to serialize")
-	}
-
-	if len(p.Data) == 0 {
-		return "", errors.New("no data to serialize")
-	}
-
-	return SerializeBinary(&p.Data, DefaultBytesPerLine), nil
+	return MarshalBinaryForText(p)
 }
 
 func (p *PaperCrypt) GetDataLength() int {
