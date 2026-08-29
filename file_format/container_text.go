@@ -33,9 +33,9 @@ import (
 
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
+	"github.com/tmuniversal/papercrypt/v3/crc24"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/internal/crc24"
-	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 func (p *PaperCrypt) GetText(lowerCaseEncoding bool) ([]byte, error) {

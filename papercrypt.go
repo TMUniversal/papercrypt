@@ -30,7 +30,7 @@ import (
 	"github.com/charmbracelet/colorprofile"
 	"github.com/tmuniversal/papercrypt/v3/cmd"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/internal/pdf"
+	"github.com/tmuniversal/papercrypt/v3/pdf"
 )
 
 // LicenseText is the license of the application as a string

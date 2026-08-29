@@ -27,7 +27,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tmuniversal/papercrypt/v3/internal/file_format/envelope"
+	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
 )
 
 func TestBinaryRoundtrip(t *testing.T) {

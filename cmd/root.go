@@ -25,7 +25,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
-	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (

@@ -26,9 +26,9 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
+	"github.com/tmuniversal/papercrypt/v3/file_format"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/internal/file_format"
-	"github.com/tmuniversal/papercrypt/v3/internal/terminal"
+	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 var (
