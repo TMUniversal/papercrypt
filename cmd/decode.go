@@ -120,7 +120,7 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
 			}
 
-			decoded, err = pc.Decode(passphraseBytes)
+			decoded, err = file_format.DecodeData(pc, passphraseBytes)
 			if err != nil {
 				return errors.Join(errors.New("error decrypting data"), err)
 			}
