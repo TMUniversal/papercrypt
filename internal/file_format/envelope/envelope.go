@@ -71,7 +71,7 @@ func Unwrap(data string, enc ContentEncoder, opts ...CompressorOption) ([]byte, 
 		return nil, err
 	}
 	if hdr.Type != TypeEnvelope {
-		return nil, fmt.Errorf("%w: not an envelope", ErrInvalidVersion)
+		return nil, fmt.Errorf("%w: not an envelope", ErrInvalidType)
 	}
 	if hdr.Encoding != enc.EncodingType() {
 		return nil, ErrEncodingType

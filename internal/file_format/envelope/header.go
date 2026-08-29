@@ -20,6 +20,7 @@ const (
 var (
 	ErrInvalidMagic   = errors.New("envelope: invalid magic")
 	ErrInvalidVersion = errors.New("envelope: unsupported envelope version")
+	ErrInvalidType    = errors.New("envelope: unsupported envelope type")
 	ErrEncodingType   = errors.New("envelope: encoding type mismatch")
 )
 

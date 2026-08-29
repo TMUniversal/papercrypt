@@ -22,7 +22,9 @@ package envelope
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
+	"hash/crc32"
 	"strings"
 	"testing"
 )
@@ -150,6 +152,25 @@ func TestInvalidVersion(t *testing.T) {
 		if !errors.Is(err, ErrInvalidVersion) {
 			t.Fatalf("expected ErrInvalidVersion, got %v", err)
 		}
+	}
+}
+
+func TestInvalidType(t *testing.T) {
+	content := []byte("test")
+	comp := CompressionRaw
+	stored, _ := selectCompression(content)
+	crc := crc32.ChecksumIEEE(stored)
+	crcBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(crcBytes, crc)
+	containerEnvelope := headerString(TypeContainer, testEncoder, comp) +
+		testEncoder.EncodeToString(crcBytes) + testEncoder.EncodeToString(stored)
+
+	_, err := Unwrap(containerEnvelope, testEncoder)
+	if !errors.Is(err, ErrInvalidType) {
+		t.Fatalf("expected ErrInvalidType, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "not an envelope") {
+		t.Fatalf("expected 'not an envelope' diagnostic, got %q", err.Error())
 	}
 }
 
