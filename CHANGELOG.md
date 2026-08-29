@@ -1,3 +1,18 @@
+# [3.5.0](https://github.com/TMUniversal/papercrypt/compare/v3.4.1...v3.5.0) (2026-08-29)
+
+
+### Bug Fixes
+
+* **envelope:** use ErrInvalidType for wrong-type headers ([e277e53](https://github.com/TMUniversal/papercrypt/commit/e277e5350c06e58b95adad44ef64a849beee6a3c))
+
+
+### Features
+
+* **envelope:** replace PCE magic with PC + base32 info header ([927eed7](https://github.com/TMUniversal/papercrypt/commit/927eed773d596eb52ba28a01bb5ac729bdc947a8))
+* **scan:** add --unlimited flag to bypass decompressed size cap ([e88ed8f](https://github.com/TMUniversal/papercrypt/commit/e88ed8f385d5292babeb0cf10e6a36fbe3e103a2))
+* **scan:** hint at --unlimited when the decompressed size limit is hit ([dfc9553](https://github.com/TMUniversal/papercrypt/commit/dfc9553f2f55a3cc4bc6cd12abcd168482470e76))
+* update binary formats ([ee38acd](https://github.com/TMUniversal/papercrypt/commit/ee38acdc2472d67de94057ebaeb7ae2206a99218))
+
 ## [3.4.1](https://github.com/TMUniversal/papercrypt/compare/v3.4.0...v3.4.1) (2026-08-28)
 
 
