@@ -271,14 +271,42 @@ func TestGzipCompressorRejectsInvalidData(t *testing.T) {
 }
 
 func TestGzipCompressorRejectsOversizedOutput(t *testing.T) {
-	bomb := bytes.Repeat([]byte{0}, maxDecompressedSize+1)
-	compressed, err := GzipCompressor{}.Compress(bomb)
+	const customLimit = 1024
+	bomb := bytes.Repeat([]byte{0}, customLimit*2)
+	compressed, err := (GzipCompressor{}).Compress(bomb)
 	if err != nil {
 		t.Fatalf("Compress: %v", err)
 	}
 
-	if _, err := (GzipCompressor{}).Decompress(compressed); err == nil {
+	comp, err := NewCompressor(CompressionGzip, WithMaxDecompressedSize(customLimit))
+	if err != nil {
+		t.Fatalf("NewCompressor: %v", err)
+	}
+
+	if _, err := comp.Decompress(compressed); err == nil {
 		t.Fatal("expected error when decompressed output exceeds the size limit")
+	}
+}
+
+func TestGzipCompressorNoDecompressionLimit(t *testing.T) {
+	const customLimit = 1024
+	bomb := bytes.Repeat([]byte{0}, customLimit*2)
+	compressed, err := (GzipCompressor{}).Compress(bomb)
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+
+	comp, err := NewCompressor(CompressionGzip, WithNoDecompressionLimit())
+	if err != nil {
+		t.Fatalf("NewCompressor: %v", err)
+	}
+
+	out, err := comp.Decompress(compressed)
+	if err != nil {
+		t.Fatalf("Decompress with disabled limit: %v", err)
+	}
+	if !bytes.Equal(out, bomb) {
+		t.Errorf("roundtrip mismatch when the size limit is disabled")
 	}
 }
 
