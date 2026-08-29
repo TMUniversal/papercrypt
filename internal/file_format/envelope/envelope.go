@@ -44,9 +44,12 @@ import (
 )
 
 var (
-	ErrCRCMismatch     = errors.New("envelope: CRC-32 mismatch")
-	ErrPayloadTooShort = errors.New("envelope: payload too short")
-	ErrDecode          = errors.New("envelope: decode error")
+	ErrCRCMismatch              = errors.New("envelope: CRC-32 mismatch")
+	ErrPayloadTooShort          = errors.New("envelope: payload too short")
+	ErrDecode                   = errors.New("envelope: decode error")
+	ErrDecompressedSizeExceeded = errors.New(
+		"envelope: decompressed content exceeds the size limit",
+	)
 )
 
 // Wrap compresses with gzip only when it makes the payload strictly smaller.

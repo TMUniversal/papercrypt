@@ -128,7 +128,8 @@ func (c GzipCompressor) Decompress(data []byte) ([]byte, error) {
 	}
 	if limit >= 0 && len(out) > limit {
 		return nil, fmt.Errorf(
-			"envelope: decompressed content exceeds %d bytes",
+			"%w: exceeds %d bytes",
+			ErrDecompressedSizeExceeded,
 			limit,
 		)
 	}

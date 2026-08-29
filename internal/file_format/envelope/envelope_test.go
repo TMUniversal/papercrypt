@@ -283,8 +283,8 @@ func TestGzipCompressorRejectsOversizedOutput(t *testing.T) {
 		t.Fatalf("NewCompressor: %v", err)
 	}
 
-	if _, err := comp.Decompress(compressed); err == nil {
-		t.Fatal("expected error when decompressed output exceeds the size limit")
+	if _, err := comp.Decompress(compressed); !errors.Is(err, ErrDecompressedSizeExceeded) {
+		t.Fatalf("expected ErrDecompressedSizeExceeded, got %v", err)
 	}
 }
 
