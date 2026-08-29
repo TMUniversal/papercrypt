@@ -20,7 +20,26 @@
 
 package file_format
 
-// Deprecated: use the package-level GetPDF function instead.
-func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
-	return GetPDF(p, no2D, lowerCaseEncoding)
+import (
+	"bytes"
+	"errors"
+	"image/png"
+
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/datamatrix"
+)
+
+// GenerateDataMatrix renders a Data Matrix code of the given serial as PNG.
+func GenerateDataMatrix(serial string) ([]byte, error) {
+	enc := datamatrix.NewDataMatrixWriter()
+	code, err := enc.Encode(serial, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)
+	if err != nil {
+		return nil, errors.Join(errors.New("error generating Data Matrix code"), err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, code); err != nil {
+		return nil, errors.Join(errors.New("error generating Data Matrix code PNG"), err)
+	}
+	return buf.Bytes(), nil
 }

@@ -20,7 +20,26 @@
 
 package file_format
 
-// Deprecated: use the package-level GetPDF function instead.
-func (p *PaperCrypt) GetPDF(no2D bool, lowerCaseEncoding bool) ([]byte, error) {
-	return GetPDF(p, no2D, lowerCaseEncoding)
+import (
+	"errors"
+
+	"github.com/tmuniversal/papercrypt/v3/codematrix"
+	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
+)
+
+// GenerateQR renders the QR code carrying the envelope-wrapped binary
+// container of the document.
+func GenerateQR(p *PaperCrypt) ([]byte, error) {
+	qrBin, err := MarshalBinary(p)
+	if err != nil {
+		return nil, errors.Join(errors.New("error marshalling PaperCrypt to binary"), err)
+	}
+
+	qrData := envelope.Wrap(qrBin, envelope.Base45Encoder{})
+
+	qrImage, err := codematrix.EncodePNG(qrData)
+	if err != nil {
+		return nil, errors.Join(errors.New("error generating QR code"), err)
+	}
+	return qrImage, nil
 }
