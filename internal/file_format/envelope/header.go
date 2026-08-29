@@ -23,7 +23,7 @@ var (
 	ErrEncodingType   = errors.New("envelope: encoding type mismatch")
 )
 
-const headerAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
+const headerAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 const headerChars = 2
 

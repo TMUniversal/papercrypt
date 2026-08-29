@@ -23,11 +23,11 @@
 //
 // Wire format:
 //
-//	"PC" + base32(info) + base32(version) + encoder(CRC32) + encoder(content)
+//	"PC" + base36(info) + base36(version) + encoder(CRC32) + encoder(content)
 //
 // The header is a 4-character prefix: the magic "PC", followed by the
 // envelope info and the envelope version, each encoded as a single
-// base32 character (0-9A-Z, alphabet "0123456789ABCDEFGHIJKLMNOPQRSTUV").
+// base36 character (0-9A-Z, alphabet "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ").
 // The info character encodes the envelope type in its least significant
 // bit (1 = envelope), the content encoding type in the next two bits,
 // and the content compression type in the fourth bit (1 = gzip).
