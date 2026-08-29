@@ -270,6 +270,18 @@ func TestGzipCompressorRejectsInvalidData(t *testing.T) {
 	}
 }
 
+func TestGzipCompressorRejectsOversizedOutput(t *testing.T) {
+	bomb := bytes.Repeat([]byte{0}, maxDecompressedSize+1)
+	compressed, err := GzipCompressor{}.Compress(bomb)
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+
+	if _, err := (GzipCompressor{}).Decompress(compressed); err == nil {
+		t.Fatal("expected error when decompressed output exceeds the size limit")
+	}
+}
+
 func TestNewCompressor(t *testing.T) {
 	if c, err := NewCompressor(CompressionRaw); err != nil {
 		t.Fatalf("NewCompressor(CompressionRaw): %v", err)

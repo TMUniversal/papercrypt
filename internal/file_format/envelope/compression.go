@@ -59,6 +59,10 @@ func (RawCompressor) CompressionType() CompressionType {
 
 type GzipCompressor struct{}
 
+// maxDecompressedSize caps GzipCompressor.Decompress output, guarding
+// against decompression bombs.
+const maxDecompressedSize = 1 << 30 // 1 GiB
+
 func (GzipCompressor) Compress(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -80,12 +84,18 @@ func (GzipCompressor) Decompress(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("envelope: creating gzip reader: %w", err)
 	}
 
-	out, err := io.ReadAll(gz)
+	out, err := io.ReadAll(io.LimitReader(gz, maxDecompressedSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("envelope: reading gzip data: %w", err)
 	}
 	if err := gz.Close(); err != nil {
 		return nil, fmt.Errorf("envelope: closing gzip reader: %w", err)
+	}
+	if len(out) > maxDecompressedSize {
+		return nil, fmt.Errorf(
+			"envelope: decompressed content exceeds %d bytes",
+			maxDecompressedSize,
+		)
 	}
 	return out, nil
 }
