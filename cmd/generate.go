@@ -170,7 +170,7 @@ encrypted data.`,
 
 		var text []byte
 
-		text, err = crypt.GetPDF(noQR, lowerCasedBase16)
+		text, err = file_format.GetPDF(crypt, noQR, lowerCasedBase16)
 		if err != nil {
 			return errors.Join(errors.New("error generating PDF"), err)
 		}
