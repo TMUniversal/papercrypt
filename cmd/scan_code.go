@@ -122,6 +122,12 @@ The resulting data can be read by this command, by supplying the --from-binary f
 
 		pc, err := file_format.UnmarshalEnvelope(envelopeStr, unwrapOpts...)
 		if err != nil {
+			if errors.Is(err, envelope.ErrDecompressedSizeExceeded) {
+				return errors.Join(
+					err,
+					errors.New("use --unlimited to ignore the decompressed size limit"),
+				)
+			}
 			return err
 		}
 
