@@ -39,8 +39,9 @@ installed by default.
 - Entrypoint `papercrypt.go` sets go-embedded assets (fonts, LICENSE, EFF word list, THIRD_PARTY.md) onto `cmd` package
   pointers, then calls `cmd.Execute()`.
 - `file_format`: binary container wire format v5 — magic `PC`, format version byte `05` (`CurrentBinaryFormatVersion`;
-  decode rejects any other byte). Table in README. `container_envelope.go` bridges the QR envelope to the container;
-  `container_decode.go` reverses the pipeline.
+  decode rejects any other byte). Table in README. Package-level functions (`MarshalBinary`, `UnmarshalBinary`,
+  `UnmarshalEnvelope`, `SerializeBinary`, `DeserializeBinary`, `DeserializeText`, `DecodeData`, `GetText`, `GetPDF`)
+  drive the pipeline; split across `binary_*`, `text_*`, `pdf_*`, `json.go`, `decode.go` and `format_handler.go`.
 - `file_format/envelope`: `Wrap`/`Unwrap` with an injectable `ContentEncoder` (currently Base45), gzip only when it
   shrinks the payload. Header = `PC` + base36 (info) + base36 (version) + base45 (CRC-32) + base45 (payload) —
   documented in README; keep in sync.
