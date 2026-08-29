@@ -51,8 +51,8 @@ func GetFileHandleCarefully(path string, override bool) (*os.File, error) {
 	return out, nil
 }
 
-// PrintInputAndGetReader returns os.Stdin when inFileName is empty; the
-// caller must close the returned file.
+// PrintInputAndGetReader returns os.Stdin when inFileName is empty or "-";
+// callers must close only files opened here, never os.Stdin.
 func PrintInputAndGetReader(inFileName string) (*os.File, error) {
 	var err error
 	var inFile *os.File
