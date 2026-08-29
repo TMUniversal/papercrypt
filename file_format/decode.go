@@ -20,7 +20,13 @@
 
 package file_format
 
-// Deprecated: use the package-level DecodeData function instead.
-func (p *PaperCrypt) Decode(passphrase []byte) ([]byte, error) {
-	return DecodeData(p, passphrase)
+// DecodeData decodes and, if the data was encrypted with PaperCrypt (data
+// format is PaperCryptDataFormatPGP), decrypts the data, returning the
+// original binary data.
+func DecodeData(p *PaperCrypt, passphrase []byte) ([]byte, error) {
+	handler, err := getHandler(p.DataFormat)
+	if err != nil {
+		return nil, err
+	}
+	return handler.process(p.Data, passphrase)
 }
