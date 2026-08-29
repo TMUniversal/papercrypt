@@ -28,12 +28,15 @@ import (
 	"fmt"
 	"hash/crc32"
 	"math"
+	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/ccoveille/go-safecast/v2"
 	"github.com/tmuniversal/papercrypt/v3/crc24"
 	"github.com/tmuniversal/papercrypt/v3/internal"
 )
+
+const hexDigits = "0123456789ABCDEF"
 
 type lineData struct {
 	LineNumber uint32
@@ -60,38 +63,46 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	lines := math.Ceil(float64(len(*data)) / float64(bytesPerLine))
 	lineNumberDigits := int(math.Floor(math.Log10(lines + 1)))
 
-	dataBlock := make([]byte, 0, len(*data)+int(lines)*(lineNumberDigits+1)+1)
+	// two hex digits plus a space per byte, line-number prefixes, CRCs and newlines
+	dataBlock := make([]byte, 0, len(*data)*3+int(lines)*15+8)
 
 	for i := 0; i < len(*data); i += bytesPerLine {
 		lineNumber := (i / bytesPerLine) + 1
 		lineNumberPadding := lineNumberDigits - int(math.Floor(math.Log10(float64(lineNumber))))
 
-		line := fmt.Sprintf(
-			"%s%d: ",
-			string(bytes.Repeat([]byte{' '}, lineNumberPadding)),
-			lineNumber,
-		)
+		dataBlock = append(dataBlock, bytes.Repeat([]byte{' '}, lineNumberPadding)...)
+		dataBlock = strconv.AppendInt(dataBlock, int64(lineNumber), 10)
+		dataBlock = append(dataBlock, ':', ' ')
 
-		dataLine := make([]byte, 0, bytesPerLine)
-
-		for j := 0; j < bytesPerLine; j++ {
-			if i+j >= len(*data) {
-				break
-			}
-
-			dataLine = append(dataLine, (*data)[i+j])
-			line += fmt.Sprintf("%02X ", (*data)[i+j])
+		dataLine := (*data)[i:min(len(*data), i+bytesPerLine)]
+		for _, b := range dataLine {
+			dataBlock = append(dataBlock, hexDigits[b>>4], hexDigits[b&0x0f], ' ')
 		}
 
 		lineCRC24 := crc24.Checksum(dataLine)
-		line += fmt.Sprintf("%06X\n", lineCRC24)
-
-		dataBlock = append(dataBlock, []byte(line)...)
+		dataBlock = append(dataBlock,
+			hexDigits[lineCRC24>>20&0x0f],
+			hexDigits[lineCRC24>>16&0x0f],
+			hexDigits[lineCRC24>>12&0x0f],
+			hexDigits[lineCRC24>>8&0x0f],
+			hexDigits[lineCRC24>>4&0x0f],
+			hexDigits[lineCRC24&0x0f],
+			'\n',
+		)
 	}
 
 	dataCRC24 := crc24.Checksum(*data)
 	finalLineNumber := max(int(lines+1), min(1, int(lines)))
-	dataBlock = append(dataBlock, fmt.Appendf(nil, "%d: %06X\n", finalLineNumber, dataCRC24)...)
+	dataBlock = strconv.AppendInt(dataBlock, int64(finalLineNumber), 10)
+	dataBlock = append(dataBlock, ':', ' ',
+		hexDigits[dataCRC24>>20&0x0f],
+		hexDigits[dataCRC24>>16&0x0f],
+		hexDigits[dataCRC24>>12&0x0f],
+		hexDigits[dataCRC24>>8&0x0f],
+		hexDigits[dataCRC24>>4&0x0f],
+		hexDigits[dataCRC24&0x0f],
+		'\n',
+	)
 
 	return string(dataBlock)
 }
@@ -99,91 +110,87 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 // DeserializeBinary deserializes bytes from human-readable archive format encoded by SerializeBinary
 func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})
-	lines := make([][]byte, 0)
-
+	lines := make([][]byte, 0, len(rawLines))
 	for _, line := range rawLines {
 		if len(line) > 0 {
 			lines = append(lines, line)
 		}
 	}
 
-	result := make([]lineData, 0)
+	result := make([]lineData, 0, len(lines))
 
 	blockCrc := uint32(0)
 
-	for _, line := range lines {
-		parts := bytes.SplitN(line, []byte(": "), 2)
-		if len(parts) != 2 {
+	for lineIdx := 0; lineIdx < len(lines); lineIdx++ {
+		line := lines[lineIdx]
+		sep := bytes.Index(line, []byte(": "))
+		if sep < 0 {
 			return nil, fmt.Errorf("invalid line format: %s", line)
 		}
 
-		lineNumber := strings.ReplaceAll(string(parts[0]), " ", "")
-		lineNumber = strings.ReplaceAll(lineNumber, "\t", "")
+		lineNumber := line[:sep]
+		lineNumber = bytes.ReplaceAll(lineNumber, []byte(" "), nil)
+		lineNumber = bytes.ReplaceAll(lineNumber, []byte("\t"), nil)
 
-		if lineNumber == fmt.Sprint(len(lines)) {
-			// last line, contains CRC24 of data
-			var err error
-			blockCrc, err = ParseHexUint32(string(parts[1]))
+		lineNum, err := strconv.ParseUint(string(lineNumber), 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("invalid line number: %s", lineNumber)
+		}
+
+		// last line, contains the CRC24 of the data block
+		if int64(lineNum) == int64(len(lines)) {
+			blockCrc, err = ParseHexUint32(string(line[sep+2:]))
 			if err != nil {
-				return nil, fmt.Errorf("error parsing block CRC24: %s", parts[1])
+				return nil, fmt.Errorf("error parsing block CRC24: %s", line[sep+2:])
 			}
 			continue
 		}
 
-		lineParts := bytes.Split(parts[1], []byte(" "))
+		lineParts := bytes.Split(line[sep+2:], []byte(" "))
 		// as lineParts contains sub-arrays of encoded bytes, the length of lineParts is equal to the number of bytes in the line + 1 (for the checksum)
 		// a line must never contain no data, this a line must contain at least two parts, one byte and the checksum
 		// (the last line, containing only the block checksum, is already handled above)
 		if len(lineParts) > DefaultBytesPerLine+1 || len(lineParts) < 2 {
-			return nil, fmt.Errorf("unexpected line length: line %s: %s", lineNumber, parts[1])
+			return nil, fmt.Errorf("unexpected line length: line %d: %s", lineNum, line[sep+2:])
 		}
 
-		bytesHex := bytes.Join(lineParts[0:len(lineParts)-1], []byte(""))
-		checksumHex := lineParts[len(lineParts)-1]
+		hexBytes := make([]byte, 0, len(line)-sep-2)
+		for _, hb := range lineParts[:len(lineParts)-1] {
+			hexBytes = append(hexBytes, hb...)
+		}
 
-		bytesData, err := hex.DecodeString(string(bytesHex))
-		if err != nil {
+		decoded := make([]byte, len(hexBytes)/2)
+		if _, err := hex.Decode(decoded, hexBytes); err != nil {
 			return nil, err
 		}
 
+		checksumHex := lineParts[len(lineParts)-1]
 		checksumData, err := ParseHexUint32(string(checksumHex))
 		if err != nil {
 			return nil, fmt.Errorf("error parsing line checksum: %s", checksumHex)
 		}
 
-		var lineNum uint32
-		_, err = fmt.Sscanf(lineNumber, "%d", &lineNum)
-		if err != nil {
-			return nil, err
-		}
-
-		lineData := lineData{
-			LineNumber: lineNum,
-			Data:       bytesData,
+		lineEntry := lineData{
+			LineNumber: uint32(lineNum),
+			Data:       decoded,
 			CRC24:      checksumData,
 		}
 
-		if crc24.ValidateCRC24(lineData.Data, lineData.CRC24) {
-			result = append(result, lineData)
+		if crc24.ValidateCRC24(lineEntry.Data, lineEntry.CRC24) {
+			result = append(result, lineEntry)
 		} else {
 			return nil, fmt.Errorf(
 				"invalid line checksum: line %d has checksum %06X, expected %06X",
-				lineData.LineNumber,
-				crc24.Checksum(lineData.Data),
-				lineData.CRC24,
+				lineEntry.LineNumber,
+				crc24.Checksum(lineEntry.Data),
+				lineEntry.CRC24,
 			)
 		}
 	}
 
-	for i := 0; i < len(result); i++ {
-		for j := i + 1; j < len(result); j++ {
-			if result[i].LineNumber > result[j].LineNumber {
-				tmp := result[i]
-				result[i] = result[j]
-				result[j] = tmp
-			}
-		}
-	}
+	sort.SliceStable(result, func(i, j int) bool {
+		return result[i].LineNumber < result[j].LineNumber
+	})
 
 	// Ensure that lines are consecutive, starting at 1: as we sorted the
 	// lines, we can just check the first and last line.
@@ -196,18 +203,14 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	}
 
 	// this also ensures that we have all lines, as the last line number must equal the number of lines
-	var resultLength uint32
-	var err error
-	resultLength, err = safecast.Convert[uint32, int](len(result))
-	if err != nil {
-		return nil, err
+	if int64(result[len(result)-1].LineNumber) != int64(len(result)) {
+		return nil, fmt.Errorf(
+			"invalid last line number: %d",
+			result[len(result)-1].LineNumber,
+		)
 	}
 
-	if result[len(result)-1].LineNumber != resultLength {
-		return nil, fmt.Errorf("invalid last line number: %d", result[len(result)-1].LineNumber)
-	}
-
-	var resultData []byte
+	resultData := make([]byte, 0, len(result)*DefaultBytesPerLine)
 	for _, line := range result {
 		resultData = append(resultData, line.Data...)
 	}
