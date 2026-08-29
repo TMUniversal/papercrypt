@@ -286,7 +286,8 @@ carries the envelope type in its least significant bit, the content
 encoding type in the next two bits (base45 = `1`), and the content
 compression type in the fourth bit (`1` = gzip). The payload is
 gzip-compressed only when that makes it smaller:
-```
+
+```text
 PC + base36(info) + base36(version) + base45(CRC-32 of payload) + base45(payload)
 ```
 
