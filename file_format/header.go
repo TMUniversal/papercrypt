@@ -2,7 +2,7 @@
  * This file is part of PaperCrypt.
  *
  * PaperCrypt lets you prepare encrypted messages for printing on paper.
- * Copyright (C) 2023-2026 TMUniversal <me@tmuniversal.eu>.
+ * Copyright (C) 2026 TMUniversal <me@tmuniversal.eu>.
  *
  * PaperCrypt is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -20,23 +20,33 @@
 
 package file_format
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
-// Deprecated: method adapters kept until external callers move to the
-// package-level functions.
+const (
+	DefaultBytesPerLine = 24
+)
 
-func (p *PaperCrypt) GetBinarySerialized() (string, error) {
-	if p.Data == nil {
-		return "", errors.New("no data to serialize")
-	}
+const (
+	HeaderFieldVersion       = "PaperCrypt Version"
+	HeaderFieldSerial        = "Content Serial"
+	HeaderFieldPurpose       = "Purpose"
+	HeaderFieldComment       = "Comment"
+	HeaderFieldDate          = "Date"
+	HeaderFieldDataFormat    = "Data Format"
+	HeaderFieldContentLength = "Content Length"
+	HeaderFieldSHA256        = "Content SHA-256"
+	HeaderFieldHeaderCRC32   = "Header CRC-32"
+)
 
-	if len(p.Data) == 0 {
-		return "", errors.New("no data to serialize")
-	}
+var (
+	errorParsingHeader     = errors.New("error parsing header")
+	errorParsingBody       = errors.New("error parsing body")
+	errorValidationFailure = errors.New("validation failure")
+)
 
-	return SerializeBinary(&p.Data, DefaultBytesPerLine), nil
-}
-
-func (p *PaperCrypt) GetDataLength() int {
-	return len(p.Data)
+func newFieldNotPresentError(field string) error {
+	return fmt.Errorf("`%s` not present in header", field)
 }
