@@ -22,9 +22,13 @@ package file_format
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"time"
+
+	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
 )
 
 // UnmarshalBinary parses a binary container into a PaperCrypt struct.
@@ -114,4 +118,33 @@ func UnmarshalBinaryFromReader(r io.Reader) (*PaperCrypt, error) {
 		return nil, fmt.Errorf("binary: read: %w", err)
 	}
 	return UnmarshalBinary(data)
+}
+
+// UnmarshalEnvelope decodes an envelope-wrapped binary container into a
+// PaperCrypt struct.
+func UnmarshalEnvelope(data string, opts ...envelope.CompressorOption) (*PaperCrypt, error) {
+	if !strings.HasPrefix(data, envelope.Magic) {
+		return nil, errors.New("unsupported format: expected PC envelope")
+	}
+
+	hdr, _, err := envelope.ParseHeader(data)
+	if err != nil {
+		return nil, errors.Join(errors.New("error parsing envelope header"), err)
+	}
+
+	enc, err := envelope.NewEncoder(hdr.Encoding)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := envelope.Unwrap(data, enc, opts...)
+	if err != nil {
+		return nil, errors.Join(errors.New("error unwrapping envelope"), err)
+	}
+
+	pc, err := UnmarshalBinary(content)
+	if err != nil {
+		return nil, errors.Join(errors.New("error deserializing binary container"), err)
+	}
+	return pc, nil
 }
