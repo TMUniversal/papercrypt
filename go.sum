@@ -10,8 +10,6 @@ github.com/caarlos0/go-version v0.2.2 h1:5r+nlrg4H2wOVwWjqRqRRIRbZ7ytRmjC9xoMIP0
 github.com/caarlos0/go-version v0.2.2/go.mod h1:X+rI5VAtJDpcjCjeEIXpxGa5+rTcgur1FK66wS0/944=
 github.com/caarlos0/log v0.6.2 h1:ZeP1TBAEiF0XF6VoJze/KNKeRqsQ0frHuDLhtNDvRys=
 github.com/caarlos0/log v0.6.2/go.mod h1:y47Oq2WDdjL12pPSjdCZlIKtgF6SOMss88kSWTxXZBc=
-github.com/ccoveille/go-safecast/v2 v2.0.1 h1:2+mIu3gXtwmWelBia2kkxfB8eP4orTHDH7ClSlWkd6I=
-github.com/ccoveille/go-safecast/v2 v2.0.1/go.mod h1:JIYA4CAR33blIDuE6fSwCp2sz1oOBahXnvmdBhOAABs=
 github.com/charmbracelet/colorprofile v0.4.3 h1:QPa1IWkYI+AOB+fE+mg/5/4HRMZcaXex9t5KX76i20Q=
 github.com/charmbracelet/colorprofile v0.4.3/go.mod h1:/zT4BhpD5aGFpqQQqw7a+VtHCzu+zrQtt1zhMt9mR4Q=
 github.com/charmbracelet/ultraviolet v0.0.0-20260812204455-68fa937c71be h1:qEvkJy1sjJXP+yf8IH2o13NV+Rh4nIUHjaLNJ+pWxpI=

@@ -8,7 +8,6 @@ require (
 	github.com/boombuler/barcode v1.1.0
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.6.2
-	github.com/ccoveille/go-safecast/v2 v2.0.1
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/dasio/base45 v1.0.1
 	github.com/jung-kurt/gofpdf/v2 v2.17.3
