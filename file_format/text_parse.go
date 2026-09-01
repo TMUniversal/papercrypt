@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -71,25 +72,12 @@ func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 }
 
 func ParseHexUint32(hex string) (uint32, error) {
-	h := strings.ToLower(hex)
-	h = strings.ReplaceAll(h, "0x", "")
-	h = strings.ReplaceAll(h, " ", "")
+	s := strings.TrimPrefix(strings.ToLower(hex), "0x")
+	s = strings.ReplaceAll(s, " ", "")
 
-	var n uint32
-	_, err := fmt.Sscanf(h, "%x", &n)
+	n, err := strconv.ParseUint(s, 16, 32)
 	if err != nil {
 		return 0, errors.Join(errors.New("error parsing hexadecimal value"), err)
 	}
-
-	// check input against output serialization, taking care to avoid leading zeros
-	nStr := fmt.Sprintf("%x", n)
-	hNoLeadingZeros := strings.TrimLeft(h, "0")
-	if hNoLeadingZeros == "" {
-		hNoLeadingZeros = "0"
-	}
-	if nStr != hNoLeadingZeros {
-		return n, fmt.Errorf("invalid hexadecimal value: %s", hex)
-	}
-
-	return n, nil
+	return uint32(n), nil
 }

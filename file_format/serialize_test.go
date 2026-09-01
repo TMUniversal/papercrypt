@@ -65,6 +65,24 @@ func TestParseHexUint32(t *testing.T) {
 			t.Errorf("ParseHexUint32 should not fail with hex number without prefix")
 		}
 	})
+
+	t.Run("parse hex with leading zeros", func(t *testing.T) {
+		parsed, err := ParseHexUint32("0x001f")
+		if err != nil {
+			t.Errorf("ParseHexUint32 failed with error %s", err)
+		}
+		if parsed != 31 {
+			t.Errorf("Parsed value was incorrect, got: %d, want: %d.", parsed, 31)
+		}
+	})
+
+	t.Run("reject repeated prefix and trailing garbage", func(t *testing.T) {
+		for _, hex := range []string{"0x0x1f", "1fg"} {
+			if _, err := ParseHexUint32(hex); err == nil {
+				t.Errorf("ParseHexUint32 should fail with %q", hex)
+			}
+		}
+	})
 }
 
 func TestBytesFromBase64(t *testing.T) {
