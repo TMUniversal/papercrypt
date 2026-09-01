@@ -47,8 +47,8 @@ installed by default.
   documented in README; keep in sync.
 - Decompression capped at 1 GiB by the single shared owner `internal/decompression` (cap constant `MaxSize`, sentinel
   `ErrSizeExceeded`); the cap applies to both the envelope unwrap and the container payload expansion, and the
-  `scan --unlimited` and `decode --unlimited` flags disable it. Envelope re-exports the sentinel as
-  `envelope.ErrDecompressedSizeExceeded`; scan appends a `use --unlimited` hint on a cap hit.
+  `scan --unlimited-gzip-payload` and `decode --unlimited-gzip-payload` flags disable it. Envelope re-exports the sentinel as
+  `envelope.ErrDecompressedSizeExceeded`; scan appends a `use --unlimited-gzip-payload` hint on a cap hit.
 - `codematrix` = QR encode (boombuler/barcode) / decode (gozxing); `pdf` = gofpdf with embedded Noto Sans/Inconsolata.
 
 ## Tracked artifacts

@@ -151,7 +151,7 @@ func init() {
 	decodeCmd.Flags().
 		BoolVar(&ignoreChecksumMismatch, "ignore-header-checksum-mismatch", false, "Ignore header checksum mismatches and continue anyway")
 	decodeCmd.Flags().
-		BoolVar(&decodeUnlimited, "unlimited", false, "Ignore the decompressed size limit when decoding the payload")
+		BoolVar(&decodeUnlimited, "unlimited-gzip-payload", false, "Ignore the decompressed size limit for the gzip payload")
 
 	decodeCmd.Flags().
 		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")

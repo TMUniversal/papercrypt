@@ -18,8 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Package decompression is the single owner of the gzip-expansion size cap
-// shared by every layer that inflates untrusted input.
 package decompression
 
 import (
@@ -28,15 +26,10 @@ import (
 	"io"
 )
 
-// MaxSize is the module-wide default cap on gzip-expanded output, guarding
-// against decompression bombs.
 const MaxSize = 1 << 30 // 1 GiB
 
-// ErrSizeExceeded is returned when gzip-expanded output exceeds the cap.
 var ErrSizeExceeded = errors.New("decompressed data exceeds the size limit")
 
-// ReadAll reads all of r, rejecting output above limit bytes with
-// ErrSizeExceeded. A negative limit disables the cap; zero uses MaxSize.
 func ReadAll(r io.Reader, limit int) ([]byte, error) {
 	limitBytes := limit
 	if limitBytes == 0 {

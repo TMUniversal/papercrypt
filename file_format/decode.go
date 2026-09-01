@@ -22,15 +22,12 @@ package file_format
 
 import "errors"
 
-// DecodeOption configures DecodeData.
 type DecodeOption func(*decodeOptions)
 
 type decodeOptions struct {
 	maxDecompressedSize int
 }
 
-// WithNoDecompressionLimit disables the cap on the gzip-expanded container
-// payload, which otherwise defaults to internal/decompression.MaxSize.
 func WithNoDecompressionLimit() DecodeOption {
 	return func(o *decodeOptions) { o.maxDecompressedSize = -1 }
 }
