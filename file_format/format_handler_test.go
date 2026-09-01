@@ -33,7 +33,7 @@ import (
 func TestProcessPGPDataRejectsOversizedDecompression(t *testing.T) {
 	data := gzipped(t, make([]byte, 2*1024))
 
-	_, err := processPGPData(1024, data, nil)
+	_, err := decodePGPData(1024, data, nil)
 	if !errors.Is(err, decompression.ErrSizeExceeded) {
 		t.Fatalf("expected ErrSizeExceeded, got %v", err)
 	}
@@ -42,7 +42,7 @@ func TestProcessPGPDataRejectsOversizedDecompression(t *testing.T) {
 func TestProcessPGPDataUnlimited(t *testing.T) {
 	data := gzipped(t, make([]byte, 2*1024))
 
-	if _, err := processPGPData(-1, data, nil); err == nil {
+	if _, err := decodePGPData(-1, data, nil); err == nil {
 		t.Fatal("unexpected success")
 	} else if errors.Is(err, decompression.ErrSizeExceeded) {
 		t.Fatalf("size-limit error raised despite unlimited mode: %v", err)
@@ -52,7 +52,7 @@ func TestProcessPGPDataUnlimited(t *testing.T) {
 func TestProcessPGPDataAcceptsWithinLimit(t *testing.T) {
 	data := gzipped(t, make([]byte, 512))
 
-	if _, err := processPGPData(1024, data, nil); err == nil {
+	if _, err := decodePGPData(1024, data, nil); err == nil {
 		t.Fatal("unexpected success")
 	} else if strings.Contains(err.Error(), "size limit") {
 		t.Fatalf("size-limit error raised within the limit: %v", err)
