@@ -25,32 +25,23 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"errors"
-	"math"
-	"math/big"
 )
 
 func GenerateSerial(length uint8) (string, error) {
-	numbers := make([]*big.Int, length)
-
-	for i := uint8(0); i < length; i++ {
-		randInt, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-		if err != nil {
-			return "", errors.Join(errors.New("error generating random bytes"), err)
-		}
-
-		numbers[i] = randInt
+	// Encode length random bytes: base32 yields >= length characters for any
+	// nonzero length, so the trailing slice never runs off the end even if a
+	// byte is zero.
+	random := make([]byte, length)
+	if _, err := rand.Read(random); err != nil {
+		return "", errors.Join(errors.New("error generating random bytes"), err)
 	}
 
 	buf := new(bytes.Buffer)
 	encoder := base32.NewEncoder(base32.StdEncoding, buf)
-	for _, number := range numbers {
-		_, err := encoder.Write(number.Bytes())
-		if err != nil {
-			return "", errors.Join(errors.New("error encoding bytes"), err)
-		}
+	if _, err := encoder.Write(random); err != nil {
+		return "", errors.Join(errors.New("error encoding bytes"), err)
 	}
-	err := encoder.Close()
-	if err != nil {
+	if err := encoder.Close(); err != nil {
 		return "", errors.Join(errors.New("error closing base64 encoder"), err)
 	}
 
