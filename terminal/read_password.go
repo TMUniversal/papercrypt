@@ -26,8 +26,6 @@ import (
 )
 
 func SensitivePrompt() ([]byte, error) {
-	_, _ = fmt.Fprint(os.Stderr, "Passphrase: ")
-
 	p, e := readTtyLine()
 
 	_, _ = fmt.Fprint(os.Stderr, "\n")
