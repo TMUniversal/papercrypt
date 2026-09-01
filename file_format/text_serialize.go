@@ -44,18 +44,16 @@ type lineData struct {
 	CRC24      uint32
 }
 
-// Lines hold 22 bytes of data, prefaced by the line number, followed by the
-// CRC-24 of the line; bytes are printed as two base16 (hex) digits, separated
-// by a space. The last line carries the block CRC-24.
+// Lines hold DefaultBytesPerLine bytes of data, prefaced by the line
+// number, followed by the CRC-24 of the line; bytes are printed as two base16
+// (hex) digits, separated by a space. The last line carries the block CRC-24.
 // Example:
 //
-//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 <CRC-24 of this line>
+//	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 <CRC-24 of this line>
 //	2: ... <CRC-24 of this line>
-//
-// 10: ... <CRC-24 of this line>
-// ...
-// n-1: ... <CRC-24 of this line>
-// n: <CRC-24 of the block>
+//	...
+//	n-1: ... <CRC-24 of this line>
+//	n: <CRC-24 of the block>
 //
 // See [example.pdf](example.pdf) for an example.
 func SerializeBinary(data *[]byte, bytesPerLine int) string {
