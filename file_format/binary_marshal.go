@@ -60,7 +60,10 @@ func MarshalBinary(p *PaperCrypt) ([]byte, error) {
 		return nil, fmt.Errorf("binary: comment too long (%d > 255)", len(commentBytes))
 	}
 
-	major, minor, patch := parseVersion(p.Version)
+	major, minor, patch, err := ParseVersion(p.Version)
+	if err != nil {
+		return nil, fmt.Errorf("binary: invalid version: %w", err)
+	}
 
 	size := BinaryHeaderSize +
 		3 + // version

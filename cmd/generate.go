@@ -158,8 +158,14 @@ encrypted data.`,
 		if rawData {
 			format = file_format.PaperCryptDataFormatRaw
 		}
+		version := internal.VersionInfo.GitVersion
+		if _, _, _, err := file_format.ParseVersion(version); err != nil {
+			// devel builds carry no serializable version; 0.0.0 is how the
+			// text format marks a development document (major 0 == devel).
+			version = "0.0.0"
+		}
 		crypt := file_format.NewPaperCrypt(
-			internal.VersionInfo.GitVersion,
+			version,
 			data,
 			serialNumber,
 			purpose,

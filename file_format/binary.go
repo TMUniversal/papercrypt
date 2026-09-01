@@ -47,15 +47,26 @@ var (
 	ErrBinaryTruncated = errors.New("binary: truncated data")
 )
 
-// parseVersion extracts major, minor, patch from a version string like "v3.1.2".
-// Returns 0,0,0 for unparseable strings.
-func parseVersion(v string) (major, minor, patch uint8) {
-	v = strings.TrimPrefix(v, "v")
+// ParseVersion extracts major, minor, patch from a version string like "v3.1.2".
+// It errors when the string does not parse or any component falls outside the
+// 0–255 range representable in the binary wire format, so serialization cannot
+// silently rewrite version metadata.
+func ParseVersion(v string) (major, minor, patch uint8, err error) {
+	trimmed := strings.TrimPrefix(v, "v")
 	var maj, mi, pat int
-	if _, err := fmt.Sscanf(v, "%d.%d.%d", &maj, &mi, &pat); err != nil {
-		return 0, 0, 0
+	if _, err := fmt.Sscanf(trimmed, "%d.%d.%d", &maj, &mi, &pat); err != nil {
+		return 0, 0, 0, fmt.Errorf("unparseable version %q", v)
 	}
-	return uint8(maj), uint8(mi), uint8(pat) //nolint:gosec // version components fit in uint8
+	if maj < 0 || maj > 255 {
+		return 0, 0, 0, fmt.Errorf("major %d out of range", maj)
+	}
+	if mi < 0 || mi > 255 {
+		return 0, 0, 0, fmt.Errorf("minor %d out of range", mi)
+	}
+	if pat < 0 || pat > 255 {
+		return 0, 0, 0, fmt.Errorf("patch %d out of range", pat)
+	}
+	return uint8(maj), uint8(mi), uint8(pat), nil
 }
 
 // formatVersion returns "M.m.p" from three uint8 components.

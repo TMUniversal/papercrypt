@@ -278,7 +278,7 @@ func FuzzBinaryRoundtrip(f *testing.F) {
 }
 
 func TestParseVersion(t *testing.T) {
-	tests := []struct {
+	valid := []struct {
 		input                     string
 		wantMaj, wantMin, wantPat uint8
 	}{
@@ -286,15 +286,22 @@ func TestParseVersion(t *testing.T) {
 		{"3.1.2", 3, 1, 2},
 		{"v0.0.0", 0, 0, 0},
 		{"v255.255.255", 255, 255, 255},
-		{"devel", 0, 0, 0},
-		{"", 0, 0, 0},
-		{"v1.2", 0, 0, 0},
 	}
-	for _, tt := range tests {
-		maj, mi, pat := parseVersion(tt.input)
+	for _, tt := range valid {
+		maj, mi, pat, err := ParseVersion(tt.input)
+		if err != nil {
+			t.Errorf("ParseVersion(%q): unexpected error %v", tt.input, err)
+		}
 		if maj != tt.wantMaj || mi != tt.wantMin || pat != tt.wantPat {
-			t.Errorf("parseVersion(%q) = %d.%d.%d, want %d.%d.%d",
+			t.Errorf("ParseVersion(%q) = %d.%d.%d, want %d.%d.%d",
 				tt.input, maj, mi, pat, tt.wantMaj, tt.wantMin, tt.wantPat)
+		}
+	}
+
+	invalid := []string{"devel", "", "v1.2", "1.2", "300.0.0", "1.300.0", "1.0.300", "-1.0.0"}
+	for _, input := range invalid {
+		if _, _, _, err := ParseVersion(input); err == nil {
+			t.Errorf("ParseVersion(%q): expected error", input)
 		}
 	}
 }
@@ -308,10 +315,37 @@ func TestFormatVersion(t *testing.T) {
 
 func TestParseFormatRoundtrip(t *testing.T) {
 	for _, v := range []string{"1.0.0", "3.1.2", "0.0.0", "255.255.255"} {
-		maj, mi, pat := parseVersion(v)
+		maj, mi, pat, err := ParseVersion(v)
+		if err != nil {
+			t.Fatalf("ParseVersion(%q): %v", v, err)
+		}
 		got := formatVersion(maj, mi, pat)
 		if got != v {
 			t.Errorf("roundtrip %q: parse -> format = %q", v, got)
+		}
+	}
+}
+
+func TestMarshalBinaryVersionValidation(t *testing.T) {
+	base := &PaperCrypt{
+		DataFormat: PaperCryptDataFormatRaw,
+		CreatedAt:  time.Now(),
+		Data:       []byte("x"),
+	}
+
+	for _, v := range []string{"3.1.2", "v3.0.0", "0.0.0", "255.255.255"} {
+		pc := *base
+		pc.Version = v
+		if _, err := MarshalBinary(&pc); err != nil {
+			t.Errorf("MarshalBinary with version %q: unexpected error %v", v, err)
+		}
+	}
+
+	for _, v := range []string{"devel", "", "1.2", "abc", "300.0.0", "1.300.0", "1.0.300"} {
+		pc := *base
+		pc.Version = v
+		if _, err := MarshalBinary(&pc); err == nil {
+			t.Errorf("MarshalBinary with version %q: expected error", v)
 		}
 	}
 }
