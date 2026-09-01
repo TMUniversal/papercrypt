@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 )
 
 const MaxSize = 1 << 30 // 1 GiB
@@ -38,7 +39,11 @@ func ReadAll(r io.Reader, limit int) ([]byte, error) {
 
 	in := r
 	if limitBytes > 0 {
-		in = io.LimitReader(in, int64(limitBytes)+1)
+		n := int64(limitBytes)
+		if n < math.MaxInt64 {
+			n++
+		}
+		in = io.LimitReader(in, n)
 	}
 
 	out, err := io.ReadAll(in)
