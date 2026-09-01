@@ -34,6 +34,7 @@ import (
 var (
 	ignoreVersionMismatch  bool
 	ignoreChecksumMismatch bool
+	decodeUnlimited        bool
 )
 
 var decodeCmd = &cobra.Command{
@@ -120,7 +121,11 @@ The data should be read from a file or stdin, you will be required to provide a 
 				return errors.Join(errors.New("error deserializing PaperCrypt document"), err)
 			}
 
-			decoded, err = file_format.DecodeData(pc, passphraseBytes)
+			var decodeOptions []file_format.DecodeOption
+			if decodeUnlimited {
+				decodeOptions = append(decodeOptions, file_format.WithNoDecompressionLimit())
+			}
+			decoded, err = file_format.DecodeData(pc, passphraseBytes, decodeOptions...)
 			if err != nil {
 				return errors.Join(errors.New("error decrypting data"), err)
 			}
@@ -145,6 +150,8 @@ func init() {
 		BoolVar(&ignoreVersionMismatch, "ignore-version-mismatch", false, "Ignore version mismatch and continue anyway")
 	decodeCmd.Flags().
 		BoolVar(&ignoreChecksumMismatch, "ignore-header-checksum-mismatch", false, "Ignore header checksum mismatches and continue anyway")
+	decodeCmd.Flags().
+		BoolVar(&decodeUnlimited, "unlimited", false, "Ignore the decompressed size limit when decoding the payload")
 
 	decodeCmd.Flags().
 		StringVarP(&passphrase, "passphrase", "P", "", "Passphrase to use for encryption (not recommended, will be prompted for if not provided)")

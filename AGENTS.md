@@ -45,8 +45,10 @@ installed by default.
 - `file_format/envelope`: `Wrap`/`Unwrap` with an injectable `ContentEncoder` (currently Base45), gzip only when it
   shrinks the payload. Header = `PC` + base36 (info) + base36 (version) + base45 (CRC-32) + base45 (payload) —
   documented in README; keep in sync.
-- Decompression capped at 1 GiB (`maxDecompressedSize`); `scan --unlimited` disables it. On a cap hit,
-  `envelope.ErrDecompressedSizeExceeded` fires and scan appends a `use --unlimited` hint.
+- Decompression capped at 1 GiB by the single shared owner `internal/decompression` (cap constant `MaxSize`, sentinel
+  `ErrSizeExceeded`); the cap applies to both the envelope unwrap and the container payload expansion, and the
+  `scan --unlimited` and `decode --unlimited` flags disable it. Envelope re-exports the sentinel as
+  `envelope.ErrDecompressedSizeExceeded`; scan appends a `use --unlimited` hint on a cap hit.
 - `codematrix` = QR encode (boombuler/barcode) / decode (gozxing); `pdf` = gofpdf with embedded Noto Sans/Inconsolata.
 
 ## Tracked artifacts

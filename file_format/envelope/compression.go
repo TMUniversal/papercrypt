@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"io"
+
+	"github.com/tmuniversal/papercrypt/v3/internal/decompression"
 )
 
 type CompressionType uint8
@@ -84,10 +85,6 @@ type GzipCompressor struct {
 	maxDecompressedSize int
 }
 
-// maxDecompressedSize caps GzipCompressor.Decompress output, guarding
-// against decompression bombs.
-const maxDecompressedSize = 1 << 30 // 1 GiB
-
 func (GzipCompressor) Compress(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	gz, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -109,29 +106,14 @@ func (c GzipCompressor) Decompress(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("envelope: creating gzip reader: %w", err)
 	}
 
-	limit := c.maxDecompressedSize
-	if limit == 0 {
-		limit = maxDecompressedSize
-	}
-
-	in := io.Reader(gz)
-	if limit >= 0 {
-		in = io.LimitReader(gz, int64(limit)+1)
-	}
-
-	out, err := io.ReadAll(in)
+	// the decompressed-size cap lives in internal/decompression; a zero
+	// config value means the package-wide default, a negative one is unlimited
+	out, err := decompression.ReadAll(gz, c.maxDecompressedSize)
 	if err != nil {
 		return nil, fmt.Errorf("envelope: reading gzip data: %w", err)
 	}
 	if err := gz.Close(); err != nil {
 		return nil, fmt.Errorf("envelope: closing gzip reader: %w", err)
-	}
-	if limit >= 0 && len(out) > limit {
-		return nil, fmt.Errorf(
-			"%w: exceeds %d bytes",
-			ErrDecompressedSizeExceeded,
-			limit,
-		)
 	}
 	return out, nil
 }

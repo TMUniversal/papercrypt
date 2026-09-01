@@ -22,16 +22,33 @@ package file_format
 
 import "errors"
 
+// DecodeOption configures DecodeData.
+type DecodeOption func(*decodeOptions)
+
+type decodeOptions struct {
+	maxDecompressedSize int
+}
+
+// WithNoDecompressionLimit disables the cap on the gzip-expanded container
+// payload, which otherwise defaults to internal/decompression.MaxSize.
+func WithNoDecompressionLimit() DecodeOption {
+	return func(o *decodeOptions) { o.maxDecompressedSize = -1 }
+}
+
 // DecodeData decodes and, if the data was encrypted with PaperCrypt (data
 // format is PaperCryptDataFormatPGP), decrypts the data, returning the
 // original binary data.
-func DecodeData(p *PaperCrypt, passphrase []byte) ([]byte, error) {
+func DecodeData(p *PaperCrypt, passphrase []byte, opts ...DecodeOption) ([]byte, error) {
 	if p == nil {
 		return nil, errors.New("decode: nil PaperCrypt")
+	}
+	var o decodeOptions
+	for _, opt := range opts {
+		opt(&o)
 	}
 	handler, err := getHandler(p.DataFormat)
 	if err != nil {
 		return nil, err
 	}
-	return handler.process(p.Data, passphrase)
+	return handler.process(o.maxDecompressedSize, p.Data, passphrase)
 }
