@@ -20,19 +20,12 @@
 
 package crc24
 
-import (
-	"hash/crc32"
-)
-
 const (
 	CRC24Polynomial = polynomial
 	CRC24Initial    = initial
 )
 
+// ValidateCRC24 reports whether checksum is the CRC-24 of data.
 func ValidateCRC24(data []byte, checksum uint32) bool {
 	return Validate(data, checksum)
-}
-
-func ValidateCRC32(data []byte, checksum uint32) bool {
-	return crc32.ChecksumIEEE(data) == checksum
 }
