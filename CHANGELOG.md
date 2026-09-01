@@ -1,3 +1,26 @@
+## [3.5.1](https://github.com/TMUniversal/papercrypt/compare/v3.5.0...v3.5.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **decompression:** avoid LimitReader overflow at max int limit ([a73356d](https://github.com/TMUniversal/papercrypt/commit/a73356df070ade1b8343e430dd9d30b40f1f373c))
+* **envelope:** reject reserved header bits in ParseHeader ([8087486](https://github.com/TMUniversal/papercrypt/commit/80874866de69dd2585194068cb25d1341f0686ce))
+* **file_format:** accept any SerializeBinary width in DeserializeBinary ([f79ca7f](https://github.com/TMUniversal/papercrypt/commit/f79ca7f05c1b8914667ca8b24c008d2876751980))
+* **file_format:** correct base32 label in serial error message ([833a98c](https://github.com/TMUniversal/papercrypt/commit/833a98c314548d6fefcdbf345977dfdc32fd2a5a))
+* **file_format:** guard DecodeData against nil document ([dfe2a39](https://github.com/TMUniversal/papercrypt/commit/dfe2a393bc43cc941b739829355400b042aee025))
+* **file_format:** never underflow serial buffer before slicing ([7350db3](https://github.com/TMUniversal/papercrypt/commit/7350db30bb22ddf9053ebeff9280f5585ea92155))
+* **file_format:** nil-guard GetText before dereferencing p ([81aadbe](https://github.com/TMUniversal/papercrypt/commit/81aadbecdada23276ac63191d620f1258c7a3726))
+* **file_format:** reject unrepresentable versions on binary marshal ([95673e5](https://github.com/TMUniversal/papercrypt/commit/95673e506dc48772108649a8c6bbeaece5becd50))
+* **file_format:** treat absent CRC and date headers as required-field errors ([c5152e8](https://github.com/TMUniversal/papercrypt/commit/c5152e8a43daeda09b09d8984a04af21b4f4f96d))
+* **file_format:** verify every data line number is consecutive ([89f1dfd](https://github.com/TMUniversal/papercrypt/commit/89f1dfdd0769385e68089c5ec098ca11960264d9))
+* **terminal:** close tty on all paths and drop duplicate prompt ([5093516](https://github.com/TMUniversal/papercrypt/commit/50935162762de286becdfd06343fbc8c36cb1827))
+* **terminal:** prompt before /dev/tty password read ([c883273](https://github.com/TMUniversal/papercrypt/commit/c883273d42ac792ce4d7468f2b0be0b91db96e5d))
+
+
+### Performance Improvements
+
+* **file_format:** streamline hex serialization and line parsing ([a45ee62](https://github.com/TMUniversal/papercrypt/commit/a45ee627082059c83f09b8e30dd8fd0ec10e9086))
+
 # [3.5.0](https://github.com/TMUniversal/papercrypt/compare/v3.4.1...v3.5.0) (2026-08-29)
 
 
