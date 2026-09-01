@@ -27,9 +27,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/pdf"
 )
 
-// GetPDF renders the PaperCrypt document as a printable PDF, combining the
-// human-readable text, the QR code (unless no2D) carrying the full binary
-// container and the Data Matrix serial label.
 func GetPDF(p *PaperCrypt, no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	text, err := GetText(p, lowerCaseEncoding)
 	if err != nil {
@@ -70,7 +67,6 @@ func GetPDF(p *PaperCrypt, no2D bool, lowerCaseEncoding bool) ([]byte, error) {
 	return pdf.New(pdfMode(p, no2D)).Render(cfg)
 }
 
-// pdfMode picks the sheet layout for the document's data format.
 func pdfMode(p *PaperCrypt, no2D bool) pdf.Mode {
 	switch {
 	case p.DataFormat == PaperCryptDataFormatRaw && no2D:

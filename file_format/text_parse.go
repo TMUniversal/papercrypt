@@ -27,7 +27,6 @@ import (
 	"strings"
 )
 
-// TextToHeaderMap expects "Key: Value" header lines; the "# " prefix is stripped from keys.
 func TextToHeaderMap(text []byte) (map[string]string, error) {
 	headers := make(map[string]string)
 
@@ -71,7 +70,6 @@ func SplitTextHeaderAndBody(data []byte) ([]byte, []byte, error) {
 	return header, body, nil
 }
 
-// ParseHexUint32 parses a uint32 number from a string of hexadecimal characters
 func ParseHexUint32(hex string) (uint32, error) {
 	h := strings.ToLower(hex)
 	h = strings.ReplaceAll(h, "0x", "")

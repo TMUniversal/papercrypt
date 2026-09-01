@@ -29,7 +29,6 @@ import (
 	"github.com/makiuchi-d/gozxing/datamatrix"
 )
 
-// GenerateDataMatrix renders a Data Matrix code of the given serial as PNG.
 func GenerateDataMatrix(serial string) ([]byte, error) {
 	enc := datamatrix.NewDataMatrixWriter()
 	code, err := enc.Encode(serial, gozxing.BarcodeFormat_DATA_MATRIX, 384, 384, nil)

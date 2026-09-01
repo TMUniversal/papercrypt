@@ -27,8 +27,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
 )
 
-// GenerateQR renders the QR code carrying the envelope-wrapped binary
-// container of the document.
 func GenerateQR(p *PaperCrypt) ([]byte, error) {
 	qrBin, err := MarshalBinary(p)
 	if err != nil {
