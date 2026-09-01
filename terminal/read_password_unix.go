@@ -24,6 +24,7 @@ package terminal
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"syscall"
 
@@ -52,6 +53,10 @@ func readTtyLinePlatform() ([]byte, error) {
 		return nil, errors.Join(errors.New("could not open /dev/tty"), err)
 	}
 	defer tty.Close() //nolint:errcheck // close error on a read-only fd is not actionable
+
+	// term.ReadPassword prints nothing, so announce input here where promptui
+	// is not used; the terminal path above already shows its own label.
+	_, _ = fmt.Fprint(os.Stderr, "Passphrase: ")
 
 	password, err := term.ReadPassword(int(tty.Fd()))
 	if err != nil {
