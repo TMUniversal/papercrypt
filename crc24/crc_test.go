@@ -88,37 +88,3 @@ func TestBoth(t *testing.T) {
 		t.Errorf("Expected checksum validation to be true, but got false.")
 	}
 }
-
-func TestValidateCRC32(t *testing.T) {
-	data := []byte{
-		0x2d,
-		0x2d,
-		0x2d,
-		0x2d,
-		0x2d,
-		0x42,
-		0x45,
-		0x47,
-		0x49,
-		0x4e,
-		0x20,
-		0x50,
-		0x47,
-		0x50,
-		0x20,
-		0x4d,
-		0x45,
-		0x53,
-		0x53,
-		0x41,
-		0x47,
-		0x45,
-	}
-	checksum := uint32(0x59f08912)
-
-	assert.True(
-		t,
-		ValidateCRC32(data, checksum),
-		"Expected checksum validation to pass for pre-determined valid checksum, but got false.",
-	)
-}

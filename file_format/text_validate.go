@@ -30,7 +30,6 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/tmuniversal/papercrypt/v3/crc24"
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
@@ -84,7 +83,7 @@ func validateHeaderCRC32(
 		[]byte{},
 	)
 
-	if !crc24.ValidateCRC32(headerWithoutCrc, headerCrc32) {
+	if crc32.ChecksumIEEE(headerWithoutCrc) != headerCrc32 {
 		if !ignoreChecksumMismatch {
 			return errors.Join(
 				errorParsingHeader,
