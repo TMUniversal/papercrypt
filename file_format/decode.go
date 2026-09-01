@@ -20,10 +20,15 @@
 
 package file_format
 
+import "errors"
+
 // DecodeData decodes and, if the data was encrypted with PaperCrypt (data
 // format is PaperCryptDataFormatPGP), decrypts the data, returning the
 // original binary data.
 func DecodeData(p *PaperCrypt, passphrase []byte) ([]byte, error) {
+	if p == nil {
+		return nil, errors.New("decode: nil PaperCrypt")
+	}
 	handler, err := getHandler(p.DataFormat)
 	if err != nil {
 		return nil, err
