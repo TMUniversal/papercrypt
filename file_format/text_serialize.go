@@ -246,6 +246,10 @@ func MarshalBinaryForText(p *PaperCrypt) (string, error) {
 }
 
 func GetText(p *PaperCrypt, lowerCaseEncoding bool) ([]byte, error) {
+	if p == nil {
+		return nil, errors.New("cannot get text for nil PaperCrypt")
+	}
+
 	header := fmt.Sprintf(
 		`%s: %s
 %s: %s
