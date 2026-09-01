@@ -63,14 +63,10 @@ func validateHeaderCRC32(
 ) error {
 	headerCrc, ok := headers[HeaderFieldHeaderCRC32]
 	if !ok {
-		if !ignoreChecksumMismatch {
-			return errors.Join(
-				errorParsingHeader,
-				newFieldNotPresentError(HeaderFieldHeaderCRC32),
-			)
-		}
-
-		log.Warn(terminal.Warning("Header CRC-32 not present in header"))
+		return errors.Join(
+			errorParsingHeader,
+			newFieldNotPresentError(HeaderFieldHeaderCRC32),
+		)
 	}
 
 	headerCrc = strings.ToLower(headerCrc)
