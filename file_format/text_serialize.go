@@ -116,6 +116,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	result := make([]lineData, 0, len(lines))
 
 	blockCrc := uint32(0)
+	lineBytes := 0
 
 	for lineIdx := 0; lineIdx < len(lines); lineIdx++ {
 		line := lines[lineIdx]
@@ -143,11 +144,20 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		}
 
 		lineParts := bytes.Split(line[sep+2:], []byte(" "))
-		// as lineParts contains sub-arrays of encoded bytes, the length of lineParts is equal to the number of bytes in the line + 1 (for the checksum)
-		// a line must never contain no data, this a line must contain at least two parts, one byte and the checksum
-		// (the last line, containing only the block checksum, is already handled above)
-		if len(lineParts) > DefaultBytesPerLine+1 || len(lineParts) < 2 {
+
+		if n := len(lineParts) - 1; n < 1 || (lineBytes != 0 && n > lineBytes) {
 			return nil, fmt.Errorf("unexpected line length: line %d: %s", lineNum, line[sep+2:])
+		}
+		if int64(lineNum) < int64(len(lines)-1) {
+			if lineBytes == 0 {
+				lineBytes = len(lineParts) - 1
+			} else if len(lineParts)-1 != lineBytes {
+				return nil, fmt.Errorf(
+					"inconsistent line length: line %d: %s",
+					lineNum,
+					line[sep+2:],
+				)
+			}
 		}
 
 		hexBytes := make([]byte, 0, len(line)-sep-2)
@@ -206,7 +216,7 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		)
 	}
 
-	resultData := make([]byte, 0, len(result)*DefaultBytesPerLine)
+	resultData := make([]byte, 0, len(result)*lineBytes)
 	for _, line := range result {
 		resultData = append(resultData, line.Data...)
 	}
