@@ -32,7 +32,6 @@ import (
 )
 
 func readTtyLinePlatform() ([]byte, error) {
-	// if stdin is a terminal, use it with promptui
 	if term.IsTerminal(int(syscall.Stdin)) {
 		prompt := promptui.Prompt{
 			Label:  "Passphrase",
