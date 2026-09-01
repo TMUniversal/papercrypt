@@ -12,7 +12,7 @@ Use `task` for all verification; do not substitute raw `go test`/`go vet` for th
 - `task test` — vet + unit + e2e + raw + cleanup (CI parity)
 - `task test:unit` — `-short -race -coverpkg=./...`; tune via `TEST_OPTIONS`, `SOURCE_FILES`, `TEST_PATTERN`
     - Focused:
-      `task test:unit SOURCE_FILES=./internal/file_format/envelope/... TEST_PATTERN=TestGzipCompressorRejectsOversizedOutput`
+      `task test:unit SOURCE_FILES=./file_format/envelope/... TEST_PATTERN=TestGzipCompressorRejectsOversizedOutput`
 - `task test:unit:full` — same without `-short`
 - `task ci` (setup + build + test), `task test:fuzz`, `task cover`, `task reltest`
 - E2E requires `pdftoppm` (macOS: `brew install poppler`); `task test` flows a PDF through pdftoppm → `scan` → `decode`.
