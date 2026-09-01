@@ -267,7 +267,7 @@ metadata intact. This format is not designed to be human-readable.
 
 **Encoding pipeline:**
 
-```
+```text
 MarshalBinary → PC envelope (Base45, gzip if smaller) → QR code
 ```
 
@@ -298,7 +298,7 @@ PC + base36(info) + base36(version) + base45(CRC-32 of payload) + base45(payload
 
 **Decoding pipeline** (reverses encoding):
 
-```
+```text
 QR code → PC envelope unwrap → Base45 decode → gzip decompress (if marked) → UnmarshalBinary
 ```
 
@@ -313,7 +313,7 @@ Once you have the text from the printed document,
 
 which should look something like this:
 
-```
+```text
 # PaperCrypt Version: 3.0.0
 # Content Serial: EIPESR
 # Purpose: Example Sheet
