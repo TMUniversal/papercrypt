@@ -44,5 +44,5 @@ func DecodeData(p *PaperCrypt, passphrase []byte, opts ...DecodeOption) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	return handler.process(o.maxDecompressedSize, p.Data, passphrase)
+	return handler.decode(o.maxDecompressedSize, p.Data, passphrase)
 }

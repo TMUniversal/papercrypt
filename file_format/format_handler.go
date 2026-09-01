@@ -31,12 +31,12 @@ import (
 )
 
 type formatHandler struct {
-	process func(maxDecompressedSize int, data, passphrase []byte) ([]byte, error)
+	decode func(maxDecompressedSize int, data, passphrase []byte) ([]byte, error)
 }
 
 var formatHandlers = map[PaperCryptDataFormat]formatHandler{
-	PaperCryptDataFormatPGP: {process: processPGPData},
-	PaperCryptDataFormatRaw: {process: processRawData},
+	PaperCryptDataFormatPGP: {decode: decodePGPData},
+	PaperCryptDataFormatRaw: {decode: decodeRawData},
 }
 
 func getHandler(format PaperCryptDataFormat) (formatHandler, error) {
@@ -47,11 +47,11 @@ func getHandler(format PaperCryptDataFormat) (formatHandler, error) {
 	return handler, nil
 }
 
-func processRawData(_ int, data, _ []byte) ([]byte, error) {
+func decodeRawData(_ int, data, _ []byte) ([]byte, error) {
 	return data, nil
 }
 
-func processPGPData(maxDecompressedSize int, data, passphrase []byte) ([]byte, error) {
+func decodePGPData(maxDecompressedSize int, data, passphrase []byte) ([]byte, error) {
 	gzipReader, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, errors.Join(errors.New("error creating gzip reader"), err)
