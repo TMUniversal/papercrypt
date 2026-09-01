@@ -349,3 +349,9 @@ func TestMarshalBinaryVersionValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestDecodeDataNilDocument(t *testing.T) {
+	if _, err := DecodeData(nil, nil); err == nil {
+		t.Error("DecodeData(nil): expected error")
+	}
+}
