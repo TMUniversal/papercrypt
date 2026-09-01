@@ -41,15 +41,15 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
+
+	"github.com/tmuniversal/papercrypt/v3/internal/decompression"
 )
 
 var (
 	ErrCRCMismatch              = errors.New("envelope: CRC-32 mismatch")
 	ErrPayloadTooShort          = errors.New("envelope: payload too short")
 	ErrDecode                   = errors.New("envelope: decode error")
-	ErrDecompressedSizeExceeded = errors.New(
-		"envelope: decompressed content exceeds the size limit",
-	)
+	ErrDecompressedSizeExceeded = decompression.ErrSizeExceeded
 )
 
 // Wrap compresses with gzip only when it makes the payload strictly smaller.

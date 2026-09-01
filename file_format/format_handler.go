@@ -27,12 +27,13 @@ import (
 	"fmt"
 
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
+	"github.com/tmuniversal/papercrypt/v3/internal/decompression"
 )
 
 // formatHandler turns the binary Data stored in a PaperCrypt document back
 // into plaintext. Each supported PaperCryptDataFormat gets one.
 type formatHandler struct {
-	process func(data, passphrase []byte) ([]byte, error)
+	process func(maxDecompressedSize int, data, passphrase []byte) ([]byte, error)
 }
 
 var formatHandlers = map[PaperCryptDataFormat]formatHandler{
@@ -48,25 +49,28 @@ func getHandler(format PaperCryptDataFormat) (formatHandler, error) {
 	return handler, nil
 }
 
-func processRawData(data, _ []byte) ([]byte, error) {
+func processRawData(_ int, data, _ []byte) ([]byte, error) {
 	return data, nil
 }
 
-func processPGPData(data, passphrase []byte) ([]byte, error) {
+// processPGPData expands the gzip-compressed payload and decrypts it. The
+// expansion cap lives in internal/decompression; a zero maxDecompressedSize
+// means the package default, a negative one is unlimited.
+func processPGPData(maxDecompressedSize int, data, passphrase []byte) ([]byte, error) {
 	gzipReader, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, errors.Join(errors.New("error creating gzip reader"), err)
 	}
 
-	decompressed := new(bytes.Buffer)
-	if _, err := decompressed.ReadFrom(gzipReader); err != nil {
+	decompressed, err := decompression.ReadAll(gzipReader, maxDecompressedSize)
+	if err != nil {
 		return nil, errors.Join(errors.New("error reading from gzip reader"), err)
 	}
 	if err := gzipReader.Close(); err != nil {
 		return nil, errors.Join(errors.New("error closing gzip reader"), err)
 	}
 
-	pgpMessage := crypto.NewPGPMessage(decompressed.Bytes())
+	pgpMessage := crypto.NewPGPMessage(decompressed)
 
 	pgp := crypto.PGP()
 	decryptionHandler, err := pgp.Decryption().Password(passphrase).New()
