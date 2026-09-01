@@ -60,9 +60,12 @@ func TestParseHexUint32(t *testing.T) {
 
 	t.Run("parse hex number without prefix", func(t *testing.T) {
 		hex := "FF"
-		_, err := ParseHexUint32(hex)
+		parsed, err := ParseHexUint32(hex)
 		if err != nil {
-			t.Errorf("ParseHexUint32 should not fail with hex number without prefix")
+			t.Fatalf("ParseHexUint32 should not fail with hex number without prefix")
+		}
+		if parsed != 0xFF {
+			t.Errorf("Parsed value was incorrect, got: %d, want: %d.", parsed, 0xFF)
 		}
 	})
 
@@ -137,7 +140,7 @@ func TestDeserializeBinary(t *testing.T) {
 		data := []byte(correctFile)
 		_, err := DeserializeBinary(&data)
 		if err != nil {
-			t.Errorf("DeserializeBinary failed with error %s", err)
+			t.Fatalf("DeserializeBinary failed with error %s", err)
 		}
 	})
 
@@ -145,7 +148,7 @@ func TestDeserializeBinary(t *testing.T) {
 		data := []byte(correctFile)
 		res, err := DeserializeBinary(&data)
 		if err != nil {
-			t.Errorf("DeserializeBinary failed with error %s", err)
+			t.Fatalf("DeserializeBinary failed with error %s", err)
 		}
 
 		expected := []byte{
@@ -586,7 +589,7 @@ func TestDeserializeBinary(t *testing.T) {
 	18: 22DF5F`)
 		_, err := DeserializeBinary(&data)
 		if err == nil {
-			t.Errorf("DeserializeBinary should fail with invalid base16")
+			t.Errorf("DeserializeBinary should fail with invalid line numbers")
 		}
 	})
 
@@ -642,6 +645,31 @@ func TestDeserializeBinary(t *testing.T) {
 		}
 		if _, err := DeserializeBinary(&widened); err == nil {
 			t.Errorf("DeserializeBinary should fail with inconsistent line lengths")
+		}
+	})
+
+	t.Run("round trip", func(t *testing.T) {
+		payloads := [][]byte{
+			{0xFF},
+			[]byte("17: short line"),
+			[]byte("hello world, this is some data 0123456789"),
+		}
+		for _, payload := range payloads {
+			serialized := []byte(SerializeBinary(&payload, 24))
+			res, err := DeserializeBinary(&serialized)
+			if err != nil {
+				t.Fatalf("DeserializeBinary failed with error %s", err)
+			}
+			if !bytes.Equal(res, payload) {
+				t.Errorf("round trip mismatch, got: %x, want: %x", res, payload)
+			}
+		}
+	})
+
+	t.Run("reject empty input", func(t *testing.T) {
+		empty := []byte{}
+		if _, err := DeserializeBinary(&empty); err == nil {
+			t.Errorf("DeserializeBinary should fail with no data lines")
 		}
 	})
 }
