@@ -27,7 +27,6 @@ import (
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/caarlos0/log"
 	"github.com/tmuniversal/papercrypt/v3/internal"
-	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
 func DeserializeText(
@@ -87,7 +86,7 @@ func DeserializeText(
 
 	headerDate, ok := headers[HeaderFieldDate]
 	if !ok {
-		log.Warn(terminal.Warning("Date not present in header!"))
+		return nil, errors.Join(errorParsingHeader, newFieldNotPresentError(HeaderFieldDate))
 	}
 
 	timestamp, err := time.Parse(internal.TimeStampFormatLong, headerDate)
