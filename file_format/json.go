@@ -29,7 +29,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal"
 )
 
-// JSONPaperCrypt is the JSON representation of PaperCrypt with base64 encoded hashes.
 type JSONPaperCrypt struct {
 	Version      string `json:"v"`
 	DataFormat   string `json:"f"`
@@ -41,7 +40,6 @@ type JSONPaperCrypt struct {
 	Data         []byte `json:"d"`
 }
 
-// MarshalJSON implements the json.Marshaler interface for PaperCrypt.
 func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
 	jpc := JSONPaperCrypt{
 		Version:      p.Version,
@@ -56,7 +54,6 @@ func (p *PaperCrypt) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jpc)
 }
 
-// UnmarshalJSON implements the json.Unmarshaler interface for PaperCrypt.
 func (p *PaperCrypt) UnmarshalJSON(data []byte) error {
 	var jpc JSONPaperCrypt
 	if err := json.Unmarshal(data, &jpc); err != nil {

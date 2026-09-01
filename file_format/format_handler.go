@@ -30,8 +30,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/internal/decompression"
 )
 
-// formatHandler turns the binary Data stored in a PaperCrypt document back
-// into plaintext. Each supported PaperCryptDataFormat gets one.
 type formatHandler struct {
 	process func(maxDecompressedSize int, data, passphrase []byte) ([]byte, error)
 }

@@ -34,8 +34,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
-// validateVersion checks the version header field and that it is a supported
-// PaperCrypt major version, returning the value for the document.
 func validateVersion(headers map[string]string, ignoreVersionMismatch bool) (string, error) {
 	versionLine, ok := headers[HeaderFieldVersion]
 	if !ok {
@@ -58,8 +56,6 @@ func validateVersion(headers map[string]string, ignoreVersionMismatch bool) (str
 	return versionLine, nil
 }
 
-// validateHeaderCRC32 verifies the header CRC-32 signature against the
-// header section, sans the CRC-32 line itself.
 func validateHeaderCRC32(
 	headers map[string]string,
 	headersSection []byte,
@@ -112,7 +108,6 @@ func validateHeaderCRC32(
 	return nil
 }
 
-// validateDataFormat reads the data format header field, returning the enum value.
 func validateDataFormat(headers map[string]string) (PaperCryptDataFormat, error) {
 	dataFormatString, ok := headers[HeaderFieldDataFormat]
 	if !ok {
@@ -127,8 +122,6 @@ func validateDataFormat(headers map[string]string) (PaperCryptDataFormat, error)
 	return PaperCryptDataFormatFromString(dataFormatString), nil
 }
 
-// validateContentLength checks that the deserialized body length matches the
-// content length header field.
 func validateContentLength(body []byte, headers map[string]string) error {
 	bodyLength, ok := headers[HeaderFieldContentLength]
 	if !ok {
@@ -150,8 +143,6 @@ func validateContentLength(body []byte, headers map[string]string) error {
 	return nil
 }
 
-// validateSHA256 checks the deserialized body against the content SHA-256
-// header field.
 func validateSHA256(body []byte, headers map[string]string, ignoreChecksumMismatch bool) error {
 	bodySha256, ok := headers[HeaderFieldSHA256]
 	if !ok {

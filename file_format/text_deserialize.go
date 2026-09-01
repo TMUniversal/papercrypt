@@ -31,9 +31,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/terminal"
 )
 
-// DeserializeText parses a human-readable PaperCrypt text document back into
-// a PaperCrypt struct, validating the header (version, CRC-32, data format)
-// and the body (content length and SHA-256).
 func DeserializeText(
 	data []byte,
 	ignoreVersionMismatch bool,

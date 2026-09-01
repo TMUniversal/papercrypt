@@ -32,9 +32,6 @@ func WithNoDecompressionLimit() DecodeOption {
 	return func(o *decodeOptions) { o.maxDecompressedSize = -1 }
 }
 
-// DecodeData decodes and, if the data was encrypted with PaperCrypt (data
-// format is PaperCryptDataFormatPGP), decrypts the data, returning the
-// original binary data.
 func DecodeData(p *PaperCrypt, passphrase []byte, opts ...DecodeOption) ([]byte, error) {
 	if p == nil {
 		return nil, errors.New("decode: nil PaperCrypt")

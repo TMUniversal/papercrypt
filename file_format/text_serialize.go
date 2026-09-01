@@ -44,10 +44,9 @@ type lineData struct {
 	CRC24      uint32
 }
 
-// SerializeBinary returns the encrypted binary data,
-// formatted for restoration
-// lines will hold 22 bytes of data, prefaces by the line number, followed by the CRC-24 of the line,
-// bytes are printed as two base16 (hex) digits, separated by a space.
+// Lines hold 22 bytes of data, prefaced by the line number, followed by the
+// CRC-24 of the line; bytes are printed as two base16 (hex) digits, separated
+// by a space. The last line carries the block CRC-24.
 // Example:
 //
 //	1: 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 <CRC-24 of this line>
@@ -107,7 +106,6 @@ func SerializeBinary(data *[]byte, bytesPerLine int) string {
 	return string(dataBlock)
 }
 
-// DeserializeBinary deserializes bytes from human-readable archive format encoded by SerializeBinary
 func DeserializeBinary(data *[]byte) ([]byte, error) {
 	rawLines := bytes.Split(*data, []byte{'\n'})
 	lines := make([][]byte, 0, len(rawLines))
@@ -227,8 +225,6 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 	return resultData, nil
 }
 
-// MarshalBinaryForText returns the binary data formatted for restoration,
-// hex lines with line numbers and a per-line CRC-24.
 func MarshalBinaryForText(p *PaperCrypt) (string, error) {
 	if p.Data == nil {
 		return "", errors.New("no data to serialize")
@@ -241,7 +237,6 @@ func MarshalBinaryForText(p *PaperCrypt) (string, error) {
 	return SerializeBinary(&p.Data, DefaultBytesPerLine), nil
 }
 
-// GetText renders the human-readable text container for p.
 func GetText(p *PaperCrypt, lowerCaseEncoding bool) ([]byte, error) {
 	header := fmt.Sprintf(
 		`%s: %s
@@ -291,7 +286,6 @@ func GetText(p *PaperCrypt, lowerCaseEncoding bool) ([]byte, error) {
 		serializedData), nil
 }
 
-// BytesFromBase64 decodes a base64 string using base64.StdEncoding to a byte slice
 func BytesFromBase64(data string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(data)
 }

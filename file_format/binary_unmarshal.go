@@ -31,7 +31,6 @@ import (
 	"github.com/tmuniversal/papercrypt/v3/file_format/envelope"
 )
 
-// UnmarshalBinary parses a binary container into a PaperCrypt struct.
 func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	if len(data) < BinaryHeaderSize {
 		return nil, ErrBinaryTruncated
@@ -111,7 +110,6 @@ func UnmarshalBinary(data []byte) (*PaperCrypt, error) {
 	return p, nil
 }
 
-// UnmarshalBinaryFromReader reads a binary container from r and returns it.
 func UnmarshalBinaryFromReader(r io.Reader) (*PaperCrypt, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
@@ -120,8 +118,6 @@ func UnmarshalBinaryFromReader(r io.Reader) (*PaperCrypt, error) {
 	return UnmarshalBinary(data)
 }
 
-// UnmarshalEnvelope decodes an envelope-wrapped binary container into a
-// PaperCrypt struct.
 func UnmarshalEnvelope(data string, opts ...envelope.CompressorOption) (*PaperCrypt, error) {
 	if !strings.HasPrefix(data, envelope.Magic) {
 		return nil, errors.New("unsupported format: expected PC envelope")
