@@ -198,22 +198,20 @@ func DeserializeBinary(data *[]byte) ([]byte, error) {
 		return result[i].LineNumber < result[j].LineNumber
 	})
 
-	// Ensure that lines are consecutive, starting at 1: as we sorted the
-	// lines, we can just check the first and last line.
+	// lines are 1-based and consecutive; the endpoint checks alone admit a
+	// duplicate-plus-gap like 1,1,3, so verify every sorted position.
 	if len(result) == 0 {
 		return nil, errors.New("no lines found")
 	}
 
-	if result[0].LineNumber != 1 {
-		return nil, fmt.Errorf("invalid first line number: %d", result[0].LineNumber)
-	}
-
-	// this also ensures that we have all lines, as the last line number must equal the number of lines
-	if int64(result[len(result)-1].LineNumber) != int64(len(result)) {
-		return nil, fmt.Errorf(
-			"invalid last line number: %d",
-			result[len(result)-1].LineNumber,
-		)
+	for i, line := range result {
+		if line.LineNumber != uint32(i+1) {
+			return nil, fmt.Errorf(
+				"invalid line number: line %d at position %d",
+				line.LineNumber,
+				i+1,
+			)
+		}
 	}
 
 	resultData := make([]byte, 0, len(result)*lineBytes)

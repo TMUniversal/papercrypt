@@ -648,6 +648,20 @@ func TestDeserializeBinary(t *testing.T) {
 		}
 	})
 
+	t.Run("reject duplicate and gap in line numbers", func(t *testing.T) {
+		// identical data lines keep the block CRC valid after renumbering,
+		// so only the line-number ordering check can catch this
+		payload := bytes.Repeat([]byte{0x66}, 72)
+		s := SerializeBinary(&payload, 24)
+		b := bytes.Replace([]byte(s), []byte("2: "), []byte("1: "), 1)
+		if bytes.Contains([]byte(s), []byte("2: ")) && bytes.Equal(b, []byte(s)) {
+			t.Fatalf("failed to renumber the second data line")
+		}
+		if _, err := DeserializeBinary(&b); err == nil {
+			t.Errorf("DeserializeBinary should fail with duplicate and gap in line numbers")
+		}
+	})
+
 	t.Run("round trip", func(t *testing.T) {
 		payloads := [][]byte{
 			{0xFF},
