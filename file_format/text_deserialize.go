@@ -21,7 +21,6 @@
 package file_format
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -106,12 +105,6 @@ func DeserializeText(
 		timestamp,
 		dataFormat,
 	)
-
-	_, err = json.MarshalIndent(paperCrypt, "", "  ")
-	if err != nil {
-		return nil, errors.Join(errors.New("error encoding JSON"), err)
-	}
-	log.WithField("json", paperCrypt).Debug("Serialized PaperCrypt document")
 
 	return paperCrypt, nil
 }
