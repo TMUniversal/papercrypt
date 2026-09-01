@@ -199,7 +199,7 @@ If no seed is passed to the command, one will be generated using the system's en
 papercrypt phrase-sheet --out phrase-sheet.pdf ExampleAbcA=
 ```
 
-Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed will is also present
+Here, `ExampleAbcA=` is the base64-encoded seed, which is used to generate the word list. The seed is also present
 on the generated PDF document, so you can regenerate the same word list later, even if you allowed the seed to be chosen
 at random.
 
