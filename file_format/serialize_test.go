@@ -614,4 +614,34 @@ func TestDeserializeBinary(t *testing.T) {
 			t.Errorf("DeserializeBinary should not fail with lines swapped")
 		}
 	})
+
+	t.Run("deserialize with non-default bytes per line", func(t *testing.T) {
+		payload := []byte("hello world, this is some data 0123456789")
+		serialized := []byte(SerializeBinary(&payload, 4))
+		res, err := DeserializeBinary(&serialized)
+		if err != nil {
+			t.Fatalf("DeserializeBinary failed with error %s", err)
+		}
+		if !bytes.Equal(res, payload) {
+			t.Errorf("round trip mismatch, got: %x, want: %x", res, payload)
+		}
+	})
+
+	t.Run("reject inconsistent line lengths", func(t *testing.T) {
+		payload := []byte("abcdefghijklmnopqrstuvwxyz012345")
+		s := SerializeBinary(&payload, 8)
+		b := []byte(s) // widen the first data line by one extra byte pair (hex "EE")
+		widened := bytes.Replace(
+			b,
+			[]byte("61 62 63 64 65 66 67 68 "),
+			[]byte("61 62 63 64 65 66 67 68 EE "),
+			1,
+		)
+		if bytes.Equal(widened, b) {
+			t.Fatalf("failed to construct inconsistent-length fixture")
+		}
+		if _, err := DeserializeBinary(&widened); err == nil {
+			t.Errorf("DeserializeBinary should fail with inconsistent line lengths")
+		}
+	})
 }
