@@ -1,3 +1,23 @@
+/*
+ * This file is part of PaperCrypt.
+ *
+ * PaperCrypt lets you prepare encrypted messages for printing on paper.
+ * Copyright (C) 2026 TMUniversal <me@tmuniversal.eu>.
+ *
+ * PaperCrypt is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package envelope
 
 import (
@@ -58,6 +78,9 @@ func ParseHeader(data string) (Header, string, error) {
 	infoIdx := strings.IndexByte(headerAlphabet, rest[0])
 	if infoIdx == -1 {
 		return hdr, "", fmt.Errorf("%w: invalid header character %q", ErrInvalidVersion, rest[0])
+	}
+	if infoIdx > 0x0f {
+		return hdr, "", fmt.Errorf("%w: reserved header bits set %q", ErrInvalidVersion, rest[0])
 	}
 	info := uint8(infoIdx) //nolint:gosec // index is valid alphabet position
 	hdr.Type = HeaderType(info & 1)
