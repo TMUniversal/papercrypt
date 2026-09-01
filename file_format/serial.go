@@ -42,7 +42,7 @@ func GenerateSerial(length uint8) (string, error) {
 		return "", errors.Join(errors.New("error encoding bytes"), err)
 	}
 	if err := encoder.Close(); err != nil {
-		return "", errors.Join(errors.New("error closing base64 encoder"), err)
+		return "", errors.Join(errors.New("error closing base32 encoder"), err)
 	}
 
 	return buf.String()[:length], nil
