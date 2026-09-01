@@ -29,8 +29,9 @@ import (
 type PaperCryptDataFormat uint8
 
 const (
-	PaperCryptDataFormatPGP PaperCryptDataFormat = 0
-	PaperCryptDataFormatRaw PaperCryptDataFormat = 1
+	PaperCryptDataFormatPGP     PaperCryptDataFormat = 0
+	PaperCryptDataFormatRaw     PaperCryptDataFormat = 1
+	PaperCryptDataFormatUnknown PaperCryptDataFormat = 0xFF
 )
 
 func (f PaperCryptDataFormat) String() string {
@@ -51,7 +52,7 @@ func PaperCryptDataFormatFromString(s string) PaperCryptDataFormat {
 	case "Raw":
 		return PaperCryptDataFormatRaw
 	default:
-		return PaperCryptDataFormat(0xFF)
+		return PaperCryptDataFormatUnknown
 	}
 }
 
