@@ -53,9 +53,6 @@ func processRawData(_ int, data, _ []byte) ([]byte, error) {
 	return data, nil
 }
 
-// processPGPData expands the gzip-compressed payload and decrypts it. The
-// expansion cap lives in internal/decompression; a zero maxDecompressedSize
-// means the package default, a negative one is unlimited.
 func processPGPData(maxDecompressedSize int, data, passphrase []byte) ([]byte, error) {
 	gzipReader, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {

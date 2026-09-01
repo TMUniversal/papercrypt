@@ -106,8 +106,6 @@ func (c GzipCompressor) Decompress(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("envelope: creating gzip reader: %w", err)
 	}
 
-	// the decompressed-size cap lives in internal/decompression; a zero
-	// config value means the package-wide default, a negative one is unlimited
 	out, err := decompression.ReadAll(gz, c.maxDecompressedSize)
 	if err != nil {
 		return nil, fmt.Errorf("envelope: reading gzip data: %w", err)

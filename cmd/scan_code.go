@@ -125,7 +125,9 @@ The resulting data can be read by this command, by supplying the --from-binary f
 			if errors.Is(err, envelope.ErrDecompressedSizeExceeded) {
 				return errors.Join(
 					err,
-					errors.New("use --unlimited to ignore the decompressed size limit"),
+					errors.New(
+						"use --unlimited-gzip-payload to ignore the decompressed size limit",
+					),
 				)
 			}
 			return err
@@ -154,5 +156,5 @@ func init() {
 	scanCmd.Flags().
 		BoolVarP(&qrCmdToBinary, "to-binary", "b", false, "Write envelope string output instead of plaintext")
 	scanCmd.Flags().
-		BoolVar(&qrCmdUnlimited, "unlimited", false, "Ignore the decompressed size limit when unwrapping the envelope")
+		BoolVar(&qrCmdUnlimited, "unlimited-gzip-payload", false, "Ignore the decompressed size limit for the gzip payload")
 }
