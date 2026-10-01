@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.6
-	github.com/ProtonMail/gopenpgp/v3 v3.4.1
+	github.com/ProtonMail/gopenpgp/v3 v3.5.2
 	github.com/boombuler/barcode v1.1.0
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.6.2
@@ -21,7 +21,7 @@ require (
 )
 
 require (
-	github.com/ProtonMail/go-crypto v1.4.1 // indirect
+	github.com/ProtonMail/go-crypto v1.5.2 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20260812204455-68fa937c71be // indirect
 	github.com/charmbracelet/x/ansi v0.11.8 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
